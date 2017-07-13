@@ -1,0 +1,3 @@
+rootProject.name = 'didekin_web'
+include 'didekin'
+

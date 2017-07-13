@@ -1,0 +1,53 @@
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'idea'
+
+configurations {
+    compile.exclude module: "spring-boot-starter-tomcat"
+}
+
+jar {
+    baseName = 'didekin_web'
+    if(project.hasProperty('versionjar')) {
+        version = versionjar
+    }
+    exclude('*.sql')
+}
+
+test {
+    filter {
+        includeTestsMatching "com.didekin.userservice.*Test"
+        includeTestsMatching "com.didekin.incidservice.*Test"
+    }
+    useJUnit {
+        if(project.hasProperty('testCategory')) {
+            includeCategories testCategory
+        }else {
+            includeCategories "com.didekin.common.LocalDev"
+        }
+    }
+}
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'com.google.guava:guava:19.0'
+    compile 'com.sun.mail:javax.mail:1.5.6'
+    compile 'mysql:mysql-connector-java:5.1.38'
+
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
+    compile 'org.springframework.boot:spring-boot-starter-jetty'
+    compile 'org.springframework:spring-context-support'
+    compile 'org.springframework.boot:spring-boot-starter-jdbc'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.9.RELEASE'
+
+    compile rootProject.ext.didekinlibs
+    compile rootProject.ext.retrofit2
+
+    testCompile rootProject.ext.mock_server
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+}
+
+

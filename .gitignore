@@ -1,0 +1,45 @@
+# Idea files
+/**/*.iml
+/**/*.ipr
+/**/*.iws
+.idea/
+didekin/.idea/
+administracion
+
+# Mac files
+.DS_Store
+
+# Gradle root files
+.gradle/
+gradle.properties
+
+# AWS related files
+aws/
+.elasticbeanstalk/
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# Elastic Beanstalk configuration
+didekin/src/main/resources/.ebextensions/env-var.config
+didekin/src/main/resources/.ebextensions/https-instance-securitygroup.config
+# Entornos AWS para test
+didekin/src/test/resources/aws_*_test.properties
+
+# Build and logs
+logs/
+build/
+didekin/build/**
+/**/libs/*.jar
+/**/*.bat
+
+# Configuración de entornos
+terminal/
+
+# Releases
+releases/
+
+# SECURITY
+
+# Basurilla
+/**/trash.sql
+

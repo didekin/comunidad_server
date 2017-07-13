@@ -1,0 +1,50 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.2.2.RELEASE'
+        /*1.3.2.RELEASE*/
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+        flatDir{
+            dirs '/Users/pedro/Documents/git_projects/didekinlibs/didekinlib_model/releases/master/',
+                    '/Users/pedro/Documents/git_projects/didekinlibs/didekinlib_gcm/releases/master/',
+                    '/Users/pedro/Documents/git_projects/didekinlibs/didekinlib_http/releases/master/'
+        }
+    }
+    dependencies {
+    }
+}
+
+ext {
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_8
+    targetCompatibilityVersion = JavaVersion.VERSION_1_8
+    retrofit2Version = '2.3.0'
+    okhttpVersion = '3.8.1'
+    didekinlibsVersion = 'a-0.1.18'
+
+    didekinlibs = [":didekinlib_model-$rootProject.ext.didekinlibsVersion:@jar",
+                   ":didekinlib_gcm-$rootProject.ext.didekinlibsVersion:@jar",
+                   ":didekinlib_http-$rootProject.ext.didekinlibsVersion:@jar"]
+
+    mock_server = "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okhttpVersion"
+    retrofit2 = ["com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit2Version",
+                 "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit2Version",
+                 "com.squareup.okhttp3:logging-interceptor:$rootProject.ext.okhttpVersion"]
+}
+
+task wrapper(type: Wrapper) {
+    /*  No podemos subir de versión hasta subir a spring-boot 1.4.*   */
+    gradleVersion = '2.14.1'
+}
+
+
+
+

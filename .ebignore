@@ -1,0 +1,15 @@
+.elastisbeanstalk
+.gradle
+.idea
+administracion
+gradle
+logs
+releases
+didekin
+!didekin/build/libs/*.jar
+terminal
+.gitignore
+*.gradle
+gradle.properties
+gradlew
+README.md
