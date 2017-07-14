@@ -10,7 +10,6 @@ public final class MailConstants {
     private MailConstants()
     {
     }
-    // TODO: hay que cambiar los valores de las 3 variables de entorno para PRE y PRO: han de ser distintas.
 
     public static final String aws_cred_username = System.getenv("aws_cred_username");
     public static final String aws_cred_password = System.getenv("aws_cred_password");

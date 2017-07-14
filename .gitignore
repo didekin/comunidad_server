@@ -33,10 +33,10 @@ didekin/build/**
 /**/*.bat
 
 # Configuración de entornos
-terminal/
+terminal/*
 
 # Releases
-releases/
+releases/*
 
 # SECURITY
 
