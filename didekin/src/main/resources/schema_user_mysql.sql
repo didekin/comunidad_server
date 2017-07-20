@@ -143,6 +143,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ...........VIEWS..............
 
 DROP VIEW IF EXISTS comunidades_municipio_view;
+DROP VIEW IF EXISTS usuarios_comunidades_view;
 
 CREATE VIEW comunidades_municipio_view AS
   SELECT
@@ -159,8 +160,6 @@ CREATE VIEW comunidades_municipio_view AS
       ON c.m_id = m.m_id
          AND m.pr_id = pr.pr_id
          AND pr.ca_id = ca.ca_id;
-
-DROP VIEW IF EXISTS usuarios_comunidades_view;
 
 CREATE VIEW usuarios_comunidades_view AS
   SELECT

@@ -29,4 +29,13 @@ public abstract class MunicipioDaoTest {
         municipio = municipioDao.getMunicipioById(municipio.getmId());
         assertThat(municipio.getProvincia().getProvinciaId(), is(equalTo((short) 13)));
     }
+
+    @Test
+    public void getMunicipioCharacterSet() throws Exception
+    {
+        Municipio municipio = municipioDao.getMunicipioByPrIdAndMcd((short) 13, (short) 1);
+        assertThat(municipio.getNombre(), is(equalTo("Abenójar")));
+        municipio = municipioDao.getMunicipioByPrIdAndMcd((short) 13, (short) 61);
+        assertThat(municipio.getNombre(), is(equalTo("Pedro Muñoz")));
+    }
 }
