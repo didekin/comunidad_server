@@ -335,6 +335,13 @@ public abstract class UsuarioServiceTest {
         }
     }
 
+    @Test
+    public void testLogin_2() throws EntityException
+    {
+        Usuario user = new Usuario.UsuarioBuilder().userName("didekindroid@didekin.com").password("pedro1").build();
+        assertThat(usuarioService.login(user), is(true));
+    }
+
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
