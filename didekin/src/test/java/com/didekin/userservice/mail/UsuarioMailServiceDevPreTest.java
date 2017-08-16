@@ -61,7 +61,7 @@ public class UsuarioMailServiceDevPreTest {
     public void testPasswordMessage_1() throws MessagingException, InterruptedException, IOException
     {
         mailService.sendNewPswd(usuario, newPassword);
-        Thread.sleep(6000);
+        Thread.sleep(9000);
         javaMailMonitor.checkPasswordMessage(usuario.getAlias(), newPassword);
     }
 }

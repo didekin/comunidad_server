@@ -62,9 +62,7 @@ import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -345,22 +343,15 @@ public abstract class UsuarioControllerTest {
         UsuarioComunidad usuarioComunidad =
                 new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
-        getTokenAndCheckDb(TO, oldPassword);
 
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
 
-        // Check DB.
-        assertThat(sujetosService.getUserByUserName(usuario.getUserName()).getPassword(), allOf(
-                notNullValue(),
-                not(is(oldPassword))
-        ));
-        // Check for deletion of oauth token.
-        assertThat(sujetosService.getAccessTokenByUserName(TO).isPresent(), is(false));
-
         // Check mail.
-        Thread.sleep(6000);
+        Thread.sleep(9000);
         javaMailMonitor.checkPasswordMessage(usuario.getAlias(), null);
+        // Login data have changed
+        assertThat(sujetosService.login(usuario), is(false));
         // Cleaning and closing.
         javaMailMonitor.closeStoreAndFolder();
     }
@@ -375,7 +366,7 @@ public abstract class UsuarioControllerTest {
         // Invalid email.
         Response<Boolean> isPswdSent = USER_ENDPOINT.passwordSend(USER_JUAN.getUserName()).execute();
         assertThat(retrofitHandler.getErrorBean(isPswdSent).getMessage(), is(PASSWORD_NOT_SENT.getHttpMessage()));
-        // Verificamos datos de login.
+        // Login data haven't changed
         assertThat(sujetosService.login(USER_JUAN), is(true));
     }
 

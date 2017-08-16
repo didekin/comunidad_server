@@ -6,7 +6,6 @@ import org.hamcrest.CoreMatchers;
 
 import java.io.IOException;
 
-import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -22,6 +21,7 @@ import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CHANGE_CONTR
 import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CHANGE_CONTRASEÑA_2;
 import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CONTRASEÑA;
 import static com.google.common.base.Preconditions.checkState;
+import static javax.mail.Flags.Flag.DELETED;
 import static javax.mail.Folder.READ_WRITE;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,7 +49,7 @@ public class JavaMailMonitor {
         checkState(folder.isOpen());
     }
 
-    public void checkPasswordMessage(String userAlias, String newPassword) throws MessagingException, IOException
+    public boolean checkPasswordMessage(String userAlias, String newPassword) throws MessagingException, IOException
     {
         Message[] messages = folder.getMessages();
 
@@ -69,8 +69,8 @@ public class JavaMailMonitor {
         assertThat(((InternetAddress) messages[0].getFrom()[0]).getAddress(), is(mail_from));
         assertThat(((InternetAddress) messages[0].getAllRecipients()[0]).getAddress(), CoreMatchers.is(UsuarioMailConfigurationPre.TO));
 
-        messages[0].setFlag(Flags.Flag.DELETED, true);
-        folder.expunge();
+        messages[0].setFlag(DELETED, true);
+        return folder.expunge().length == 1;
     }
 
     public void closeStoreAndFolder() throws MessagingException
@@ -89,7 +89,7 @@ public class JavaMailMonitor {
     {
         Message[] messages = folder.getMessages();
         for (Message message : messages) {
-            message.setFlag(Flags.Flag.DELETED, true);
+            message.setFlag(DELETED, true);
         }
 
         folder.expunge();

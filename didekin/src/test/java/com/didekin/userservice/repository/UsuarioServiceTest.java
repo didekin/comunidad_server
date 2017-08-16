@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
@@ -507,6 +508,8 @@ public abstract class UsuarioServiceTest {
         assertThat(usuarioService.passwordChangeWithUser(luis, newClearPswd), is(1));
         assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
                 is(true));
+        // Check for deletion of oauth token.
+        assertThat(usuarioService.getAccessTokenByUserName(TO).isPresent(), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

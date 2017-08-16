@@ -38,6 +38,8 @@ ext {
     retrofit2 = ["com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit2Version",
                  "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit2Version",
                  "com.squareup.okhttp3:logging-interceptor:$rootProject.ext.okhttpVersion"]
+
+    awaitility = 'org.awaitility:awaitility:3.0.0'
 }
 
 task wrapper(type: Wrapper) {
