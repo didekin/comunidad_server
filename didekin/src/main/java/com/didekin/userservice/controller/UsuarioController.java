@@ -36,6 +36,7 @@ import static com.didekinlib.http.UsuarioServConstant.USER_READ;
 import static com.didekinlib.http.UsuarioServConstant.USER_READ_GCM_TOKEN;
 import static com.didekinlib.http.UsuarioServConstant.USER_WRITE;
 import static com.didekinlib.http.UsuarioServConstant.USER_WRITE_GCM_TOKEN;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -128,6 +129,7 @@ public class UsuarioController extends AppControllerAbstract {
     {
         logger.debug("passwordChangeWithName()");
         return usuarioService.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
+        // TODO: notificar por mail que el password ha sido cambiado.
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)
@@ -135,11 +137,15 @@ public class UsuarioController extends AppControllerAbstract {
     {
         logger.debug("passwordSend()");
         Usuario usuario = usuarioService.getUserByUserName(userName);
-        String newPswd = usuarioService.makeNewPassword(usuario);
-        if (newPswd != null){
-            usuarioMailService.sendNewPswd(usuario, newPswd);  // TODO: hacer asíncrono con Observable.
+        final String newPswd = usuarioService.makeNewPassword(usuario);
+        if (!newPswd.isEmpty()){
+            try{
+                usuarioMailService.sendNewPswd(usuario, usuarioService.makeNewPassword(usuario));  // TODO: hacer asíncrono con Observable.
+            }catch (MailException e){
+                throw new EntityException(PASSWORD_NOT_SENT);
+            }
         }
-        return newPswd != null && !newPswd.isEmpty();
+        return usuarioService.passwordChangeWithUser(usuario, newPswd) == 1;
     }
 
 //    ............................ HANDLING EXCEPTIONS ................................

@@ -306,8 +306,7 @@ public class UsuarioService implements UsuarioServiceIf {
     public String makeNewPassword(Usuario user) throws EntityException
     {
         logger.debug("makeNewPassword()");
-        final String newPswd = PswdGenerator.GENERATOR_13.makePswd();
-        return passwordChangeWithUser(user, newPswd) == 1 ? newPswd : null;
+        return PswdGenerator.GENERATOR_13.makePswd();
     }
 
     @Override
@@ -419,8 +418,6 @@ public class UsuarioService implements UsuarioServiceIf {
 
         final Usuario usuarioOld = usuarioDao.getUserByUserName(userName);
         return passwordChangeWithUser(usuarioOld, newPassword);
-
-        // TODO: notificar por mail que el password ha sido cambiado y por notificación al móvil.
     }
 
     @Override

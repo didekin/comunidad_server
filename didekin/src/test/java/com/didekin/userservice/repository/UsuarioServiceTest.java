@@ -2,7 +2,6 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
 import com.didekin.incidservice.testutils.IncidenciaTestUtils;
-import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -20,12 +19,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.didekin.userservice.repository.PswdGenerator.LENGTH;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.*;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_TRAV_PLAZUELA_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN2;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -335,22 +339,13 @@ public abstract class UsuarioServiceTest {
         }
     }
 
-    @Test
-    public void testLogin_2() throws EntityException
-    {
-        Usuario user = new Usuario.UsuarioBuilder().userName("didekindroid@didekin.com").password("pedro1").build();
-        assertThat(usuarioService.login(user), is(true));
-    }
-
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testMakeNewPassword() throws EntityException
     {
         String newPassword = usuarioService.makeNewPassword(pedro);
-        assertThat((short) newPassword.length(), is(LENGTH));
-        String passwordBD = usuarioDao.getUserByUserName(pedro.getUserName()).getPassword();
-        assertThat(new BCryptPasswordEncoder().matches(newPassword, passwordBD), is(true));
+        checkGeneratedPassword(newPassword);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -473,7 +468,7 @@ public abstract class UsuarioServiceTest {
                 .build();
         try {
             usuarioService.modifyUser(usuarioNew, "juan@noauth.com");
-        } catch (EntityException e){
+        } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
         }
     }
@@ -483,17 +478,16 @@ public abstract class UsuarioServiceTest {
     @Test
     public void testPasswordChangeWithName() throws EntityException
     {
-        Usuario luis = usuarioService.getUserByUserName("luis@luis.com");
-        String newClearPswd = "new_luis_password";
-        assertThat(usuarioService.passwordChangeWithName(luis.getUserName(), newClearPswd), is(1));
-        assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
+        assertThat(usuarioService.passwordChangeWithName(luis.getUserName(), "new_luis_password"), is(1));
+        assertThat(new BCryptPasswordEncoder().matches("new_luis_password", usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
                 is(true));
+        assertThat(usuarioService.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChangeWithUser()
+    public void testPasswordChangeWithUser_1()
     {
         try {
             usuarioService.passwordChangeWithUser(new Usuario.UsuarioBuilder()
@@ -502,6 +496,17 @@ public abstract class UsuarioServiceTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
         }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testPasswordChangeWithUser_2() throws EntityException
+    {
+        String newClearPswd = "new_luis_password";
+        assertThat(usuarioService.passwordChangeWithUser(luis, newClearPswd), is(1));
+        assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
+                is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

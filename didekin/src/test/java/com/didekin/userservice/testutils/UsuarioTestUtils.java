@@ -13,9 +13,12 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import java.io.IOException;
 
+import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * User: pedro@didekin
@@ -175,5 +178,13 @@ public final class UsuarioTestUtils {
     public static String tokenPepe(RetrofitHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(USER_PEPE.getUserName(), USER_PEPE.getPassword());
+    }
+
+    public static void checkGeneratedPassword(String password)
+    {
+        assertThat(password.length() <= 13, is(true));
+        assertThat(password.length() >= 10, is(true));
+        assertThat(password.contains("O"), is(false));
+        assertThat(PASSWORD.isPatternOk(password), is(true));
     }
 }

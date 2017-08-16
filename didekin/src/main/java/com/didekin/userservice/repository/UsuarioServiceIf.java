@@ -37,6 +37,7 @@ public interface UsuarioServiceIf {
     /**
      * Overloaded method, mainly for tests.
      */
+    @SuppressWarnings("UnusedReturnValue")
     Comunidad getComunidadById(long comunidadId) throws EntityException;
 
     Comunidad getComunidadById(Usuario user, long comunidadId) throws EntityException;

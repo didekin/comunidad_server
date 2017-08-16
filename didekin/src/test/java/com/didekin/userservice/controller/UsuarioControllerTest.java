@@ -60,6 +60,7 @@ import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
 import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
 import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -233,7 +234,7 @@ public abstract class UsuarioControllerTest {
     public void testModifyUser_1() throws IOException
     {
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
-        SpringOauthToken token_1 = doSpringOauthTokenAssert(USER_JUAN.getUserName(), USER_JUAN.getPassword());
+        SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
 
         // Change userName.
@@ -254,7 +255,7 @@ public abstract class UsuarioControllerTest {
     {
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
         SpringOauthToken token_1 =
-                doSpringOauthTokenAssert(USER_JUAN.getUserName(), USER_JUAN.getPassword());
+                getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
 
         // Change alias.
@@ -275,14 +276,14 @@ public abstract class UsuarioControllerTest {
     }
 
     /**
-     *  We test how change of userName invalidates accessToken.
+     * We test how change of userName invalidates accessToken.
      */
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUser_3() throws IOException, EntityException
     {
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
-        SpringOauthToken token_1 = doSpringOauthTokenAssert(USER_JUAN.getUserName(), USER_JUAN.getPassword());
+        SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         // Change userName with usuarioDao.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
                 .copyUsuario(sujetosService.getUserByUserName(USER_JUAN.getUserName()))
@@ -316,7 +317,7 @@ public abstract class UsuarioControllerTest {
     {
         // Preconditions: user is registered with an access token.
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body(), is(true));
-        SpringOauthToken accessToken = doSpringOauthTokenAssert(USER_JUAN.getUserName(), USER_JUAN.getPassword());
+        SpringOauthToken accessToken = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         assertThat(sujetosService.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
 
         // Call the controller.
@@ -344,7 +345,7 @@ public abstract class UsuarioControllerTest {
         UsuarioComunidad usuarioComunidad =
                 new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
-        doSpringOauthTokenAssert(TO, oldPassword);
+        getTokenAndCheckDb(TO, oldPassword);
 
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
@@ -362,6 +363,20 @@ public abstract class UsuarioControllerTest {
         javaMailMonitor.checkPasswordMessage(usuario.getAlias(), null);
         // Cleaning and closing.
         javaMailMonitor.closeStoreAndFolder();
+    }
+
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testPasswordSend_2() throws MessagingException, IOException, EntityException, InterruptedException
+    {
+        // Preconditions.
+        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN).execute().body(), is(true));
+        getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
+        // Invalid email.
+        Response<Boolean> isPswdSent = USER_ENDPOINT.passwordSend(USER_JUAN.getUserName()).execute();
+        assertThat(retrofitHandler.getErrorBean(isPswdSent).getMessage(), is(PASSWORD_NOT_SENT.getHttpMessage()));
+        // Verificamos datos de login.
+        assertThat(sujetosService.login(USER_JUAN), is(true));
     }
 
     // ......................... TESTS OF HELPER METHODS ..................................
@@ -393,7 +408,7 @@ public abstract class UsuarioControllerTest {
 
     // ......................... HELPER CLASSES AND METHODS ...............................
 
-    private SpringOauthToken doSpringOauthTokenAssert(String userName, String password) throws IOException
+    private SpringOauthToken getTokenAndCheckDb(String userName, String password) throws IOException
     {
         SpringOauthToken token_1 = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
                 userName,
@@ -435,5 +450,4 @@ public abstract class UsuarioControllerTest {
     @Category({AwsPre.class})
     public static class UsuarioControllerAwsTest extends UsuarioControllerTest {
     }
-
 }
