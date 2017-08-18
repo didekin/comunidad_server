@@ -537,7 +537,7 @@ public abstract class UsuarioServiceTest {
         Thread.sleep(9000);
         javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
         // Cleaning and closing.
-        javaMailMonitor.closeStoreAndFolder();
+        javaMailMonitor.closeStoreAndFolder(); // Limpiamos y cerramos buzón.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

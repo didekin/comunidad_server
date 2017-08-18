@@ -16,6 +16,8 @@ import javax.sql.DataSource;
  * User: pedro
  * Date: 26/03/15
  * Time: 10:53
+ *
+ * UsuarioMailConfiguration is used by UsuarioService to send emails.
  */
 @Configuration
 @Import(value={RepositoryConfig.class, UsuarioMailConfiguration.class})
