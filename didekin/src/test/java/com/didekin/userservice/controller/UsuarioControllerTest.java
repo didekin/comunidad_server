@@ -8,7 +8,6 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
-import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.ServOneRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioServiceIf;
@@ -84,8 +83,6 @@ public abstract class UsuarioControllerTest {
     private RetrofitHandler retrofitHandler;
     @Autowired
     private UsuarioServiceIf sujetosService;
-    @Autowired
-    private JavaMailMonitor javaMailMonitor;
 
     @Before
     public void setUp() throws Exception
@@ -335,25 +332,13 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testPasswordSend_1() throws MessagingException, IOException, EntityException, InterruptedException
     {
-        javaMailMonitor.expungeFolder();
-        final String oldPassword = "yo_password";
-
         // Preconditions.
-        Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password(oldPassword).build();
+        Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();
         UsuarioComunidad usuarioComunidad =
                 new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
-
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
-
-        // Check mail.
-        Thread.sleep(9000);
-        javaMailMonitor.checkPasswordMessage(usuario.getAlias(), null);
-        // Login data have changed
-        assertThat(sujetosService.login(usuario), is(false));
-        // Cleaning and closing.
-        javaMailMonitor.closeStoreAndFolder();
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -366,8 +351,6 @@ public abstract class UsuarioControllerTest {
         // Invalid email.
         Response<Boolean> isPswdSent = USER_ENDPOINT.passwordSend(USER_JUAN.getUserName()).execute();
         assertThat(retrofitHandler.getErrorBean(isPswdSent).getMessage(), is(PASSWORD_NOT_SENT.getHttpMessage()));
-        // Login data haven't changed
-        assertThat(sujetosService.login(USER_JUAN), is(true));
     }
 
     // ......................... TESTS OF HELPER METHODS ..................................

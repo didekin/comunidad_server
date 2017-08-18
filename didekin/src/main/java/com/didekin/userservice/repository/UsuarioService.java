@@ -1,6 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
+import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.common.dominio.ValidDataPatterns;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.mail.MailException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -23,11 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.didekin.userservice.repository.PswdGenerator.GENERATOR_13;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -54,6 +58,8 @@ public class UsuarioService implements UsuarioServiceIf {
     private UsuarioDao usuarioDao;
     @Autowired
     private JdbcTokenStore tokenStore;
+    @Autowired
+    private UsuarioMailService usuarioMailService;
 
     @SuppressWarnings("unused")
     public UsuarioService()
@@ -159,7 +165,6 @@ public class UsuarioService implements UsuarioServiceIf {
 
         if (rowsDeleted == 1 && usuarioDao.seeUserComusByUser(userName).size() == 0) {
             logger.info("deleteUserComunidad(); usuario is also deleted");
-            // TODO: IS_USER_DELETED should not be used in the dao/model layer.
             rowsDeleted = usuarioDao.deleteUser(userName) ? IS_USER_DELETED : rowsDeleted;
         }
         return rowsDeleted;
@@ -306,7 +311,11 @@ public class UsuarioService implements UsuarioServiceIf {
     public String makeNewPassword(Usuario user) throws EntityException
     {
         logger.debug("makeNewPassword()");
-        return PswdGenerator.GENERATOR_13.makePswd();
+        String newPasssword = GENERATOR_13.makePswd();
+        if (newPasssword.isEmpty()) {
+            throw new EntityException(PASSWORD_NOT_SENT);
+        }
+        return newPasssword;
     }
 
     @Override
@@ -328,7 +337,7 @@ public class UsuarioService implements UsuarioServiceIf {
      * 2. if userName has been modified, user's accessToken has been deleted.
      *
      * @return number of rows afected in user table (it should be 1).
-     * @throws  EntityException if both newUserName and newAlias are both null.
+     * @throws EntityException if both newUserName and newAlias are both null.
      */
     @Override
     public int modifyUser(final Usuario usuario, String oldUserName) throws EntityException
@@ -342,7 +351,7 @@ public class UsuarioService implements UsuarioServiceIf {
         Usuario.UsuarioBuilder newUsuarioBuilder =
                 new Usuario.UsuarioBuilder().copyUsuario(usuarioDao.getUsuarioById(usuario.getuId()));
 
-        if (usuario.getAlias() != null && !usuario.getAlias().isEmpty()){
+        if (usuario.getAlias() != null && !usuario.getAlias().isEmpty()) {
             newUsuarioBuilder.alias(usuario.getAlias());
             isAliasToModified = true;
         }
@@ -437,6 +446,25 @@ public class UsuarioService implements UsuarioServiceIf {
         } else {
             throw new EntityException(USER_DATA_NOT_MODIFIED);
         }
+    }
+
+    @Override
+    public boolean passwordSendIntegration(String userName) throws EntityException
+    {
+        logger.debug("passwordSendIntegration()");
+        return passwordSendWithMail(getUserByUserName(userName), makeNewPassword(getUserByUserName(userName)));
+    }
+
+    @Override
+    public boolean passwordSendWithMail(Usuario usuario, String newPswd) throws EntityException
+    {
+        logger.debug("passwordSendWithMail()");
+        try {
+            usuarioMailService.sendNewPswd(usuario, newPswd);  // TODO: hacer asíncrono con Observable.
+        } catch (MailException e) {
+            throw new EntityException(PASSWORD_NOT_SENT);
+        }
+        return passwordChangeWithUser(usuario, newPswd) == 1;
     }
 
     @Override

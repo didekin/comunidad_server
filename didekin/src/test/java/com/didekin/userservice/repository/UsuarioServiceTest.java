@@ -1,6 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
+import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.incidservice.testutils.IncidenciaTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -38,6 +39,7 @@ import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -67,6 +69,8 @@ public abstract class UsuarioServiceTest {
 
     @Autowired
     private UsuarioServiceIf usuarioService;
+    @Autowired
+    private JavaMailMonitor javaMailMonitor;
     @Autowired
     private UsuarioDao usuarioDao;
     @Autowired
@@ -343,7 +347,7 @@ public abstract class UsuarioServiceTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testMakeNewPassword() throws EntityException
+    public void testMakeNewPassword_1() throws EntityException
     {
         String newPassword = usuarioService.makeNewPassword(pedro);
         checkGeneratedPassword(newPassword);
@@ -510,6 +514,63 @@ public abstract class UsuarioServiceTest {
                 is(true));
         // Check for deletion of oauth token.
         assertThat(usuarioService.getAccessTokenByUserName(TO).isPresent(), is(false));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordSendWithMail_1() throws Exception
+    {
+        // Preconditions: dirección email válida.
+        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName("didekindroid@didekin.es").build(), luis.getUserName()), is(1));
+        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName("didekindroid@didekin.es")).password(luis.getPassword()).build();
+        assertThat(usuarioService.login(usuarioIn), is(true));
+        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
+        // Exec.
+        String newPswd = "new_password";
+        assertThat(usuarioService.passwordSendWithMail(usuarioIn, newPswd), is(true));
+        // Invalid oldPassword.
+        assertThat(usuarioService.login(usuarioIn), is(false));
+        // Valid new password.
+        assertThat(usuarioService.login(new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(newPswd).build()), is(true));
+        // Check mail.
+        Thread.sleep(9000);
+        javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
+        // Cleaning and closing.
+        javaMailMonitor.closeStoreAndFolder();
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordSendWithMail_2() throws Exception
+    {
+        // Preconditions.
+        assertThat(usuarioService.login(luis), is(true));
+        // Exec: no valid email.
+        try {
+            usuarioService.passwordSendWithMail(luis, "new_password");
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
+        }
+        // Permanecen datos de login.
+        assertThat(usuarioService.login(luis), is(true));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordSendIntegration() throws Exception
+    {
+        // Preconditions: dirección email válida.
+        final String userName = "didekindroid@didekin.es";
+        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
+        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName(userName)).password(luis.getPassword()).build();
+        assertThat(usuarioService.login(usuarioIn), is(true));
+        // Exec
+        assertThat(usuarioService.passwordSendIntegration(userName), is(true));
+        // Login changed.
+        assertThat(usuarioService.login(usuarioIn), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

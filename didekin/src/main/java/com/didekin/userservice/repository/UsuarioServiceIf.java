@@ -81,6 +81,10 @@ public interface UsuarioServiceIf {
 
     int passwordChangeWithUser(Usuario usuarioOld, String newPassword) throws EntityException;
 
+    boolean passwordSendIntegration(String userName) throws EntityException;
+
+    boolean passwordSendWithMail(Usuario usuario, String newPswd) throws EntityException;
+
     boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;
 
     boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;

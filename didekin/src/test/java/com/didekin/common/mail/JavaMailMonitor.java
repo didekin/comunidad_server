@@ -49,7 +49,7 @@ public class JavaMailMonitor {
         checkState(folder.isOpen());
     }
 
-    public boolean checkPasswordMessage(String userAlias, String newPassword) throws MessagingException, IOException
+    public void checkPasswordMessage(String userAlias, String newPassword) throws MessagingException, IOException
     {
         Message[] messages = folder.getMessages();
 
@@ -70,7 +70,7 @@ public class JavaMailMonitor {
         assertThat(((InternetAddress) messages[0].getAllRecipients()[0]).getAddress(), CoreMatchers.is(UsuarioMailConfigurationPre.TO));
 
         messages[0].setFlag(DELETED, true);
-        return folder.expunge().length == 1;
+        folder.expunge();
     }
 
     public void closeStoreAndFolder() throws MessagingException

@@ -36,7 +36,6 @@ import static com.didekinlib.http.UsuarioServConstant.USER_READ;
 import static com.didekinlib.http.UsuarioServConstant.USER_READ_GCM_TOKEN;
 import static com.didekinlib.http.UsuarioServConstant.USER_WRITE;
 import static com.didekinlib.http.UsuarioServConstant.USER_WRITE_GCM_TOKEN;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -55,14 +54,11 @@ public class UsuarioController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class.getCanonicalName());
 
-    private final UsuarioMailService usuarioMailService;
-
     private final UsuarioServiceIf usuarioService;
 
     @Autowired
     public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioServiceIf usuarioService)
     {
-        this.usuarioMailService = usuarioMailService;
         this.usuarioService = usuarioService;
     }
 
@@ -136,16 +132,7 @@ public class UsuarioController extends AppControllerAbstract {
     public boolean passwordSend(@RequestParam(USER_PARAM) String userName) throws EntityException, MailException
     {
         logger.debug("passwordSend()");
-        Usuario usuario = usuarioService.getUserByUserName(userName);
-        final String newPswd = usuarioService.makeNewPassword(usuario);
-        if (!newPswd.isEmpty()){
-            try{
-                usuarioMailService.sendNewPswd(usuario, usuarioService.makeNewPassword(usuario));  // TODO: hacer asíncrono con Observable.
-            }catch (MailException e){
-                throw new EntityException(PASSWORD_NOT_SENT);
-            }
-        }
-        return usuarioService.passwordChangeWithUser(usuario, newPswd) == 1;
+        return usuarioService.passwordSendIntegration(userName);  // TODO: test nuevo alcance.
     }
 
 //    ............................ HANDLING EXCEPTIONS ................................
