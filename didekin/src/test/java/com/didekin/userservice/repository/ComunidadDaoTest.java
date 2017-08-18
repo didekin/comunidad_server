@@ -50,7 +50,7 @@ public abstract class ComunidadDaoTest {
     @Autowired
     private UsuarioDao usuarioDao;
     @Autowired
-    private UsuarioServiceIf sujetosService;
+//    private UsuarioServiceIf sujetosService;
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

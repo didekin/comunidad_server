@@ -9,7 +9,7 @@ import com.didekin.common.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
-import com.didekin.userservice.repository.ServOneRepoConfiguration;
+import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioServiceIf;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.ComunidadEndPoints;
@@ -191,7 +191,7 @@ public abstract class ComunidadControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
-            ServOneRepoConfiguration.class})
+            UsuarioRepoConfiguration.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, Profiles.MAIL_PRE})
     @Category({AwsPre.class})
     public static class ComunidadControllerAwsTest extends ComunidadControllerTest {

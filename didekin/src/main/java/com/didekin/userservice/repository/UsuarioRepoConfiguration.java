@@ -1,6 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.RepositoryConfig;
+import com.didekin.userservice.mail.UsuarioMailConfiguration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,15 +18,13 @@ import javax.sql.DataSource;
  * Time: 10:53
  */
 @Configuration
-@Import(RepositoryConfig.class)
-public class ServOneRepoConfiguration {
+@Import(value={RepositoryConfig.class, UsuarioMailConfiguration.class})
+public class UsuarioRepoConfiguration {
 
     @Autowired
-    private
-    DataSource dataSource;
+    private DataSource dataSource;
     @Autowired
-    private
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Bean
     public JdbcTokenStore tokenStore()

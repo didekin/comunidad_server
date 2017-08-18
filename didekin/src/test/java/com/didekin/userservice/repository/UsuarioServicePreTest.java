@@ -17,7 +17,7 @@ import static com.didekin.common.Profiles.MAIL_PRE;
  * Time: 16:23
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ServOneRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
 @Category({DbPre.class})
 @ActiveProfiles(value = {MAIL_PRE})
 public class UsuarioServicePreTest extends UsuarioServiceTest {

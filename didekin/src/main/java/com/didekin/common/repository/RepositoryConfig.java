@@ -21,8 +21,9 @@ public class RepositoryConfig {
     private static final String JDBC_URL_DEFAULT_PORT = "3306";
     private static final String SSL_DEFAULT_VALUE = "useSSL=false";
 
+    @SuppressWarnings("unused")
     @Autowired
-    Environment env;
+    Environment env; // TODO: testar quitarlo.
 
     @Bean
     public DataSource dataSource()

@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Time: 11:18
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ServOneRepoConfiguration.class})
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
 @Category({DbPre.class})
 public class ComunidadDaoPreTest extends ComunidadDaoTest {
 }

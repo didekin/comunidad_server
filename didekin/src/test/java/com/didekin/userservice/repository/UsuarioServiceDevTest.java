@@ -10,7 +10,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static com.didekin.common.Profiles.MAIL_PRE;
-import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
 
 /**
  * User: pedro@didekin
@@ -18,7 +17,7 @@ import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
  * Time: 16:23
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ServOneRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
 @Category({LocalDev.class})
 @ActiveProfiles(value = {MAIL_PRE})
 public class UsuarioServiceDevTest extends UsuarioServiceTest {

@@ -1,6 +1,6 @@
 package com.didekin.userservice.gcm;
 
-import com.didekin.userservice.repository.ServOneRepoConfiguration;
+import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioServiceIf;
 import com.didekinlib.gcm.retrofit.GcmEndPointImp;
 import com.didekinlib.gcm.retrofit.GcmRetrofitHandler;
@@ -16,15 +16,14 @@ import org.springframework.context.annotation.Import;
  * Time: 10:53
  */
 @Configuration
-@Import(ServOneRepoConfiguration.class)
+@Import(UsuarioRepoConfiguration.class)
 public class GcmConfiguration {
 
     // Firebase gcm URL.
     private static final String FCM_HOST_PORT = "https://fcm.googleapis.com";
 
     @Autowired
-    private
-    UsuarioServiceIf usuarioService;
+    private UsuarioServiceIf usuarioService;
 
     @Bean
     public GcmRetrofitHandler gcmRetrofitHandler()

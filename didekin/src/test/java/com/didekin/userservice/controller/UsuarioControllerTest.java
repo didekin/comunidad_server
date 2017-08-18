@@ -9,7 +9,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
-import com.didekin.userservice.repository.ServOneRepoConfiguration;
+import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioServiceIf;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.Oauth2EndPoints;
@@ -419,7 +419,7 @@ public abstract class UsuarioControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
-            ServOneRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+            UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UsuarioControllerAwsTest extends UsuarioControllerTest {
