@@ -37,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 
@@ -342,6 +343,7 @@ public abstract class UsuarioControllerTest {
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
+        TimeUnit.SECONDS.sleep(10);
         javaMailMonitor.expungeFolder();
     }
 
