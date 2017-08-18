@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
@@ -522,10 +524,7 @@ public abstract class UsuarioServiceTest {
     public void test_passwordSendWithMail_1() throws Exception
     {
         // Preconditions: dirección email válida.
-        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName("didekindroid@didekin.es").build(), luis.getUserName()), is(1));
-        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName("didekindroid@didekin.es")).password(luis.getPassword()).build();
-        assertThat(usuarioService.login(usuarioIn), is(true));
-        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
+        Usuario usuarioIn = doPreconditionsSendPswdOk();
         // Exec.
         String newPswd = "new_password";
         assertThat(usuarioService.passwordSendWithMail(usuarioIn, newPswd), is(true));
@@ -537,7 +536,7 @@ public abstract class UsuarioServiceTest {
         Thread.sleep(9000);
         javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
         // Cleaning and closing.
-        javaMailMonitor.closeStoreAndFolder(); // Limpiamos y cerramos buzón.
+        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -563,14 +562,14 @@ public abstract class UsuarioServiceTest {
     public void test_passwordSendIntegration() throws Exception
     {
         // Preconditions: dirección email válida.
-        final String userName = "didekindroid@didekin.es";
-        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
-        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName(userName)).password(luis.getPassword()).build();
-        assertThat(usuarioService.login(usuarioIn), is(true));
+        Usuario usuarioIn = doPreconditionsSendPswdOk();
         // Exec
-        assertThat(usuarioService.passwordSendIntegration(userName), is(true));
+        assertThat(usuarioService.passwordSendIntegration(usuarioIn.getUserName()), is(true));
         // Login changed.
         assertThat(usuarioService.login(usuarioIn), is(false));
+        // Cleaning and closing.
+        Thread.sleep(9000);
+        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -742,6 +741,18 @@ public abstract class UsuarioServiceTest {
         comunidades = usuarioService.searchComunidades(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(comunidad));
+    }
+
+    // ======================================== HELPERS ========================================
+
+    private Usuario doPreconditionsSendPswdOk() throws EntityException, MessagingException
+    {
+        final String userName = "didekindroid@didekin.es";
+        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
+        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName(userName)).password(luis.getPassword()).build();
+        assertThat(usuarioService.login(usuarioIn), is(true));
+        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
+        return usuarioIn;
     }
 }
 
