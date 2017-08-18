@@ -91,7 +91,6 @@ public class JavaMailMonitor {
         for (Message message : messages) {
             message.setFlag(DELETED, true);
         }
-
         folder.expunge();
     }
 }

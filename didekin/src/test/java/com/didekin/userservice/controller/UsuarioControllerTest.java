@@ -8,6 +8,7 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioServiceIf;
@@ -83,6 +84,8 @@ public abstract class UsuarioControllerTest {
     private RetrofitHandler retrofitHandler;
     @Autowired
     private UsuarioServiceIf sujetosService;
+    @Autowired
+    private JavaMailMonitor javaMailMonitor;
 
     @Before
     public void setUp() throws Exception
@@ -339,6 +342,7 @@ public abstract class UsuarioControllerTest {
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
+        javaMailMonitor.expungeFolder();
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
