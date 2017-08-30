@@ -20,7 +20,7 @@ CREATE TABLE ambito_incidencia
   PRIMARY KEY (ambito_id)
 );
 
-/* incidservice: 1 -----> 1 comunidad */
+/* incidencia: 1 -----> 1 comunidad */
 CREATE TABLE incidencia
 (
   incid_id     INTEGER UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -42,7 +42,7 @@ CREATE TABLE incidencia
     ON DELETE RESTRICT
 );
 
-/* incidservice: 1 -----> N indidencia_comment */
+/* incidencia: 1 -----> N indidencia_comment */
 CREATE TABLE incidencia_comment
 (
   comment_id  INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -64,7 +64,7 @@ CREATE TABLE incidencia_comment
     ON DELETE CASCADE
 );
 
-/* incidservice: 1 -----> N indidencia_importancia. Única importancia por usuarioComunidad-incidservice. */
+/* incidencia: 1 -----> N indidencia_importancia. Única importancia por usuarioComunidad-incidencia. */
 CREATE TABLE incidencia_importancia
 (
   incid_id    INTEGER UNSIGNED  NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE incidencia_importancia
     ON DELETE CASCADE
 );
 
-/* incidservice: 1 -----> 1 incidencia_resolucion */
+/* incidencia: 1 -----> 1 incidencia_resolucion */
 CREATE TABLE incidencia_resolucion
 (
   incid_id       INTEGER UNSIGNED NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE incidencia_resolucion
   coste          INTEGER SIGNED   NULL,
   moraleja       VARCHAR(250)     NULL,
   fecha_alta     TIMESTAMP(2) NOT NULL DEFAULT CURRENT_TIMESTAMP(2),
-  PRIMARY KEY (incid_id), -- una incidservice sólo puede tener una resolución.
+  PRIMARY KEY (incid_id), -- una incidencia sólo puede tener una resolución.
   INDEX id_parent_incidencia_comunidad (incid_id),
   FOREIGN KEY (incid_id)
   REFERENCES incidencia (incid_id)
@@ -144,7 +144,7 @@ CREATE VIEW incid_importancia_user_view AS
     INNER JOIN usuario AS u
       ON ii.u_id = u.u_id;
 
-/* Calcula la importancia media de una incidservice.*/
+/* Calcula la importancia media de una incidencia.*/
 CREATE VIEW incidencia_avg_view AS
   SELECT
     incid_id,
@@ -152,7 +152,7 @@ CREATE VIEW incidencia_avg_view AS
   FROM incidencia_importancia
   GROUP BY incid_id;
 
-/* Presentación de comentarios de cada incidservice.*/
+/* Presentación de comentarios de cada incidencia.*/
 CREATE VIEW incidencia_comment_view AS
   SELECT
     ic.*,

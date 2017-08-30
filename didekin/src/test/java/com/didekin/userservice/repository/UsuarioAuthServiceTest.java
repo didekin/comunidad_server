@@ -29,7 +29,7 @@ public abstract class UsuarioAuthServiceTest {
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
-    private UsuarioService usuarioService;
+    private UsuarioManager usuarioManager;
 
     private UsuarioAuthService authService;
 
@@ -39,7 +39,7 @@ public abstract class UsuarioAuthServiceTest {
     @Test
     public void testLoadUserByUsernameOk() throws Exception
     {
-        authService = new UsuarioAuthService(usuarioService);
+        authService = new UsuarioAuthService(usuarioManager);
         assertThat(authService, notNullValue());
 
         UserDetails userDetails = authService.loadUserByUsername("luis@luis.com");
@@ -65,7 +65,7 @@ public abstract class UsuarioAuthServiceTest {
     public void testLoadUserByUsernameError1() throws Exception
     {
 
-        authService = new UsuarioAuthService(usuarioService);
+        authService = new UsuarioAuthService(usuarioManager);
 
         try {
             authService.loadUserByUsername("pepe@noauth.com");
@@ -78,7 +78,7 @@ public abstract class UsuarioAuthServiceTest {
     @Test
     public void testLoadUserByUsernameError2()
     {
-        authService = new UsuarioAuthService(usuarioService);
+        authService = new UsuarioAuthService(usuarioManager);
         try {
             authService.loadUserByUsername("noexisto@fail.com");
             Assert.fail("");

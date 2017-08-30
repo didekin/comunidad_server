@@ -190,6 +190,14 @@ public abstract class UsuarioDaoTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
         }
+
+        // No se encuentran roles para usuario_comunidad.
+        try {
+            usuarioDao.getFuncionRolesArrayByUserComu("noexisto@no.com", 1L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")

@@ -1,7 +1,7 @@
 package com.didekin.common.controller;
 
 import com.didekin.common.EntityException;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.ErrorBean;
 import com.didekinlib.model.exception.ExceptionMsgIf;
 import com.didekinlib.model.usuario.Usuario;
@@ -41,7 +41,7 @@ public abstract class AppControllerAbstract {
         return ((UserDetails) authentication.getPrincipal()).getUsername();
     }
 
-    protected Usuario getUserFromDb(UsuarioServiceIf usuarioService) throws EntityException
+    protected Usuario getUserFromDb(UsuarioManagerIf usuarioService) throws EntityException
     {
         logger.debug("getUserFromDb()");
         return usuarioService.getUserByUserName(getUserNameFromAuthentication());

@@ -8,6 +8,7 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuariocomunidad.Rol;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.Matchers;
@@ -32,6 +33,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_TRAV_PLAZUELA_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN2;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
@@ -49,6 +51,7 @@ import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.ROLES_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -65,12 +68,18 @@ import static org.junit.Assert.fail;
  * User: pedro@didekin
  * Date: 20/04/15
  * Time: 16:23
+ *
+ * See in UsuarioControllerTest:
+ * testDeleteAccessToken_1(),
+ * test_deleteAccessTokenByUserName_1(),
+ * test_GetAccessToken(),
+ * test_GetAccessTokenByUserName().
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
-public abstract class UsuarioServiceTest {
+public abstract class UsuarioManagerTest {
 
     @Autowired
-    private UsuarioServiceIf usuarioService;
+    private UsuarioManagerIf usuarioManager;
     @Autowired
     private JavaMailMonitor javaMailMonitor;
     @Autowired
@@ -78,13 +87,132 @@ public abstract class UsuarioServiceTest {
     @Autowired
     private ComunidadDao comunidadDao;
 
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testCompleteUser_1() throws EntityException
+    {
+        Usuario usuario = usuarioManager.completeUser(USER_PACO.getUserName());
+        assertThat(usuario, allOf(
+                hasProperty("uId", is(11L)),
+                hasProperty("userName", is(USER_PACO.getUserName())),
+                hasProperty("alias", is(USER_PACO.getAlias())),
+                hasProperty("password", nullValue())
+        ));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testCompleteUser_2() throws EntityException
+    {
+        try {
+            usuarioManager.completeUser("no_existo");
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testCompleteUserWithHighestRol_1() throws EntityException
+    {
+        UsuarioComunidad userComu = usuarioManager.completeWithHighestRol("luis@luis.com", 1L);
+        assertThat(userComu, allOf(
+                hasProperty("comunidad", hasProperty("c_Id", is(1L))),
+                hasProperty("usuario", hasProperty("userName", is("luis@luis.com"))),
+                hasProperty("roles", is(ADMINISTRADOR.function))
+        ));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testCompleteUserWithHighestRol_2()
+    {
+        // Caso: no existe usuario.
+        try {
+            usuarioManager.completeWithHighestRol("no_existo", 1L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+
+        // Caso: no existe comunidad.
+        try {
+            usuarioManager.completeWithHighestRol("luis@luis.com", 999L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
+        }
+
+        // Caso: existen usuario y comunidad, pero no hay relación entre ambos.
+        try {
+            usuarioManager.completeWithHighestRol("luis@luis.com", 4L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
+        }
+    }
+
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void deleteAccessTokenByUserName_1() throws Exception
+    public void test_deleteAccessTokenByUserName_1() throws Exception
     {
         // No token in database: no delete.
-        assertThat(usuarioService.deleteAccessTokenByUserName(luis.getUserName()), Matchers.is(false));
+        assertThat(usuarioManager.deleteAccessTokenByUserName(luis.getUserName()), is(false));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testDeleteUser_1() throws EntityException
+    {
+        Usuario usuario = new Usuario.UsuarioBuilder().userName("user@user.com").alias("alias_user")
+                .password("password_user").build();
+        UsuarioComunidad usuarioComunidad = makeUsuarioComunidad(COMU_REAL, usuario, "portal", "esc", "plantaX",
+                "door", PROPIETARIO.function);
+
+        boolean isRegOk = usuarioManager.regComuAndUserAndUserComu(usuarioComunidad);
+        assertThat(isRegOk, is(true));
+
+        boolean isDeleted = usuarioManager.deleteUser(usuario.getUserName());
+        assertThat(isDeleted, is(true));
+    }
+
+    @Test
+    public void testDeleteUser_2()
+    {
+        // El usuario no existe en BD.
+        Usuario usuario = new Usuario.UsuarioBuilder().userName("user@user.com").alias("alias_user")
+                .password("password_user").build();
+        try {
+            usuarioManager.deleteUser(usuario.getUserName());
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testDeleteUserAndComunidades() throws EntityException
+    {
+        int comuDeleted = usuarioManager.deleteUserAndComunidades("pedro@pedro.com");
+        assertThat(comuDeleted, is(3));
+
+        assertThat(comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
+        assertThat(comunidadDao.getComunidadById(2L).getC_Id(), is(2L));
+        try {
+            comunidadDao.getComunidadById(3L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
+            assertThat(e.getExceptionMsg().getHttpMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -97,7 +225,7 @@ public abstract class UsuarioServiceTest {
         Usuario usuario = new Usuario.UsuarioBuilder().uId(3L).userName("pedro@pedro.com").build();
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build();
 
-        int isDeleted = usuarioService.deleteUserComunidad(usuarioComunidad);
+        int isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
 
         Comunidad comunidadDb = comunidadDao.getComunidadById(comunidad.getC_Id());
@@ -106,7 +234,7 @@ public abstract class UsuarioServiceTest {
         // La comunidad tiene 1 usuario.
         comunidad = new Comunidad.ComunidadBuilder().c_id(3L).build();
         usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build();
-        isDeleted = usuarioService.deleteUserComunidad(usuarioComunidad);
+        isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
         try {
             comunidadDao.getComunidadById(comunidad.getC_Id());
@@ -128,7 +256,7 @@ public abstract class UsuarioServiceTest {
                 new Comunidad.ComunidadBuilder().c_id(4L).build(),
                 new Usuario.UsuarioBuilder().uId(11L).userName("paco@paco.com").build(),
                 null, null, null, null, null);
-        assertThat(usuarioService.deleteUserComunidad(uc_1), is(IS_USER_DELETED));
+        assertThat(usuarioManager.deleteUserComunidad(uc_1), is(IS_USER_DELETED));
 
         try {
             comunidadDao.getComunidadById(4L);
@@ -138,7 +266,7 @@ public abstract class UsuarioServiceTest {
         }
 
         try {
-            usuarioService.getUserByUserName("paco@paco.com");
+            usuarioManager.getUserByUserName("paco@paco.com");
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -150,7 +278,7 @@ public abstract class UsuarioServiceTest {
                 new Comunidad.ComunidadBuilder().c_id(3L).build(),
                 new Usuario.UsuarioBuilder().uId(3L).userName("pedro@pedro.com").build(),
                 null, null, null, null, null);
-        assertThat(usuarioService.deleteUserComunidad(uc_2), is(1));
+        assertThat(usuarioManager.deleteUserComunidad(uc_2), is(1));
 
         try {
             comunidadDao.getComunidadById(3L);
@@ -160,81 +288,10 @@ public abstract class UsuarioServiceTest {
         }
 
         try {
-            assertThat(usuarioService.getUserByUserName("pedro@pedro.com"), notNullValue());
+            assertThat(usuarioManager.getUserByUserName("pedro@pedro.com"), notNullValue());
         } catch (EntityException e) {
             fail();
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testDeleteUserAndComunidades() throws EntityException
-    {
-        int comuDeleted = usuarioService.deleteUserAndComunidades("pedro@pedro.com");
-        assertThat(comuDeleted, is(3));
-
-        assertThat(comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
-        assertThat(comunidadDao.getComunidadById(2L).getC_Id(), is(2L));
-        try {
-            comunidadDao.getComunidadById(3L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
-            assertThat(e.getExceptionMsg().getHttpMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testDeleteUser_1() throws EntityException
-    {
-        Usuario usuario = new Usuario.UsuarioBuilder().userName("user@user.com").alias("alias_user")
-                .password("password_user").build();
-        UsuarioComunidad usuarioComunidad = makeUsuarioComunidad(COMU_REAL, usuario, "portal", "esc", "plantaX",
-                "door", PROPIETARIO.function);
-
-        boolean isRegOk = usuarioService.regComuAndUserAndUserComu(usuarioComunidad);
-        assertThat(isRegOk, is(true));
-
-        boolean isDeleted = usuarioService.deleteUser(usuario.getUserName());
-        assertThat(isDeleted, is(true));
-    }
-
-    @Test
-    public void testDeleteUser_2()
-    {
-        // El usuario no existe en BD.
-        Usuario usuario = new Usuario.UsuarioBuilder().userName("user@user.com").alias("alias_user")
-                .password("password_user").build();
-        try {
-            usuarioService.deleteUser(usuario.getUserName());
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testGetAuthoritiesByUser()
-    {
-
-        List<String> authorities = usuarioService.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("pedro@pedro.com").build());
-
-        assertThat(authorities.size(), is(2));
-        assertThat(authorities, hasItems(ADMINISTRADOR.authority, INQUILINO.authority));
-
-        authorities = usuarioService.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("luis@luis.com").build());
-        assertThat(authorities.size(), is(2));
-        assertThat(authorities, hasItems(PRESIDENTE.authority, PROPIETARIO.authority));
-
-        authorities = usuarioService.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("juan@noauth.com").build());
-        assertThat(authorities.size(), is(1));
-        assertThat(authorities, hasItem(INQUILINO.authority));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -243,11 +300,11 @@ public abstract class UsuarioServiceTest {
     public void testGetComunidadById() throws EntityException
     {
         Usuario usuario = new Usuario.UsuarioBuilder().uId(3L).build();
-        assertThat(usuarioService.getComunidadById(usuario, 2L), is(new Comunidad.ComunidadBuilder().c_id(2L).build()));
+        assertThat(usuarioManager.getComunidadById(usuario, 2L), is(new Comunidad.ComunidadBuilder().c_id(2L).build()));
 
         try {
             // No hay vínculo usuario-comunidad; ambos existen.
-            usuarioService.getComunidadById(usuario, 4L);
+            usuarioManager.getComunidadById(usuario, 4L);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
@@ -255,7 +312,7 @@ public abstract class UsuarioServiceTest {
 
         try {
             // No existe el usuario.
-            usuarioService.getComunidadById(new Usuario.UsuarioBuilder().uId(99L).build(), 4L);
+            usuarioManager.getComunidadById(new Usuario.UsuarioBuilder().uId(99L).build(), 4L);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
@@ -265,19 +322,104 @@ public abstract class UsuarioServiceTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetHighestRolFunction() throws EntityException
+    public void test_GetGcmToken() throws Exception
     {
-        assertThat(usuarioService.getHighestFunctionalRol("pedro@pedro.com", 3L), is(ADMINISTRADOR.function));
-        assertThat(usuarioService.getHighestFunctionalRol("luis@luis.com", 1L), is(ADMINISTRADOR.function));
-        assertThat(usuarioService.getHighestFunctionalRol("juan@noauth.com", 2L), is(INQUILINO.function));
+        // Insertamos token en usuario.
+        Usuario usuario = doUsuario("pedro@pedro.com", "pedro_gcm_token");
+        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
+        // Exec and check.
+        assertThat(usuarioManager.getGcmToken(pedro.getuId()), is("pedro_gcm_token"));
+
+        // Caso null.
+        assertThat(usuarioManager.getGcmToken(luis.getuId()), nullValue());
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testGetGcmTokensByComunidad() throws EntityException
+    {
+        // Insertamos tokens en tres usuarios.
+        Usuario usuario = doUsuario("pedro@pedro.com", "pedro_gcm_token");
+        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
+        usuario = doUsuario("luis@luis.com", "luis_gcm_token");
+        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
+        usuario = doUsuario("juan@noauth.com", "juan_gcm_token");
+        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
+
+        List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getC_Id());
+        assertThat(tokens.size(), is(2));
+        assertThat(tokens, hasItems("pedro_gcm_token", "luis_gcm_token"));
+
+        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(2L).build().getC_Id());
+        assertThat(tokens.size(), is(2));
+        assertThat(tokens, hasItems("pedro_gcm_token", "juan_gcm_token"));
+
+        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(3L).build().getC_Id());
+        assertThat(tokens.size(), is(1));
+        assertThat(tokens, hasItems("pedro_gcm_token"));
+
+        // Caso: comunidad con usuario sin token.
+        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(4L).build().getC_Id());
+        assertThat(tokens, notNullValue());
+        assertThat(tokens.size(), is(0));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_getHighestFunctionalRol() throws EntityException
+    {
+        assertThat(usuarioManager.getHighestFunctionalRol("pedro@pedro.com", 3L), is(ADMINISTRADOR.function));
+        assertThat(usuarioManager.getHighestFunctionalRol("luis@luis.com", 1L), is(ADMINISTRADOR.function));
+        assertThat(usuarioManager.getHighestFunctionalRol("juan@noauth.com", 2L), is(INQUILINO.function));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_getRolesSecurity()
+    {
+        List<String> authorities = usuarioManager.getRolesSecurity(
+                new Usuario.UsuarioBuilder().userName("pedro@pedro.com").build());
+
+        assertThat(authorities.size(), is(2));
+        assertThat(authorities, hasItems(ADMINISTRADOR.authority, INQUILINO.authority));
+
+        authorities = usuarioManager.getRolesSecurity(
+                new Usuario.UsuarioBuilder().userName("luis@luis.com").build());
+        assertThat(authorities.size(), is(2));
+        assertThat(authorities, hasItems(PRESIDENTE.authority, PROPIETARIO.authority));
+
+        authorities = usuarioManager.getRolesSecurity(
+                new Usuario.UsuarioBuilder().userName("juan@noauth.com").build());
+        assertThat(authorities.size(), is(1));
+        assertThat(authorities, hasItem(INQUILINO.authority));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testGetUserComuByUserAndComu() throws EntityException
+    {
+        // No existe la combinación (usario, comunidad); existe la comunidad.
+        assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
+
+        // No existe la comunidad.
+        try {
+            usuarioManager.getUserComuByUserAndComu("paco@paco.com", 111L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetUserByUserName_1() throws EntityException
     {
-        usuarioService.regComuAndUserAndUserComu(makeUsuarioComunidad(COMU_LA_PLAZUELA_5, pedro, "portal1", "EE", "3", null, INQUILINO.function));
-        Usuario usuario = usuarioService.getUserByUserName(pedro.getUserName());
+        usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(COMU_LA_PLAZUELA_5, pedro, "portal1", "EE", "3", null, INQUILINO.function));
+        Usuario usuario = usuarioManager.getUserByUserName(pedro.getUserName());
         assertThat(usuario.getUserName(), is(pedro.getUserName()));
         assertThat(usuario.getuId() > 0L, is(true));
         assertThat(usuario.getAlias(), is(pedro.getAlias()));
@@ -287,14 +429,30 @@ public abstract class UsuarioServiceTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserComuByUserAndComu() throws EntityException
+    public void test_hasAuthorityAdmInComunidad() throws EntityException
     {
-        // No existe la combinación (usario, comunidad); existe la comunidad.
-        assertThat(usuarioService.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
+        assertThat(usuarioManager.hasAuthorityAdmInComunidad("pedro@pedro.com", 1L), is(true));
+        assertThat(usuarioManager.hasAuthorityAdmInComunidad("juan@noauth.com", 2L), is(false));
+        assertThat(usuarioManager.hasAuthorityAdmInComunidad("luis@luis.com", 1L), is(true));
+    }
 
-        // No existe la comunidad.
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testIsOldestUserComuId_1() throws InterruptedException, EntityException
+    {
+        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(3L).build(), 1L), is(true));
+        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(5L).build(), 1L), is(false));
+        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(7L).build(), 2L), is(true));
+    }
+
+    @Test
+    public void testIsOldestUserComuId_2() throws InterruptedException, EntityException
+    {
+        // Caso: la comunidad no existe en BD.
+        Usuario pedro = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("password3").build();
         try {
-            usuarioService.getUserComuByUserAndComu("paco@paco.com", 111L);
+            assertThat(usuarioManager.isOldestUserComu(pedro, 999L), is(true));
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -304,24 +462,16 @@ public abstract class UsuarioServiceTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testIsOldestUserComuId_1() throws InterruptedException, EntityException
+    public void testIsUserInComunidad()
     {
-        assertThat(usuarioService.isOldestUserComu(new Usuario.UsuarioBuilder().uId(3L).build(), 1L), is(true));
-        assertThat(usuarioService.isOldestUserComu(new Usuario.UsuarioBuilder().uId(5L).build(), 1L), is(false));
-        assertThat(usuarioService.isOldestUserComu(new Usuario.UsuarioBuilder().uId(7L).build(), 2L), is(true));
-    }
-
-    @Test
-    public void testIsOldestUserComuId_2() throws InterruptedException, EntityException
-    {
-        // Caso: la comunidad no existe en BD.
-        Usuario pedro = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("password3").build();
-        try {
-            assertThat(usuarioService.isOldestUserComu(pedro, 999L), is(true));
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
-        }
+        // No existe relación entre usuario y comunidad.
+        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 4L), is(false));
+        // Sí existe.
+        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 1L), is(true));
+        // La comunidad no existe.
+        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 111L), is(false));
+        // Ni el usuario, ni la comunidad existen.
+        assertThat(usuarioManager.isUserInComunidad("noexisto@no.com", 111L), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -335,11 +485,11 @@ public abstract class UsuarioServiceTest {
         Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("passwordWrong")
                 .build();
 
-        assertThat(usuarioService.login(pedroOk), is(true));
-        assertThat(usuarioService.login(pedroWrongPassword), is(false));
+        assertThat(usuarioManager.login(pedroOk), is(true));
+        assertThat(usuarioManager.login(pedroWrongPassword), is(false));
 
         try {
-            assertThat(usuarioService.login(pedroWrongUserName), is(true));
+            assertThat(usuarioManager.login(pedroWrongUserName), is(true));
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -351,7 +501,7 @@ public abstract class UsuarioServiceTest {
     @Test
     public void testMakeNewPassword_1() throws EntityException
     {
-        String newPassword = usuarioService.makeNewPassword(pedro);
+        String newPassword = usuarioManager.makeNewPassword(pedro);
         checkGeneratedPassword(newPassword);
     }
 
@@ -371,22 +521,22 @@ public abstract class UsuarioServiceTest {
         UsuarioComunidad uc13 = makeUsuarioComunidad(c3, u1, null, null, null, null, PROPIETARIO.function);
         UsuarioComunidad uc21 = makeUsuarioComunidad(c1, u2, null, null, null, null, PROPIETARIO.function);
 
-        usuarioService.regComuAndUserAndUserComu(uc13);
+        usuarioManager.regComuAndUserAndUserComu(uc13);
         Thread.sleep(1000);
-        usuarioService.regComuAndUserAndUserComu(uc21);
+        usuarioManager.regComuAndUserAndUserComu(uc21);
         Thread.sleep(1000);
 
-        u1 = usuarioService.getUserByUserName(u1.getUserName());
-        u2 = usuarioService.getUserByUserName(u2.getUserName());
-        c3 = usuarioService.getComusByUser(u1.getUserName()).get(0);
-        c1 = usuarioService.getComusByUser(u2.getUserName()).get(0);
+        u1 = usuarioManager.getUserByUserName(u1.getUserName());
+        u2 = usuarioManager.getUserByUserName(u2.getUserName());
+        c3 = usuarioManager.getComusByUser(u1.getUserName()).get(0);
+        c1 = usuarioManager.getComusByUser(u2.getUserName()).get(0);
 
         UsuarioComunidad uc11 = makeUsuarioComunidad(c1, u1, null, null, null, null, PROPIETARIO.function);
         UsuarioComunidad uc23 = makeUsuarioComunidad(c3, u2, null, null, null, null, PROPIETARIO.function);
 
-        usuarioService.regUserComu(uc11);
+        usuarioManager.regUserComu(uc11);
         Thread.sleep(1000);
-        usuarioService.regUserComu(uc23);
+        usuarioManager.regUserComu(uc23);
         Thread.sleep(1000);
 
         Comunidad c11 = new Comunidad.ComunidadBuilder().c_id(c1.getC_Id()).tipoVia("tipoV11").nombreVia("nombreV11")
@@ -394,41 +544,22 @@ public abstract class UsuarioServiceTest {
         Comunidad c33 = new Comunidad.ComunidadBuilder().c_id(c3.getC_Id()).tipoVia("tipoV33").nombreVia("nombreV33")
                 .municipio(new Municipio((short) 14, new Provincia((short) 3))).build();
 
-        assertThat(usuarioService.modifyComuData(u1, c33), is(1));
-        assertThat(usuarioService.modifyComuData(u2, c11), is(1));
+        assertThat(usuarioManager.modifyComuData(u1, c33), is(1));
+        assertThat(usuarioManager.modifyComuData(u2, c11), is(1));
 
         try {
-            usuarioService.modifyComuData(u1, c11);
+            usuarioManager.modifyComuData(u1, c11);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
         }
 
         try {
-            usuarioService.modifyComuData(u2, c33);
+            usuarioManager.modifyComuData(u2, c33);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testModifyUserGcmTokens()
-    {
-        assertThat(usuarioService.modifyUserGcmToken(pedro), is(1));
-        assertThat(usuarioService.modifyUserGcmToken(luis), is(1));
-        assertThat(usuarioService.modifyUserGcmToken(IncidenciaTestUtils.juan), is(1));
-
-        List<GcmTokensHolder> holders = new ArrayList<>(3);
-        holders.add(new GcmTokensHolder(null, luis.getGcmToken()));
-        holders.add(new GcmTokensHolder(null, pedro.getGcmToken()));
-        holders.add(new GcmTokensHolder("new_juan_token", IncidenciaTestUtils.juan.getGcmToken()));
-        assertThat(usuarioService.modifyUserGcmTokens(holders), is(3));
-
-        assertThat(usuarioDao.getUsuarioWithGcmToken(luis.getuId()).getGcmToken(), nullValue());
-        assertThat(usuarioDao.getUsuarioWithGcmToken(pedro.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -442,8 +573,8 @@ public abstract class UsuarioServiceTest {
                 .alias("new_juan_alias")
                 .build();
 
-        assertThat(usuarioService.modifyUser(usuarioIn, "juan@noauth.com"), is(1));
-        assertThat(usuarioService.getUserByUserName("juan@noauth.com").getAlias(), is("new_juan_alias"));
+        assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com"), is(1));
+        assertThat(usuarioManager.getUserByUserName("juan@noauth.com").getAlias(), is("new_juan_alias"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -457,8 +588,8 @@ public abstract class UsuarioServiceTest {
                 .userName("new_juan@juan.com")
                 .build();
 
-        assertThat(usuarioService.modifyUser(usuarioNew, "juan@noauth.com"), is(1));
-        assertThat(usuarioService.getUserByUserName("new_juan@juan.com"), allOf(
+        assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com"), is(1));
+        assertThat(usuarioManager.getUserByUserName("new_juan@juan.com"), allOf(
                 hasProperty("uId", equalTo(7L)),
                 hasProperty("alias", is("juan_no_auth")))
         );
@@ -474,30 +605,77 @@ public abstract class UsuarioServiceTest {
                 .uId(7L)
                 .build();
         try {
-            usuarioService.modifyUser(usuarioNew, "juan@noauth.com");
+            usuarioManager.modifyUser(usuarioNew, "juan@noauth.com");
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChangeWithName() throws EntityException
+    public void test_ModifyUserGcmToken_1() throws EntityException
     {
-        assertThat(usuarioService.passwordChangeWithName(luis.getUserName(), "new_luis_password"), is(1));
-        assertThat(new BCryptPasswordEncoder().matches("new_luis_password", usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
-                is(true));
-        assertThat(usuarioService.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()), is(true));
+        Usuario usuario = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.completeUser("juan@noauth.com")).gcmToken("GCMtoKen1234X").build();
+        // Verificamos la premisa.
+        assertThat(usuarioManager.getGcmToken(usuario.getuId()), nullValue());
+        // Insertamos token.
+        assertThat(usuarioManager.modifyUserGcmToken(usuario.getUserName(), usuario.getGcmToken()), is(1));
+        // Verificamos.
+        assertThat(usuarioManager.getGcmToken(usuario.getuId()), is("GCMtoKen1234X"));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_ModifyUserGcmToken_2() throws EntityException
+    {
+        // Caso: no existe usuario.
+        try {
+            usuarioManager.modifyUserGcmToken("noexist_user", "GCMtoKen1234X");
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_ModifyUserGcmTokens()
+    {
+        assertThat(usuarioManager.modifyUserGcmToken(pedro), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(luis), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(IncidenciaTestUtils.juan), is(1));
+
+        List<GcmTokensHolder> holders = new ArrayList<>(3);
+        holders.add(new GcmTokensHolder(null, luis.getGcmToken()));
+        holders.add(new GcmTokensHolder(null, pedro.getGcmToken()));
+        holders.add(new GcmTokensHolder("new_juan_token", IncidenciaTestUtils.juan.getGcmToken()));
+        assertThat(usuarioManager.modifyUserGcmTokens(holders), is(3));
+
+        assertThat(usuarioDao.getUsuarioWithGcmToken(luis.getuId()).getGcmToken(), nullValue());
+        assertThat(usuarioDao.getUsuarioWithGcmToken(pedro.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChangeWithUser_1()
+    public void test_passwordChangeWithName() throws EntityException
+    {
+        assertThat(usuarioManager.passwordChangeWithName(luis.getUserName(), "new_luis_password"), is(1));
+        assertThat(new BCryptPasswordEncoder().matches("new_luis_password", usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
+                is(true));
+        assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()), is(true));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordChangeWithUser_1()
     {
         try {
-            usuarioService.passwordChangeWithUser(new Usuario.UsuarioBuilder()
+            usuarioManager.passwordChangeWithUser(new Usuario.UsuarioBuilder()
                     .userName("noexisto@no.com").password("noexisto").build(), "newPassword");
             fail();
         } catch (EntityException e) {
@@ -508,14 +686,30 @@ public abstract class UsuarioServiceTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChangeWithUser_2() throws EntityException
+    public void test_passwordChangeWithUser_2() throws EntityException
     {
         String newClearPswd = "new_luis_password";
-        assertThat(usuarioService.passwordChangeWithUser(luis, newClearPswd), is(1));
+        assertThat(usuarioManager.passwordChangeWithUser(luis, newClearPswd), is(1));
         assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
                 is(true));
         // Check for deletion of oauth token.
-        assertThat(usuarioService.getAccessTokenByUserName(TO).isPresent(), is(false));
+        assertThat(usuarioManager.getAccessTokenByUserName(TO).isPresent(), is(false));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordSendIntegration() throws Exception
+    {
+        // Preconditions: dirección email válida.
+        Usuario usuarioIn = doPreconditionsSendPswdOk();
+        // Exec
+        assertThat(usuarioManager.passwordSendIntegration(usuarioIn.getUserName()), is(true));
+        // Login changed.
+        assertThat(usuarioManager.login(usuarioIn), is(false));
+        // Cleaning and closing.
+        Thread.sleep(9000);
+        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -527,11 +721,11 @@ public abstract class UsuarioServiceTest {
         Usuario usuarioIn = doPreconditionsSendPswdOk();
         // Exec.
         String newPswd = "new_password";
-        assertThat(usuarioService.passwordSendWithMail(usuarioIn, newPswd), is(true));
+        assertThat(usuarioManager.passwordSendWithMail(usuarioIn, newPswd), is(true));
         // Invalid oldPassword.
-        assertThat(usuarioService.login(usuarioIn), is(false));
+        assertThat(usuarioManager.login(usuarioIn), is(false));
         // Valid new password.
-        assertThat(usuarioService.login(new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(newPswd).build()), is(true));
+        assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(newPswd).build()), is(true));
         // Check mail.
         Thread.sleep(9000);
         javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
@@ -545,31 +739,15 @@ public abstract class UsuarioServiceTest {
     public void test_passwordSendWithMail_2() throws Exception
     {
         // Preconditions.
-        assertThat(usuarioService.login(luis), is(true));
+        assertThat(usuarioManager.login(luis), is(true));
         // Exec: no valid email.
         try {
-            usuarioService.passwordSendWithMail(luis, "new_password");
+            usuarioManager.passwordSendWithMail(luis, "new_password");
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
         }
         // Permanecen datos de login.
-        assertThat(usuarioService.login(luis), is(true));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_passwordSendIntegration() throws Exception
-    {
-        // Preconditions: dirección email válida.
-        Usuario usuarioIn = doPreconditionsSendPswdOk();
-        // Exec
-        assertThat(usuarioService.passwordSendIntegration(usuarioIn.getUserName()), is(true));
-        // Login changed.
-        assertThat(usuarioService.login(usuarioIn), is(false));
-        // Cleaning and closing.
-        Thread.sleep(9000);
-        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
+        assertThat(usuarioManager.login(luis), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -579,10 +757,10 @@ public abstract class UsuarioServiceTest {
         UsuarioComunidad usuarioCom = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
 
-        boolean insertedOk = usuarioService.regComuAndUserAndUserComu(usuarioCom);
+        boolean insertedOk = usuarioManager.regComuAndUserAndUserComu(usuarioCom);
         assertThat(insertedOk, is(true));
 
-        List<UsuarioComunidad> comunidades = usuarioService.seeUserComusByUser(USER_JUAN.getUserName());
+        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(USER_JUAN.getUserName());
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(usuarioCom));
     }
@@ -591,10 +769,10 @@ public abstract class UsuarioServiceTest {
     @Test
     public void testRegComuAndUserAndUserComu_2() throws SQLException, EntityException
     {
-        boolean isInserted_1 = usuarioService.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN);
+        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN);
         assertThat(isInserted_1, is(true));
         try {
-            usuarioService.regComuAndUserAndUserComu(COMU_REAL_JUAN);
+            usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN);
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_DUPLICATE));
         }
@@ -604,10 +782,10 @@ public abstract class UsuarioServiceTest {
     @Test
     public void testRegComuAndUserAndUserComu_3() throws SQLException, EntityException
     {
-        boolean isInserted_1 = usuarioService.regComuAndUserAndUserComu(COMU_REAL_JUAN);
+        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN);
         assertThat(isInserted_1, is(true));
         try {
-            usuarioService.regComuAndUserAndUserComu(COMU_REAL_PEPE);
+            usuarioManager.regComuAndUserAndUserComu(COMU_REAL_PEPE);
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_DUPLICATE));
         }
@@ -621,16 +799,16 @@ public abstract class UsuarioServiceTest {
         // Preconditions: there is DB a user registered in a comunidad.
         UsuarioComunidad usuarioComunidad1 = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1", "door",
                 INQUILINO.function);
-        usuarioService.regComuAndUserAndUserComu(usuarioComunidad1);
-        Usuario usuarioWithPk = usuarioService.getUserByUserName(USER_JUAN.getUserName());
+        usuarioManager.regComuAndUserAndUserComu(usuarioComunidad1);
+        Usuario usuarioWithPk = usuarioManager.getUserByUserName(USER_JUAN.getUserName());
 
         UsuarioComunidad usuarioComunidad2 = makeUsuarioComunidad(COMU_OTRA, usuarioWithPk, "AB", "ESC", "11", "puert",
                 ADMINISTRADOR.function);
 
-        boolean isRegOk = usuarioService.regComuAndUserComu(usuarioComunidad2);
+        boolean isRegOk = usuarioManager.regComuAndUserComu(usuarioComunidad2);
         assertThat(isRegOk, is(true));
 
-        List<UsuarioComunidad> comunidades = usuarioService.seeUserComusByUser(USER_JUAN.getUserName());
+        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(USER_JUAN.getUserName());
         assertThat(comunidades.size(), is(2));
         assertThat(comunidades, hasItems(usuarioComunidad1, usuarioComunidad2));
     }
@@ -640,10 +818,10 @@ public abstract class UsuarioServiceTest {
     public void testRegComuAndUserComu_2() throws EntityException
     {
         // Preconditions: there is DB a user registered in a comunidad.
-        boolean isInserted_1 = usuarioService.regComuAndUserAndUserComu(COMU_REAL_JUAN);
+        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN);
         assertThat(isInserted_1, is(true));
         try {
-            usuarioService.regComuAndUserComu(COMU_REAL_PEPE);
+            usuarioManager.regComuAndUserComu(COMU_REAL_PEPE);
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_DUPLICATE));
         }
@@ -654,19 +832,19 @@ public abstract class UsuarioServiceTest {
     public void testRegUserAndUserComu_1() throws SQLException, EntityException
     {
         // Preconditions: there is a comunidad associated to other users.
-        usuarioService.regComuAndUserAndUserComu(COMU_TRAV_PLAZUELA_PEPE);
+        usuarioManager.regComuAndUserAndUserComu(COMU_TRAV_PLAZUELA_PEPE);
         // We get the id of the comunidad.
-        long comunidadId = usuarioService.getComusByUser(USER_PEPE.getUserName()).get(0).getC_Id();
+        long comunidadId = usuarioManager.getComusByUser(USER_PEPE.getUserName()).get(0).getC_Id();
 
         // Nuevo usuarioComunidad.
         UsuarioComunidad userComu = makeUsuarioComunidad(
                 new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
                 USER_JUAN2,
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
-        boolean isRegistered = usuarioService.regUserAndUserComu(userComu);
+        boolean isRegistered = usuarioManager.regUserAndUserComu(userComu);
 
         assertThat(isRegistered, is(true));
-        long comunidadId_2 = usuarioService.getComusByUser(USER_JUAN2.getUserName()).get(0).getC_Id();
+        long comunidadId_2 = usuarioManager.getComusByUser(USER_JUAN2.getUserName()).get(0).getC_Id();
         assertThat(comunidadId_2, is(comunidadId));
     }
 
@@ -675,10 +853,10 @@ public abstract class UsuarioServiceTest {
     public void testRegUserAndUserComu_2() throws EntityException
     {
         // Preconditions: there is a comunidad associated to other users.
-        boolean isInserted_1 = usuarioService.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN);
+        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN);
         assertThat(isInserted_1, is(true));
         try {
-            usuarioService.regUserAndUserComu(COMU_REAL_JUAN);
+            usuarioManager.regUserAndUserComu(COMU_REAL_JUAN);
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_DUPLICATE));
         }
@@ -707,11 +885,11 @@ public abstract class UsuarioServiceTest {
 
         final UsuarioComunidad usuarioComunidad_1 = makeUsuarioComunidad(comunidad1, USER_JUAN, "portal", "esc",
                 "plantaX", "door12", PROPIETARIO.function);
-        usuarioService.regComuAndUserAndUserComu(usuarioComunidad_1);
-        Usuario userWithPk = usuarioService.getUserByUserName(USER_JUAN.getUserName());
+        usuarioManager.regComuAndUserAndUserComu(usuarioComunidad_1);
+        Usuario userWithPk = usuarioManager.getUserByUserName(USER_JUAN.getUserName());
 
         // Primera búsqueda.
-        List<Comunidad> comunidades = usuarioService.searchComunidades(comunidad);
+        List<Comunidad> comunidades = usuarioManager.searchComunidades(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(comunidad1));
 
@@ -725,20 +903,20 @@ public abstract class UsuarioServiceTest {
 
         final UsuarioComunidad usuarioComunidad_2 = makeUsuarioComunidad(comunidad2, userWithPk, null,
                 null, "planta3", "doorA", ADMINISTRADOR.function);
-        usuarioService.regComuAndUserComu(usuarioComunidad_2);
+        usuarioManager.regComuAndUserComu(usuarioComunidad_2);
 
         // Segunda búsqueda.
-        comunidades = usuarioService.searchComunidades(comunidad);
+        comunidades = usuarioManager.searchComunidades(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(comunidad2));
 
         // Caso 3: una comunidad con coincidencia completa. Se aplica searchOne.
         final UsuarioComunidad usuarioComunidad_3 = makeUsuarioComunidad(comunidad, userWithPk, null,
                 null, "planta3", "doorA", ADMINISTRADOR.function);
-        usuarioService.regComuAndUserComu(usuarioComunidad_3);
+        usuarioManager.regComuAndUserComu(usuarioComunidad_3);
 
         // Tercera búsqueda.
-        comunidades = usuarioService.searchComunidades(comunidad);
+        comunidades = usuarioManager.searchComunidades(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(comunidad));
     }
@@ -748,11 +926,17 @@ public abstract class UsuarioServiceTest {
     private Usuario doPreconditionsSendPswdOk() throws EntityException, MessagingException
     {
         final String userName = "didekindroid@didekin.es";
-        assertThat(usuarioService.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
-        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioService.getUserByUserName(userName)).password(luis.getPassword()).build();
-        assertThat(usuarioService.login(usuarioIn), is(true));
+        assertThat(usuarioManager.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
+        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(userName)).password(luis.getPassword()).build();
+        assertThat(usuarioManager.login(usuarioIn), is(true));
         javaMailMonitor.expungeFolder(); // Limpiamos buzón.
         return usuarioIn;
+    }
+
+    private Usuario doUsuario(String userName, String gcmToken) throws EntityException
+    {
+        return new Usuario.UsuarioBuilder().uId(usuarioManager.completeUser(userName).getuId()).gcmToken
+                (gcmToken).build();
     }
 }
 

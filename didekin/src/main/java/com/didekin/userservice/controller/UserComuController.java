@@ -2,7 +2,7 @@ package com.didekin.userservice.controller;
 
 import com.didekin.common.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -31,8 +31,6 @@ import static com.didekinlib.http.UsuarioComunidadServConstant.USERCOMUS_BY_USER
 import static com.didekinlib.http.UsuarioComunidadServConstant.USERCOMU_DELETE;
 import static com.didekinlib.http.UsuarioComunidadServConstant.USERCOMU_MODIFY;
 import static com.didekinlib.http.UsuarioComunidadServConstant.USERCOMU_READ;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -49,10 +47,10 @@ public class UserComuController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UserComuController.class.getCanonicalName());
 
-    private final UsuarioServiceIf usuarioService;
+    private final UsuarioManagerIf usuarioService;
 
     @Autowired
-    public UserComuController(UsuarioServiceIf usuarioService)
+    public UserComuController(UsuarioManagerIf usuarioService)
     {
         this.usuarioService = usuarioService;
     }
@@ -93,7 +91,7 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("isOldestOrAdmonUserComu()");
         return usuarioService.isOldestUserComu(getUserFromDb(usuarioService), comunidadId)
-                || hasAuthorityAdmInComunidad(getUserNameFromAuthentication(), comunidadId);
+                || usuarioService.hasAuthorityAdmInComunidad(getUserNameFromAuthentication(), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)
@@ -178,52 +176,5 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("seeUserComusByUser()");
         return usuarioService.seeUserComusByUser(getUserFromDb(usuarioService).getUserName());
-    }
-
-//  =========================== METHODS FOR INTERNAL SERVICES =========================
-
-    public UsuarioComunidad completeWithHighestRol(String userName, long comunidadId) throws EntityException
-    {
-        logger.debug("completeWithHighestRol()");
-        return new UsuarioComunidad.UserComuBuilder(
-                new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                new Usuario.UsuarioBuilder().copyUsuario(usuarioService.completeUser(userName)).build()
-        ).roles(usuarioService.getHighestFunctionalRol(userName, comunidadId)).build();
-    }
-
-    public List<String> getGcmTokensByComunidad(long comunidadId)
-    {
-        logger.debug("getGcmTokensByComunidad(Usuario usuario)");
-        List<String> gcmTokens = usuarioService.getGcmTokensByComunidad(comunidadId);
-        logger.debug("getGcmTokensByComunidad(); gcmTokens size = " + gcmTokens.size());
-        return gcmTokens;
-    }
-
-    public UsuarioComunidad getUserComunidadChecker(String userName, long comunidadId)
-    {
-        logger.debug("getUserComunidadChecker()");
-        try {
-            return usuarioService.getUserComuByUserAndComu(userName, comunidadId);
-        } catch (EntityException e) {
-            return null;
-        }
-    }
-
-    public boolean hasAuthorityAdmInComunidad(String userName, long comunidadId) throws EntityException
-    {
-        logger.debug("getHighestFuncitonalRol()");
-        String rol = usuarioService.getHighestFunctionalRol(userName, comunidadId);
-        return rol.equals(ADMINISTRADOR.function) || rol.equals(PRESIDENTE.function);
-    }
-
-    public boolean isUserInComunidad(String userName, long comunidadId)
-    {
-        logger.debug("isUserInComunidad");
-        try {
-            return usuarioService.getUserComuByUserAndComu(userName, comunidadId) != null;
-        } catch (EntityException ee) {
-            logger.error("isUserInComunidad(): " + ee.getExceptionMsg().getHttpMessage());
-            return false;
-        }
     }
 }

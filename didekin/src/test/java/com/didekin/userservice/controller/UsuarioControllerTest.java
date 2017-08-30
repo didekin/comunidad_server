@@ -11,7 +11,7 @@ import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.Oauth2EndPoints;
 import com.didekinlib.http.retrofit.RetrofitHandler;
@@ -84,7 +84,7 @@ public abstract class UsuarioControllerTest {
     @Autowired
     private RetrofitHandler retrofitHandler;
     @Autowired
-    private UsuarioServiceIf sujetosService;
+    private UsuarioManagerIf usuarioManager;
     @Autowired
     private JavaMailMonitor javaMailMonitor;
 
@@ -102,25 +102,8 @@ public abstract class UsuarioControllerTest {
     }
 
     //    ==============================  USERSERVICE TESTS ========================================
-          /* UserService tests requiring http client. */
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void deleteAccessTokenByUserName_1() throws Exception
-    {
-        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(luis.getUserName(), luis.getPassword()).body();
-        assertThat(sujetosService.deleteAccessTokenByUserName(luis.getUserName()), is(true));
-        assertThat(sujetosService.getAccessToken(token.getValue()), nullValue());
-    }
-
-//    ===================================== CONTROLLER TESTS =======================================
-
-    @Test
-    public void testBefore()
-    {
-        assertThat(sujetosService, notNullValue());
-    }
+    /* UserService tests requiring http client. */
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -128,8 +111,32 @@ public abstract class UsuarioControllerTest {
     public void testDeleteAccessToken_1() throws EntityException, IOException
     {
         // We test just the SujetosService method.
-        assertThat(sujetosService.deleteAccessToken(tokenPedro(retrofitHandler)), is(true));
+        assertThat(usuarioManager.deleteAccessToken(tokenPedro(retrofitHandler)), is(true));
     }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_deleteAccessTokenByUserName_1() throws Exception
+    {
+        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(luis.getUserName(), luis.getPassword()).body();
+        assertThat(usuarioManager.deleteAccessTokenByUserName(luis.getUserName()), is(true));
+        assertThat(usuarioManager.getAccessToken(token.getValue()), nullValue());
+    }
+
+    @Test
+    public void test_GetAccessToken() throws Exception
+    {
+        // TODO: tst.
+    }
+
+    @Test
+    public void test_GetAccessTokenByUserName() throws Exception
+    {
+        // TODO: tst.
+    }
+
+//    ===================================== CONTROLLER TESTS =======================================
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -181,7 +188,6 @@ public abstract class UsuarioControllerTest {
         assertThat(usuarioDB.getUserName(), is("juan@juan.us"));
         assertThat(usuarioDB.getAlias(), is("juan"));
         assertThat(usuarioDB.getPassword(), nullValue());
-
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -243,9 +249,9 @@ public abstract class UsuarioControllerTest {
                 .build();
 
         assertThat(USER_ENDPOINT.modifyUser(HELPER.doBearerAccessTkHeader(token_1), usuarioIn_1).execute().body(), is(1));
-        // Check wiht usuarioService that access token has been deleted. We try with both userNames.
-        assertThat(sujetosService.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(false));
-        assertThat(sujetosService.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(false));
+        // Check wiht usuarioManager that access token has been deleted. We try with both userNames.
+        assertThat(usuarioManager.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(false));
+        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(false));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -264,8 +270,8 @@ public abstract class UsuarioControllerTest {
                 .build();
 
         assertThat(USER_ENDPOINT.modifyUser(HELPER.doBearerAccessTkHeader(token_1), usuarioIn_1).execute().body(), is(1));
-        // Check wiht usuarioService that access token has not been deleted.
-        assertThat(sujetosService.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
+        // Check wiht usuarioManager that access token has not been deleted.
+        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
         // Authentication by refreshToken continues to work.
         assertThat(
                 OAUTH_ENDPOINT.getRefreshUserToken(new SecurityTestUtils(retrofitHandler)
@@ -285,13 +291,13 @@ public abstract class UsuarioControllerTest {
         SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         // Change userName with usuarioDao.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
-                .copyUsuario(sujetosService.getUserByUserName(USER_JUAN.getUserName()))
+                .copyUsuario(usuarioManager.getUserByUserName(USER_JUAN.getUserName()))
                 .userName("new_juan@new.com")
                 .build();
-        assertThat(sujetosService.getUsuarioDao().modifyUser(usuarioIn_1), is(1));
+        assertThat(usuarioManager.getUsuarioDao().modifyUser(usuarioIn_1), is(1));
 
         // Check accessToken has not been deleted.
-        assertThat(sujetosService.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(true));
+        assertThat(usuarioManager.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(true));
         // But authentication by refreshToken throws an exception.
         Response<SpringOauthToken> response = OAUTH_ENDPOINT.getRefreshUserToken(
                 new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER), token_1.getRefreshToken().getValue(), REFRESH_TOKEN_GRANT).execute();
@@ -317,7 +323,7 @@ public abstract class UsuarioControllerTest {
         // Preconditions: user is registered with an access token.
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body(), is(true));
         SpringOauthToken accessToken = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        assertThat(sujetosService.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
+        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
 
         // Call the controller.
         String newClearPswd = "new_luis_password";
@@ -326,10 +332,10 @@ public abstract class UsuarioControllerTest {
 
         // Check.
         assertThat(new BCryptPasswordEncoder()
-                        .matches(newClearPswd, sujetosService.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
+                        .matches(newClearPswd, usuarioManager.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
                 is(true));
         // Check for deletion of oauth token.
-        assertThat(sujetosService.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), CoreMatchers.is(false));
+        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), CoreMatchers.is(false));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -382,7 +388,7 @@ public abstract class UsuarioControllerTest {
         assertThat(usuarioDB.getAlias(), is(USER_JUAN.getAlias()));
         assertThat(new BCryptPasswordEncoder().matches(
                 USER_JUAN.getPassword(),
-                sujetosService.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
+                usuarioManager.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
                 is(true));
     }
 
@@ -394,7 +400,7 @@ public abstract class UsuarioControllerTest {
                 userName,
                 password,
                 PASSWORD_GRANT).execute().body();
-        assertThat(sujetosService.getAccessTokenByUserName(userName).isPresent(), is(true));
+        assertThat(usuarioManager.getAccessTokenByUserName(userName).isPresent(), is(true));
         return token_1;
     }
 

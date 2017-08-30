@@ -2,7 +2,7 @@ package com.didekin.userservice.controller;
 
 import com.didekin.common.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.comunidad.Comunidad;
 
 import org.slf4j.Logger;
@@ -32,10 +32,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class ComunidadController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(ComunidadController.class.getCanonicalName());
-    private final UsuarioServiceIf usuarioService;
+    private final UsuarioManagerIf usuarioService;
 
     @Autowired
-    public ComunidadController(UsuarioServiceIf usuarioService)
+    public ComunidadController(UsuarioManagerIf usuarioService)
     {
         this.usuarioService = usuarioService;
     }

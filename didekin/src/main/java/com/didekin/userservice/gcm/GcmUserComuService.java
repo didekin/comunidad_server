@@ -1,6 +1,6 @@
 package com.didekin.userservice.gcm;
 
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.gcm.model.common.GcmException;
 import com.didekinlib.gcm.model.common.GcmMulticastRequest;
 import com.didekinlib.gcm.model.common.GcmRequest;
@@ -42,7 +42,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * Time: 18:57
  */
 @Service
-class GcmUserComuService implements GcmUserComuServiceIf {
+class GcmUserComuService implements GcmUserComuServiceIf {     // TODO: Migrate to RX_JAVA; test it: it is untested in server, only on the android app client.
 
     private static final Logger logger = LoggerFactory.getLogger(GcmUserComuService.class.getCanonicalName());
 
@@ -64,7 +64,7 @@ class GcmUserComuService implements GcmUserComuServiceIf {
 
 
     private GcmEndPointImp gcmEndPoint;
-    private UsuarioServiceIf usuarioService;
+    private UsuarioManagerIf usuarioService;
 
     private GcmUserComuService()
     {
@@ -82,7 +82,7 @@ class GcmUserComuService implements GcmUserComuServiceIf {
     }
 
     @Autowired
-    public GcmUserComuService(GcmEndPointImp gcmEndPoint, UsuarioServiceIf usuarioService)
+    public GcmUserComuService(GcmEndPointImp gcmEndPoint, UsuarioManagerIf usuarioService)
     {
         this();
         this.gcmEndPoint = gcmEndPoint;
@@ -99,8 +99,6 @@ class GcmUserComuService implements GcmUserComuServiceIf {
         if (gcmTokens.size() <= 0) {
             return;
         }
-
-        // TODO: Migrate to RX_JAVA.
 
         Callable<GcmResponse> taskGcmMsg = () -> {
             logger.debug("Sending message-notification.");
@@ -149,19 +147,5 @@ class GcmUserComuService implements GcmUserComuServiceIf {
         } catch (RejectedExecutionException e) {
             logger.error(String.format("Threads in pool = %d; %s%n", gcmSenderPool.getPoolSize(), e.getCause()));
         }
-    }
-
-/*    ================================  TEST HELPER METHODS ============================*/
-
-    @Override
-    public ThreadPoolExecutor getGcmSenderExec()
-    {
-        return gcmSenderPool;
-    }
-
-    @Override
-    public ThreadPoolExecutor getGcmUpdaterExec()
-    {
-        return gcmUpdaterPool;
     }
 }

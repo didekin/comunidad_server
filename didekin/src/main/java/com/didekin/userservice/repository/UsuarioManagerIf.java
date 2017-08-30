@@ -16,9 +16,11 @@ import java.util.Optional;
  * Date: 26/08/15
  * Time: 14:37
  */
-public interface UsuarioServiceIf {
+public interface UsuarioManagerIf {
 
     Usuario completeUser(String userName) throws EntityException;
+
+    UsuarioComunidad completeWithHighestRol(String userName, long comunidadId) throws EntityException;
 
     boolean deleteAccessToken(String accessTkValue) throws EntityException;
 
@@ -61,7 +63,11 @@ public interface UsuarioServiceIf {
 
     UsuarioDao getUsuarioDao();
 
+    boolean hasAuthorityAdmInComunidad(String userName, long comunidadId) throws EntityException;
+
     boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException;
+
+    boolean isUserInComunidad(String userName, long comunidadId);
 
     boolean login(Usuario usuario) throws EntityException;
 
@@ -70,6 +76,8 @@ public interface UsuarioServiceIf {
     int modifyComuData(Usuario user, Comunidad comunidad) throws EntityException;
 
     int modifyUserGcmToken(Usuario usuario);
+
+    int modifyUserGcmToken(String userName, String gcmToken) throws EntityException;
 
     int modifyUserGcmTokens(List<GcmTokensHolder> holdersList);
 

@@ -53,8 +53,8 @@ public class UsuarioRepoConfiguration {
     }
 
     @Bean
-    public UsuarioServiceIf sujetosService()
+    public UsuarioManagerIf usuarioManager()
     {
-        return new UsuarioService(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate));
+        return new UsuarioManager(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate));
     }
 }

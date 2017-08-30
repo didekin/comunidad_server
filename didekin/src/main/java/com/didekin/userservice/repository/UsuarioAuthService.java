@@ -30,9 +30,9 @@ public class UsuarioAuthService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioAuthService.class.getCanonicalName());
 
-    private UsuarioServiceIf sujetosService;
+    private UsuarioManagerIf sujetosService;
 
-    public UsuarioAuthService(UsuarioServiceIf sujetosService)
+    public UsuarioAuthService(UsuarioManagerIf sujetosService)
     {
         this.sujetosService = sujetosService;
     }

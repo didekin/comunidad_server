@@ -25,5 +25,5 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Category({LocalDev.class})
 @WebIntegrationTest
 @DirtiesContext
-public class IncidenciaControllerDevTest extends IncidenciaControllerAutowireTest {
+public class IncidenciaControllerDevTest extends IncidenciaControllerTest {
 }

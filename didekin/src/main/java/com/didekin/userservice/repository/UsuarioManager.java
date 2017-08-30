@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.didekin.userservice.repository.PswdGenerator.GENERATOR_13;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
@@ -36,6 +37,8 @@ import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MOD
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
+import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
+import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -48,25 +51,20 @@ import static com.google.common.base.Preconditions.checkState;
  */
 @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @Service
-public class UsuarioService implements UsuarioServiceIf {
+public class UsuarioManager implements UsuarioManagerIf {
 
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioManager.class.getCanonicalName());
 
-    @Autowired
-    private ComunidadDao comunidadDao;
-    @Autowired
-    private UsuarioDao usuarioDao;
+
+    private final ComunidadDao comunidadDao;
+    private final UsuarioDao usuarioDao;
     @Autowired
     private JdbcTokenStore tokenStore;
     @Autowired
     private UsuarioMailService usuarioMailService;
 
-    @SuppressWarnings("unused")
-    public UsuarioService()
-    {
-    }
-
-    UsuarioService(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
+    @Autowired
+    UsuarioManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
     {
         this.comunidadDao = comunidadDao;
         this.usuarioDao = usuarioDao;
@@ -79,7 +77,7 @@ public class UsuarioService implements UsuarioServiceIf {
     }
 
     //    ============================================================
-    //    .......... UsuarioServiceIf .......
+    //    .......... UsuarioManagerIf .......
     //    ============================================================
 
     @Override
@@ -89,6 +87,16 @@ public class UsuarioService implements UsuarioServiceIf {
                 .copyUsuario(getUserByUserName(userName))
                 .password(null)
                 .build();
+    }
+
+    @Override
+    public UsuarioComunidad completeWithHighestRol(String userName, long comunidadId) throws EntityException
+    {
+        logger.debug("completeWithHighestRol()");
+        return new UsuarioComunidad.UserComuBuilder(
+                new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
+                new Usuario.UsuarioBuilder().copyUsuario(completeUser(userName)).build()
+        ).roles(getHighestFunctionalRol(userName, comunidadId)).build();
     }
 
     @Override
@@ -109,22 +117,6 @@ public class UsuarioService implements UsuarioServiceIf {
         checkArgument(userName != null);
         Optional<OAuth2AccessToken> oAuthTkOptional = getAccessTokenByUserName(userName);
         return oAuthTkOptional.isPresent() && deleteAccessToken(oAuthTkOptional.get().getValue());
-    }
-
-    @Override
-    public Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName)
-    {
-        return tokenStore.findTokensByUserName(userName)
-                .stream()
-                .filter(oAuth2Token -> oAuth2Token.getValue() != null)
-                .findFirst();
-    }
-
-    @Override
-    public OAuth2AccessToken getAccessToken(String accesTkValue)
-    {
-        logger.debug("getAccessToken()");
-        return tokenStore.readAccessToken(accesTkValue);
     }
 
     @Override
@@ -171,6 +163,22 @@ public class UsuarioService implements UsuarioServiceIf {
     }
 
     @Override
+    public OAuth2AccessToken getAccessToken(String accesTkValue)
+    {
+        logger.debug("getAccessToken()");
+        return tokenStore.readAccessToken(accesTkValue);
+    }
+
+    @Override
+    public Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName)
+    {
+        return tokenStore.findTokensByUserName(userName)
+                .stream()
+                .filter(oAuth2Token -> oAuth2Token.getValue() != null)
+                .findFirst();
+    }
+
+    @Override
     public Comunidad getComunidadById(long comunidadId) throws EntityException
     {
         logger.info("getComunidadById()");
@@ -206,7 +214,9 @@ public class UsuarioService implements UsuarioServiceIf {
     public List<String> getGcmTokensByComunidad(long comunidadId)
     {
         logger.debug("getGcmTokensByComunidad()");
-        return usuarioDao.getGcmTokensByComunidad(comunidadId);
+        return Stream.of(usuarioDao.getGcmTokensByComunidad(comunidadId))
+                .peek(tokensList -> logger.debug("getGcmTokensByComunidad(); gcmTokens size = " + tokensList.size()))
+                .findFirst().get();
     }
 
     /**
@@ -270,6 +280,14 @@ public class UsuarioService implements UsuarioServiceIf {
     }
 
     @Override
+    public boolean hasAuthorityAdmInComunidad(String userName, long comunidadId) throws EntityException
+    {
+        logger.debug("getHighestFuncitonalRol()");
+        String rol = getHighestFunctionalRol(userName, comunidadId);
+        return rol.equals(ADMINISTRADOR.function) || rol.equals(PRESIDENTE.function);
+    }
+
+    @Override
     public boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException
     {
         logger.debug("isOldestOrAdmonUserComu()");
@@ -282,6 +300,18 @@ public class UsuarioService implements UsuarioServiceIf {
             }
         }
         return user.getuId() == idOldestUser;
+    }
+
+    @Override
+    public boolean isUserInComunidad(String userName, long comunidadId)
+    {
+        logger.debug("isUserInComunidad");
+        try {
+            return getUserComuByUserAndComu(userName, comunidadId) != null;
+        } catch (EntityException ee) {
+            logger.error("isUserInComunidad(): " + ee.getExceptionMsg().getHttpMessage());
+            return false;
+        }
     }
 
     /**
@@ -381,22 +411,22 @@ public class UsuarioService implements UsuarioServiceIf {
         return usuarioDao.modifyUserGcmToken(usuario);
     }
 
-    // TODO: optimizable con un executor para procesar cada modificación en BD.
+    @Override
+    public int modifyUserGcmToken(String userName, String gcmToken) throws EntityException
+    {
+        logger.debug("modifyUserGcmToken(String userName, String gcmToken)");
+        Usuario usuario = new Usuario.UsuarioBuilder().uId(completeUser(userName).getuId()).gcmToken(gcmToken).build();
+        return modifyUserGcmToken(usuario);
+    }
+
     @Override
     public int modifyUserGcmTokens(List<GcmTokensHolder> holdersList)
     {
         logger.debug("modifyUserGcmToken(List<GcmTokensHolder> holdersList)");
-
-        int counterRecords = 0;
-        for (GcmTokensHolder holder : holdersList) {
-            checkArgument(holder.getOriginalGcmTk() != null);
-            if (holder.getNewGcmTk() == null)
-                counterRecords += usuarioDao.deleteGcmToken(holder.getOriginalGcmTk());
-            else {
-                counterRecords += usuarioDao.modifyUserGcmToken(holder);
-            }
-        }
-        return counterRecords;
+        return (int) holdersList.parallelStream()
+                .filter(holder -> holder.getOriginalGcmTk() != null)
+                .map(holder -> holder.getNewGcmTk() == null ? usuarioDao.deleteGcmToken(holder.getOriginalGcmTk()) : usuarioDao.modifyUserGcmToken(holder))
+                .count();
     }
 
     @Override

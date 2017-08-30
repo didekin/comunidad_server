@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.LocalDev;
+import com.didekin.common.DbPre;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Time: 11:29
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {IncidenciaRepoConfiguration.class})
-@Category({LocalDev.class})
-public class IncidenciaRepoServiceDevTest extends IncidenciaRepoServiceTest {
+@ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+@Category({DbPre.class})
+public class IncidenciaManagerPreTest extends IncidenciaManagerTest {
 }

@@ -72,11 +72,11 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 @SuppressWarnings("unchecked")
 abstract class IncidenciaControllerTest {
 
-    IncidenciaServEndPoints ENDPOINT;
-    UsuarioEndPoints USER_ENDPOINT;
+    private IncidenciaServEndPoints ENDPOINT;
+    private UsuarioEndPoints USER_ENDPOINT;
 
     @Autowired
-    RetrofitHandler retrofitHandler;
+    private RetrofitHandler retrofitHandler;
 
     @Before
     public void setUp() throws Exception
@@ -93,7 +93,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testCloseIncidencia_1() throws EntityException, IOException
     {
-        // Caso OK: añadimos un avance y cerramos la incidservice.
+        // Caso OK: añadimos un avance y cerramos la incidencia.
         // Premisas.
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
         assertThat(resolucion.getAvances().size(), is(2));
@@ -114,8 +114,8 @@ abstract class IncidenciaControllerTest {
 
         assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(3));
         resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        assertThat(resolucion.getAvances().size(), CoreMatchers.is(3));
-        // No encuentra la incidservice porque ya está cerrada.
+        assertThat(resolucion.getAvances().size(), is(3));
+        // No encuentra la incidencia porque ya está cerrada.
         assertThat(isIncidenciaFound(ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute()), is(false));
     }
 
@@ -125,7 +125,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testCloseIncidencia_2() throws EntityException, IOException
     {
-        // Caso OK: cierra la incidservice sin añadir avance.
+        // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
         assertThat(resolucion.getAvances().size(), is(2));
@@ -144,7 +144,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(2));
         resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
         assertThat(resolucion.getAvances().size(), CoreMatchers.is(2));
-        // No encuentra la incidservice porque ya está cerrada.
+        // No encuentra la incidencia porque ya está cerrada.
         assertThat(isIncidenciaFound(ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute()), is(false));
     }
 
@@ -154,10 +154,9 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testDeleteIncidencia_1() throws IOException
     {
-        // Caso OK: existe incidservice.
+        // Caso OK: existe incidencia.
         assertThat(ENDPOINT.deleteIncidencia(tokenPedro(), 2L).execute().body(), is(1));
-
-        /* Caso: no existe incidservice (es la incidservice borrada).*/
+        /* Caso: no existe incidencia (es la incidencia borrada).*/
         assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(tokenLuis(), 2L).execute()), is(false));
     }
 
@@ -176,7 +175,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testDeleteIncidencia_3() throws IOException
     {
-        // Caso: incidservice con resolución abierta.
+        // Caso: incidencia con resolución abierta.
         assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(tokenLuis(), 3L).execute()), is(false));
     }
 
@@ -186,7 +185,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testModifyIncidImportancia_1() throws EntityException, IOException
     {
-        // Caso OK: usuario 'adm', con incidImportancia registrada, modifica incidservice e importancia.
+        // Caso OK: usuario 'adm', con incidImportancia registrada, modifica incidencia e importancia.
         // Valores anteriores: ambito 22, importancia 1, descripción 'incidencia_2_2'.
 
         Incidencia incidencia = doIncidenciaWithIdDescUsername("luis@luis.com", 2L, "new_description", calle_la_fuente_11.getC_Id(), (short) 33);
@@ -1061,12 +1060,12 @@ abstract class IncidenciaControllerTest {
 
 //    ================================== HELPER METHODS ==================================
 
-    String tokenPedro() throws IOException
+    private String tokenPedro() throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(IncidenciaTestUtils.pedro.getUserName(), IncidenciaTestUtils.pedro.getPassword());
     }
 
-    String tokenLuis() throws IOException
+    private String tokenLuis() throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(IncidenciaTestUtils.luis.getUserName(), IncidenciaTestUtils.luis.getPassword());
     }

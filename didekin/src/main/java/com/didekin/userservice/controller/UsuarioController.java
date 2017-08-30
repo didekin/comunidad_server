@@ -4,7 +4,7 @@ import com.didekin.common.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
 import com.didekin.userservice.mail.UsuarioMailService;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.ErrorBean;
 import com.didekinlib.model.usuario.GcmTokenWrapper;
 import com.didekinlib.model.usuario.Usuario;
@@ -54,12 +54,12 @@ public class UsuarioController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class.getCanonicalName());
 
-    private final UsuarioServiceIf usuarioService;
+    private final UsuarioManagerIf usuarioManager;
 
     @Autowired
-    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioServiceIf usuarioService)
+    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioManagerIf usuarioManager)
     {
-        this.usuarioService = usuarioService;
+        this.usuarioManager = usuarioManager;
     }
 
     @RequestMapping(value = ACCESS_TOKEN_DELETE + "/{oldTk}", method = DELETE)
@@ -67,28 +67,28 @@ public class UsuarioController extends AppControllerAbstract {
                                      @PathVariable String oldTk) throws EntityException
     {
         logger.debug("deleteAccessToken()");
-        return usuarioService.deleteAccessToken(oldTk);
+        return usuarioManager.deleteAccessToken(oldTk);
     }
 
     @RequestMapping(value = USER_DELETE, method = DELETE, produces = MIME_JSON)
     public boolean deleteUser(@RequestHeader("Authorization") String accessToken) throws EntityException
     {
         logger.debug("deleteUser()");
-        return usuarioService.deleteUser(getUserNameFromAuthentication());
+        return usuarioManager.deleteUser(getUserNameFromAuthentication());
     }
 
     @RequestMapping(value = USER_READ_GCM_TOKEN, method = GET, produces = MIME_JSON)
     public GcmTokenWrapper getGcmToken(@RequestHeader("Authorization") String accessToken) throws EntityException
     {
         logger.debug("getGcmToken()");
-        return new GcmTokenWrapper(getGcmToken(getUserFromDb(usuarioService).getuId()));
+        return new GcmTokenWrapper(usuarioManager.getGcmToken(getUserFromDb(usuarioManager).getuId()));
     }
 
     @RequestMapping(value = USER_READ, method = GET, produces = MIME_JSON)
     public Usuario getUserData(@RequestHeader("Authorization") String accessToken) throws EntityException
     {
         logger.debug("getUserData()");
-        Usuario usuarioDb = getUserFromDb(usuarioService);
+        Usuario usuarioDb = getUserFromDb(usuarioManager);
         return new Usuario.UsuarioBuilder()
                 .userName(usuarioDb.getUserName())
                 .alias(usuarioDb.getAlias())
@@ -100,7 +100,7 @@ public class UsuarioController extends AppControllerAbstract {
             throws EntityException
     {
         logger.debug("login()");
-        return usuarioService.login(new Usuario.UsuarioBuilder().userName(userName).password(password).build());
+        return usuarioManager.login(new Usuario.UsuarioBuilder().userName(userName).password(password).build());
     }
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
@@ -108,7 +108,7 @@ public class UsuarioController extends AppControllerAbstract {
                                    @RequestParam(GCM_TOKEN_PARAM) final String gcmToken) throws EntityException
     {
         logger.debug("modifyUserGcmToken()");
-        return internalModifyUserGcmToken(getUserNameFromAuthentication(), gcmToken);
+        return usuarioManager.modifyUserGcmToken(getUserNameFromAuthentication(), gcmToken);
     }
 
     @RequestMapping(value = USER_WRITE, method = PUT, consumes = MIME_JSON)
@@ -116,7 +116,7 @@ public class UsuarioController extends AppControllerAbstract {
             throws EntityException
     {
         logger.debug("modifyUser()");
-        return usuarioService.modifyUser(newUsuario, getUserNameFromAuthentication());
+        return usuarioManager.modifyUser(newUsuario, getUserNameFromAuthentication());
     }
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
@@ -124,7 +124,7 @@ public class UsuarioController extends AppControllerAbstract {
                               @RequestParam(PSWD_PARAM) String newPassword) throws EntityException
     {
         logger.debug("passwordChangeWithName()");
-        return usuarioService.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
+        return usuarioManager.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
         // TODO: notificar por mail que el password ha sido cambiado.
     }
 
@@ -132,7 +132,7 @@ public class UsuarioController extends AppControllerAbstract {
     public boolean passwordSend(@RequestParam(USER_PARAM) String userName) throws EntityException, MailException
     {
         logger.debug("passwordSend()");
-        return usuarioService.passwordSendIntegration(userName);  // TODO: test nuevo alcance.
+        return usuarioManager.passwordSendIntegration(userName);
     }
 
 //    ............................ HANDLING EXCEPTIONS ................................
@@ -142,26 +142,5 @@ public class UsuarioController extends AppControllerAbstract {
     {
         logger.info("userNameExceptionHandling()");
         throw new EntityException(USER_NAME_NOT_FOUND);
-    }
-
-    //  =========================== METHODS FOR INTERNAL SERVICES =========================
-
-    public Usuario completeUser(String userName) throws EntityException
-    {
-        logger.debug("completeUser()");
-        return usuarioService.completeUser(userName);
-    }
-
-    String getGcmToken(long usuarioId)
-    {
-        logger.debug("getGcmToken(Usuario usuario)");
-        return usuarioService.getGcmToken(usuarioId);
-    }
-
-    int internalModifyUserGcmToken(String userName, String gcmToken) throws EntityException
-    {
-        logger.debug("modifyUserGcmToken(String gcmToken)");
-        Usuario usuario = new Usuario.UsuarioBuilder().uId(completeUser(userName).getuId()).gcmToken(gcmToken).build();
-        return usuarioService.modifyUserGcmToken(usuario);
     }
 }

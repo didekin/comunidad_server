@@ -3,7 +3,7 @@ package com.didekin.incidservice.controller;
 import com.didekin.common.AwsPre;
 import com.didekin.common.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekin.incidservice.repository.IncidenciaRepoConfiguration;
+import com.didekin.incidservice.repository.IncidenciaManagerConfiguration;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
-        IncidenciaRepoConfiguration.class})
+        IncidenciaManagerConfiguration.class})
 @ActiveProfiles({Profiles.NGINX_JETTY_PRE})
 @Category({AwsPre.class})
 public class IncidenciaControllerAwsTest extends IncidenciaControllerTest {

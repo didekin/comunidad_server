@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.didekin.incidservice.repository.IncidenciaSql.CLOSE_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.COUNT_RESOLUCION_BY_INCID;
@@ -55,7 +56,9 @@ import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INC
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static java.util.stream.Stream.of;
 
 /**
  * User: pedro@didekin
@@ -75,10 +78,14 @@ public class IncidenciaDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    int closeIncidencia(long incidenciaId)
+    int closeIncidencia(long incidenciaId) throws EntityException
     {
         logger.debug("closeIncidencia()");
-        return jdbcTemplate.update(CLOSE_INCIDENCIA.toString(), incidenciaId);
+        int rowsUpdated = jdbcTemplate.update(CLOSE_INCIDENCIA.toString(), incidenciaId);
+        if (rowsUpdated <= 0) {
+            throw new EntityException(INCIDENCIA_NOT_FOUND);
+        }
+        return rowsUpdated;
     }
 
     int countResolucionByIncid(long incidenciaId)
@@ -89,6 +96,9 @@ public class IncidenciaDao {
                 Integer.class);
     }
 
+    /**
+     * The update controls the existence of a resolucion for the incidencia.
+     */
     int deleteIncidencia(long incidenciaId) throws EntityException
     {
         logger.debug("deleteIncidencia()");
@@ -137,19 +147,48 @@ public class IncidenciaDao {
     int modifyIncidencia(Incidencia incidencia)
     {
         logger.debug("modifyIncidencia()");
-        return jdbcTemplate.update(MODIFY_INCIDENCIA.toString(),
+
+        int rowsModified = jdbcTemplate.update(MODIFY_INCIDENCIA.toString(),
                 incidencia.getDescripcion(),
                 incidencia.getAmbitoIncidencia().getAmbitoId(),
                 incidencia.getIncidenciaId());
+
+        if (rowsModified < 1) {
+            throw new EntityException(INCIDENCIA_NOT_FOUND);
+        }
+        return rowsModified;
     }
 
-    int modifyResolucion(Resolucion resolucion)
+    /**
+     * Control of the state 'incidencia is open' is made in the sql query.
+     *
+     * @return number of rows updated: 1 without new avance; 2 with new avance.
+     * @throws EntityException RESOLUCION_WRONG_INIT if resolucion/incidencia not found or resolucion.avance.size > 1.
+     *                         INCIDENCIA_NOT_FOUND if incidencia is closed or doesn't exist.
+     */
+    int modifyResolucion(Resolucion resolucion) throws EntityException
     {
         logger.debug("modifyResolucion()");
-        return jdbcTemplate.update(MODIFY_RESOLUCION.toString(),
-                resolucion.getFechaPrev(),
-                resolucion.getCosteEstimado(),
-                resolucion.getIncidencia().getIncidenciaId());
+
+        int rowsUpdated = of(resolucion)
+                .filter(resolucionIn -> resolucion.getAvances() == null || resolucion.getAvances().isEmpty() || resolucion.getAvances().size() == 1)
+                .map(
+                        resolucion1 -> jdbcTemplate.update(
+                                MODIFY_RESOLUCION.toString(),
+                                resolucion1.getFechaPrev(),
+                                resolucion1.getCosteEstimado(),
+                                resolucion1.getIncidencia().getIncidenciaId()
+                        )
+                )
+                .findFirst().orElseThrow(() -> new EntityException(RESOLUCION_WRONG_INIT));
+
+        if (rowsUpdated == 0){
+            throw new EntityException(INCIDENCIA_NOT_FOUND);
+        }
+        if (resolucion.getAvances() != null && resolucion.getAvances().size() == 1) {
+            rowsUpdated += regAvance(resolucion.getIncidencia().getIncidenciaId(), resolucion.getAvances().get(0));
+        }
+        return rowsUpdated;
     }
 
     int modifyIncidImportancia(IncidImportancia incidImportancia) throws EntityException
@@ -279,6 +318,19 @@ public class IncidenciaDao {
     /**
      * This method queries the incidencia_comunidad_view exclusively; therefore data pertaining to the user level,
      * such as the importancia_avg are not available in the returned object.
+     *
+     * Postconditions:
+     1. An Incidencia instance is returned with:
+     - incidenciaId.
+     - comunidad.c_Id.
+     - comunidad.tipoVia.
+     - comunidad.nombreVia
+     - comunidad.numero.
+     - comunidad.sufijoNumero
+     - userName
+     - descripcion
+     - fechaAlta
+     - fechaCierra NULL (it's open).
      */
     Incidencia seeIncidenciaById(long incidenciaId) throws EntityException
     {
@@ -310,6 +362,18 @@ public class IncidenciaDao {
         return incidencia;
     }
 
+    /**
+     Postconditions:
+     1. An IncidImportancia instance is returned with:
+       - incidencia.incidenciaId.
+       - incidencia.comunidad.c_Id.
+       - usuarioComunidad.usuario.userName (user in session).
+       - usuarioComunidad.usuario.alias.
+       - usuarioComunidad.usuario.uId.
+       - usuarioComunidad.comunidad.c_Id.
+       - incidImportancia.importancia.
+       - incidImportancia.fechaAlta
+     */
     IncidImportancia seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
     {
         logger.debug("seeIncidImportancia()");
@@ -393,13 +457,16 @@ public class IncidenciaDao {
         }
     }
 
-    List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)
+    List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)   // TODO: testar.
     {
         logger.debug("seeUserComusImportancia()");
-        return jdbcTemplate.query(SEE_USER_COMUS_IMPORTANCIA.toString(),
-                new Object[]{incidenciaId},
-                (rs, rowNum) -> new ImportanciaUser(rs.getString("alias"), rs.getShort("importancia"))
-        );
+        return Stream.of(
+                jdbcTemplate.query(SEE_USER_COMUS_IMPORTANCIA.toString(),
+                        new Object[]{incidenciaId},
+                        (rs, rowNum) -> new ImportanciaUser(rs.getString("alias"), rs.getShort("importancia")))
+        ).findFirst()
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
     }
 
 //    =========================== HELPERS ==================================

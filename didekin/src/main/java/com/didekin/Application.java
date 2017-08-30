@@ -1,7 +1,7 @@
 package com.didekin;
 
 import com.didekin.userservice.repository.UsuarioAuthService;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -227,7 +227,7 @@ public class Application {
             GlobalAuthenticationConfigurerAdapter {
 
         @Autowired
-        private UsuarioServiceIf sujetosService;
+        private UsuarioManagerIf sujetosService;
 
         @Override
         public void init(AuthenticationManagerBuilder auth) throws Exception

@@ -10,7 +10,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekin.userservice.repository.UsuarioServiceIf;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.ComunidadEndPoints;
 import com.didekinlib.http.retrofit.Oauth2EndPoints;
@@ -66,7 +66,7 @@ public abstract class ComunidadControllerTest {
     @Autowired
     private RetrofitHandler retrofitHandler;
     @Autowired
-    UsuarioServiceIf sujetosService;
+    UsuarioManagerIf sujetosService;
 
     @Before
     public void setUp() throws Exception

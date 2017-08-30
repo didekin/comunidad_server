@@ -10,8 +10,8 @@ import com.didekin.common.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekin.userservice.repository.UsuarioServiceIf;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.Oauth2EndPoints;
 import com.didekinlib.http.retrofit.RetrofitHandler;
@@ -91,7 +91,7 @@ public abstract class UserComuControllerTest {
     @Autowired
     private RetrofitHandler retrofitHandler;
     @Autowired
-    private UsuarioServiceIf sujetosService;
+    private UsuarioManagerIf sujetosService;
 
     @Before
     public void setUp() throws Exception

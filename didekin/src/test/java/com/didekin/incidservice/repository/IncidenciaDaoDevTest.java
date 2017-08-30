@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Time: 16:10
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {IncidenciaRepoConfiguration.class})
+@ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
 @Category({LocalDev.class})
 public class IncidenciaDaoDevTest extends IncidenciaDaoTest {
 }

@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 
 import org.junit.experimental.categories.Category;
@@ -18,8 +18,8 @@ import static com.didekin.common.Profiles.MAIL_PRE;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
-@Category({DbPre.class})
+@Category({LocalDev.class})
 @ActiveProfiles(value = {MAIL_PRE})
-public class UsuarioServicePreTest extends UsuarioServiceTest {
+public class UsuarioManagerDevTest extends UsuarioManagerTest {
 }
 
