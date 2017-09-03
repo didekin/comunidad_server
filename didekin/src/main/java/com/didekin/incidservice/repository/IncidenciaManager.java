@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_WRONG_INIT;
 import static com.didekinlib.model.incidencia.dominio.Resolucion.doResolucionModifiedWithNewAvance;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
@@ -73,7 +73,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *
      * @return number of registers accessed and, perhaps, modified.
      * @throws EntityException INCIDENCIA_NOT_FOUND,
-     *                         ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist),
+     *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         UNAUTHORIZED_TX_TO_USER.
      */
     @Override
@@ -105,7 +105,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 2. The incidencia and all its incidenciaUsers are deleted.
      *
      * @throws EntityException INCIDENCIA_NOT_FOUND,
-     *                         ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist),
+     *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         UNAUTHORIZED_TX_TO_USER.
      */
     @Override
@@ -136,7 +136,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * @param incidencia        : an Incidencia instance with incidenciaId, descripcion and ambitoId.
      * @return number of rows modified in DB (0 or 1).
      * @throws EntityException INCIDENCIA_NOT_FOUND (or closed),
-     *                         ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist),
+     *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         INCIDENCIA_USER_WRONG_INIT.
      */
     @Override
@@ -164,7 +164,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *
      * @param incidImportancia : an IncidImportancia instance with incidencia and importancia fields fulfilled (importancia default initialization == 0).
      * @return number of rows modified in DB: 1 or 2 if incidImportancia.importancia is also updated.
-     * @throws EntityException ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist),
+     * @throws EntityException USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         INCIDENCIA_NOT_FOUND (if the incidencia is closed or it doesn't exist),
      *                         INCID_IMPORTANCIA_WRONG_INIT (if incidImportancia.importancia is wrongly initialized).
      */
@@ -205,7 +205,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *
      * @throws EntityException INCIDENCIA_NOT_FOUND,
      *                         UNAUTHORIZED_TX_TO_USER,
-     *                         ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist).
+     *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
      */
     @Override
     public int modifyResolucion(String userName, Resolucion resolucion) throws EntityException
@@ -222,6 +222,16 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 ).map(incidenciaDao::modifyResolucion).findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
     }
 
+    /**
+     * Preconditions:
+     * 1. There exists an incidencia OPEN to which the comment is to be associated.
+     * 2. The user is associated to the comunidad to which belongs the incidencia.
+     * Postconditions:
+     * 1. The comment is inserted in the DB.
+     *
+     * @throws EntityException USER_NAME_NOT_FOUND,
+     *                         INCIDENCIA_NOT_FOUND, if the incidencia is closed (fechaCierre != null).
+     */
     @Override
     public int regIncidComment(String userName, final IncidComment comment) throws EntityException
     {
@@ -285,10 +295,27 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 }).findFirst().get();
     }
 
+    /**
+     * The method persists an incidencia, if not already persisted, and a new usuario_incidencia_importancia relationship.
+     * <p>
+     * Preconditions:
+     * 1. The user is associated to the comunidad to which belongs the incidencia.
+     * 2. The incidencia is open.
+     * <p>
+     * Postconditions:
+     * 1. The incidencia is persisted, if necessary.
+     * 2. An IncidImportancia instance is persisted for the user, with default importancia value (0), if
+     * not provided an explicit one.
+     *
+     * @return number of rows inserted: it should be 2.
+     * @throws EntityException USER_NAME_NOT_FOUND,
+     *                         INCIDENCIA_NOT_REGISTERED (see regIncidencia() below),
+     *                         USERCOMU_WRONG_INIT.
+     */
     public int regIncidImportancia(String userName, IncidImportancia incidImportancia) throws EntityException
     {
         logger.debug("regIncidImportancia()");
-        long incidenciaIdInit = incidImportancia.getIncidencia().getIncidenciaId();
+        long incidenciaIdIn = incidImportancia.getIncidencia().getIncidenciaId();
 
         return of(incidImportancia.getIncidencia())
                 .filter(incidenciaIn -> usuarioConnector.checkUserInComunidad(userName, incidenciaIn.getComunidadId()))
@@ -299,15 +326,27 @@ class IncidenciaManager implements IncidenciaManagerIf {
                                 .build()))
                 .map(incidenciaOut -> incidenciaDao.regIncidImportancia(
                         new IncidImportancia.IncidImportanciaBuilder(regIncidencia(incidenciaOut))
-                                .usuarioComunidad(usuarioConnector.getUserComunidad(userName, incidenciaOut.getComunidadId()))
+                                .usuarioComunidad(usuarioConnector.completeUserAndComuRoles(userName, incidenciaOut.getComunidadId()))
                                 .importancia(incidImportancia.getImportancia())
                                 .build()
                         )
                 )
-                .map(rowsUpdated -> (incidenciaIdInit == 0L) ? ++rowsUpdated : rowsUpdated)
+                .map(rowsUpdated -> (incidenciaIdIn == 0L) ? ++rowsUpdated : rowsUpdated)
                 .findFirst().get();
     }
 
+    /**
+     * Preconditions:
+     * 1. The user has functional role adm in the comunidad of the incidencia.
+     * 2. The incidencia is open.
+     * Postconditions:
+     * 1. The resolucion is persisted in DB.
+     * 2. A notification is sent to the users in the comunidad.
+     *
+     * @throws EntityException INCIDENCIA_NOT_FOUND if the incidencia doesn't exist or is closed.
+     *                         USERCOMU_WRONG_INIT (if the FK restriction incidencia.usuarioComunidad is violated).
+     *                         RESOLUCION_DUPLICATE.
+     */
     @Override
     public int regResolucion(String userName, Resolucion resolucion) throws EntityException
     {
@@ -356,91 +395,81 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 2. incidenciaId corresponds to an OPEN incidencia.
      * <p>
      * Postconditions:
-     * 1. An IncidAndResolBundle instance is returned with the data and highest rol of the user in session:
-     * - incidencia.incidenciaId.
-     * - incidencia.comunidad.c_Id.
-     * - usuarioComunidad.usuario.userName (user in session).
-     * - usuarioComunidad.usuario.alias.
-     * - usuarioComunidad.usuario.uId.
-     * - usuarioComunidad.comunidad.c_Id.
-     * - usuarioComunidad.roles (highest rol).
-     * - incidImportancia.importancia.
-     * - incidImportancia.fechaAlta
-     * <p>
-     * 2. If the user hasn't registered an incidImportancia record previously, the incidenciaResolBundle contains also:
-     * - incidImportancia.importancia == 0.
-     * - incidImportancia.fechaAlta == null.
-     * Plus:
-     * - incidencia.userName (user who registered the incidencia).
-     * - incidencia.ambito.ambitoId.
-     * - incidencia.fechaAlta.
-     * - incidencia.fechaCierre.
-     * - incidencia.comunidad.tipoVia.
-     * - incidencia.comunidad.nombreVia.
-     * - incidencia.comunidad.numero.
-     * - incidencia.comunidad.sufijoNumero.
+     * 1. An IncidAndResolBundle instance is returned with an IncidImportancia instance as produced by
+     * {@link IncidenciaDao#seeIncidImportanciaByUser(String userName, long incidenciaId) IncidenciaDao.seeIncidImportanciaByUser method}
      *
      * @throws EntityException INCIDENCIA_NOT_FOUND (or not open)
-     *                         ROLES_NOT_FOUND (if the relationship usuario_comunidad doesn't exist).
+     *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
      */
     @Override
-    public IncidAndResolBundle seeIncidImportancia(final String userNameInSession, final long incidenciaId) throws EntityException
+    public IncidAndResolBundle seeIncidImportanciaByUser(final String userNameInSession, final long incidenciaId) throws EntityException
     {
-        logger.debug("seeIncidImportancia()");
+        logger.debug("seeIncidImportanciaByUser()");
 
-        IncidImportancia incidImportancia = of(incidenciaId)
+        return of(incidenciaId)
                 .filter(this::checkIncidenciaOpen) // If none, we throw at the end INCIDENCIA_NOT_FOUND.
-                .map(incidenciaIdIn -> {
-                    try {
-                        return incidenciaDao.seeIncidImportanciaByUser(userNameInSession, incidenciaIdIn);
-                    } catch (EntityException e) {
-                        if (e.getExceptionMsg().equals(INCID_IMPORTANCIA_NOT_FOUND)) {
-                            return new IncidImportancia.IncidImportanciaBuilder(seeIncidenciaById(incidenciaIdIn))   // INCIDENCIA_NOT_FOUND
-                                    .build();
+                .filter(incidenciaIdIn -> checkIncidImportanciaInDb(userNameInSession, incidenciaIdIn))
+                .map(incidenciaIdIn -> incidenciaDao.seeIncidImportanciaByUser(userNameInSession, incidenciaIdIn))
+                .findFirst().orElseGet(() -> {
+                            Incidencia incidenciaIn = seeIncidenciaById(incidenciaId);
+                            UsuarioComunidad usuarioComunidad = getUsuarioConnector().completeUserAndComuRoles(userNameInSession, incidenciaIn.getComunidadId());
+                            return new IncidAndResolBundle(
+                                    new IncidImportancia.IncidImportanciaBuilder(incidenciaIn)
+                                            .usuarioComunidad(
+                                                    new UsuarioComunidad.UserComuBuilder(
+                                                            new Comunidad.ComunidadBuilder()
+                                                                    .copyComunidadNonNullValues(incidenciaIn.getComunidad())
+                                                                    .build(),
+                                                            new Usuario.UsuarioBuilder()
+                                                                    .copyUsuario(usuarioComunidad.getUsuario())
+                                                                    .build()
+                                                    ).roles(usuarioComunidad.getRoles())
+                                                            .build()
+                                            ).build(),
+                                    false
+                            );
                         }
-                        throw e;
-                    }
-                })
-                .map(incidImpIn -> incidImpIn.getUserComu() != null ? incidImpIn : new IncidImportancia.IncidImportanciaBuilder(incidImpIn.getIncidencia())
-                        .copyIncidImportancia(incidImpIn)
-                        .usuarioComunidad(
-                                new UsuarioComunidad.UserComuBuilder(incidImpIn.getIncidencia().getComunidad(), getUsuarioConnector().completeUser(userNameInSession))
-                                        .build())
-                        .build()
-                ).findFirst().orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
-
-        return of(incidImportancia)
-                .map(incidImpOut -> {
-                    Usuario usuarioIn = incidImpOut.getUserComu().getUsuario();
-                    Comunidad comunidadIn = incidImpOut.getIncidencia().getComunidad();
-                    Incidencia incidenciaIn = incidImpOut.getIncidencia();
-                    return new IncidAndResolBundle(
-                            new IncidImportancia.IncidImportanciaBuilder(incidenciaIn)
-                                    .importancia(incidImpOut.getImportancia())
-                                    .usuarioComunidad(new UsuarioComunidad.UserComuBuilder(comunidadIn, usuarioIn)
-                                            .userComuRest(incidImpOut.getUserComu())
-                                            .roles(getUsuarioConnector().addHighestFunctionalRol(usuarioIn.getUserName(), comunidadIn.getC_Id()))
-                                            .build()
-                                    )
-                                    .fechaAlta(incidImpOut.getFechaAlta())
-                                    .build(),
-                            isIncidenciaWithResolucion(incidenciaIn.getIncidenciaId())
-                    );
-                }).findFirst().get();
+                );
     }
 
+    /**
+     * Preconditions:
+     * 1. The user is registered in the comunidad of the incidencia.
+     * Postconditions:
+     * 1. A list of the closed incidencias in the comunidad, as produced by
+     * {@link IncidenciaDao#seeIncidsClosedByComu(long comunidadId) IncidenciaDao.seeIncidsClosedByComu method}
+     *
+     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
+     *                         the incidencia doesn't exist.
+     */
     @Override
-    public List<IncidenciaUser> seeIncidsClosedByComu(long comunidadId)
+    public List<IncidenciaUser> seeIncidsClosedByComu(String userNameInSession, long comunidadId)
     {
         logger.debug("seeIncidsClosedByComu()");
-        return incidenciaDao.seeIncidsClosedByComu(comunidadId);
+        return Stream.of(comunidadId)
+                .filter(comunidadIdIn -> getUsuarioConnector().checkUserInComunidad(userNameInSession, comunidadIdIn))
+                .map(incidenciaDao::seeIncidsClosedByComu)
+                .findFirst().get();
     }
 
+    /**
+     * Preconditions:
+     * 1. The user is registered in the comunidad of the incidencia.
+     * Postconditions:
+     * 1. A list of the open incidencias in the comunidad, as produced by
+     * {@link IncidenciaDao#seeIncidsOpenByComu(long comunidadId) IncidenciaDao.seeIncidsOpenByComu method}
+     *
+     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
+     *                         the incidencia doesn't exist.
+     */
     @Override
-    public List<IncidenciaUser> seeIncidsOpenByComu(long comunidadId)
+    public List<IncidenciaUser> seeIncidsOpenByComu(String userNameInSession, long comunidadId)
     {
         logger.debug("seeIncidsOpenByComu()");
-        return incidenciaDao.seeIncidsOpenByComu(comunidadId);
+        return Stream.of(comunidadId)
+                .filter(comunidadIdIn -> getUsuarioConnector().checkUserInComunidad(userNameInSession, comunidadIdIn))
+                .map(incidenciaDao::seeIncidsOpenByComu)
+                .findFirst().get();
     }
 
     /**
@@ -448,13 +477,24 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. The user is registered in the comunidad of the incidencia.
      * 2. The incidencia can be OPEN or CLOSED.
      * Postconditions:
+     * 1. A resolucion instance is returned with:
+     * - incidencia.incidencia_id
+     * - incidencia.comunidad.c_Id
+     * - userName.
+     * - descripcion.
+     * - costeEstimado.
+     * - costeFinal.
+     * - fechaAlta.
+     * - fechaPrevista.
+     * - moraleja.
+     * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
      *
      * @return resolucion in BD, with comunidad initialized in the incidencia field.
      * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
      * @throws EntityException INCIDENCIA_NOT_FOUND or RESOLUCION_NOT_FOUND, if the resolucionId (incidenciaId) doesn't exist.
      */
     @Override
-    public Resolucion seeResolucion(String userName, long resolucionId) throws EntityException  // TODO: testar las dos excepciones.
+    public Resolucion seeResolucion(String userName, long resolucionId) throws EntityException
     {
         logger.debug("seeResolucion()");
 
@@ -475,6 +515,17 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 .findFirst().get();
     }
 
+    /**
+     * Preconditions:
+     * 1. The user is registered in the comunidad of the incidencia.
+     * 2. The incidencia can be OPEN or CLOSED.
+     * Postconditions:
+     * 1. A list as produced by
+     * {@link IncidenciaDao#seeUserComusImportancia(long incidenciaId) IncidenciaDao.seeUserComusImportancia method}
+     *
+     * @throws EntityException INCIDENCIA_NOT_FOUND, if the incidenciaId doesn't exist.
+     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
+     */
     @Override
     public List<ImportanciaUser> seeUserComusImportancia(final String userName, long incidenciaId) throws EntityException
     {
@@ -501,5 +552,12 @@ class IncidenciaManager implements IncidenciaManagerIf {
             throw new EntityException(INCIDENCIA_NOT_FOUND);
         }
         return true;
+    }
+
+    @Override
+    public boolean checkIncidImportanciaInDb(String userNameInSession, long incidenciaId)
+    {
+        logger.debug("checkIncidImportanciaInDb()");
+        return incidenciaDao.isImportanciaUser(getUsuarioConnector().completeUser(userNameInSession).getuId(), incidenciaId) == 1;
     }
 }

@@ -16,7 +16,7 @@ final class IncidTables {
     static final String INCID_RESOLUCION_TB = "incidencia_resolucion";
     static final String INCID_RESOLUCION_AVANCE_TB = "incidencia_res_avance";
     static final String INCID_USER_ALTA_VIEW = "incidencia_user_alta_view";
-    static final String INCID_IMPORTANCIA_USER_VIEW = "incid_importancia_user_view";
+    static final String INCID_IMPORTANCIA_RESOLUCION_VIEW = "incid_importancia_resolucion_view";
 
     private IncidTables()
     {

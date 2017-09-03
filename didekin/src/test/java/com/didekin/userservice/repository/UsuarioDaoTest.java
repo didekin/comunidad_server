@@ -11,7 +11,6 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Connection;
@@ -19,10 +18,11 @@ import java.util.List;
 
 import static com.didekin.common.EntityException.DUPLICATE_ENTRY;
 import static com.didekin.common.EntityException.USER_NAME;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.ROLES_NOT_FOUND;
+import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USER_COMU_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -31,6 +31,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -58,14 +59,19 @@ public abstract class UsuarioDaoTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test(expected = UsernameNotFoundException.class)
+    @Test
     public void testDeleteUserByName() throws EntityException
     {
         List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser("pedro@pedro.com");
         assertThat(usuarioComunidades.size(), is(3));
         boolean isDeleted = usuarioDao.deleteUser("pedro@pedro.com");
         assertThat(isDeleted, is(true));
-        usuarioDao.getUserByUserName("pedro@pedro.com");
+        try {
+            usuarioDao.getUserByUserName("pedro@pedro.com");
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
     }
 
     @Test()
@@ -167,63 +173,6 @@ public abstract class UsuarioDaoTest {
         assertThat(comunidades.isEmpty(), is(true));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testGetFuncionRolesArrayByUserComu_1() throws EntityException
-    {
-        assertThat(usuarioDao.getFuncionRolesArrayByUserComu("luis@luis.com", 1L), is(new String[]{"adm", "pre", "pro"}));
-        assertThat(usuarioDao.getFuncionRolesArrayByUserComu("pedro@pedro.com", 3L), is(new String[]{"adm", "inq"}));
-        assertThat(usuarioDao.getFuncionRolesArrayByUserComu("juan@noauth.com", 2L), is(new String[]{"inq"}));
-
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql"})
-    @Test
-    public void testGetFuncionRolesArrayByUserComu_2() throws EntityException
-    {
-        // No se encuentran roles para usuario_comunidad.
-        try {
-            usuarioDao.getFuncionRolesArrayByUserComu("luis@luis.com", 99L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
-        }
-
-        // No se encuentran roles para usuario_comunidad.
-        try {
-            usuarioDao.getFuncionRolesArrayByUserComu("noexisto@no.com", 1L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testGetFuncionRolesStringByUserComu_1() throws EntityException
-    {
-        assertThat(usuarioDao.getFuncionRolesStringByUserComu("luis@luis.com", 1L), is("adm,pre,pro"));
-        assertThat(usuarioDao.getFuncionRolesStringByUserComu("pedro@pedro.com", 3L), is("adm,inq"));
-        assertThat(usuarioDao.getFuncionRolesStringByUserComu("juan@noauth.com", 2L), is("inq"));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql"})
-    @Test
-    public void testGetFuncionRolesStringByUserComu_2() throws EntityException
-    {
-        // No se encuentran roles para usuario_comunidad.
-        try {
-            usuarioDao.getFuncionRolesStringByUserComu("luis@luis.com", 99L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
-        }
-    }
-
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetMaxPk()
@@ -262,27 +211,57 @@ public abstract class UsuarioDaoTest {
         assertThat(usuario.getUserName(), is("luis@luis.com"));
         assertThat(usuario.getPassword(), is("$2a$10$km0D4Uc5cFV1Gv6aAnoeeu03XNk1i686uqlB2A0BClNtB5A8LucLK"));
         assertThat(usuario.getuId(), is(5L));
-
-        /*assertThat(new BCryptPasswordEncoder().matches(USER_JUAN.getPassword(), usuarioDB.getPassword()), is(true));*/
     }
 
-    @Test(expected = UsernameNotFoundException.class)
+    @Test
     public void testGetUserByUserName_2()
     {
-        usuarioDao.getUserByUserName("noexisto@no.com");
+        try {
+            usuarioDao.getUserByUserName("noexisto@no.com");
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserComuByUserAndComu_1() throws EntityException
+    public void test_GetUserComuRolesByUserName() throws Exception
+    {
+        assertThat(usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 2L),
+                allOf(
+                        hasProperty("usuario",
+                                allOf(
+                                        hasProperty("uId", is(3L)),
+                                        hasProperty("userName", is(pedro.getUserName())),
+                                        hasProperty("alias", is(pedro.getAlias()))
+                                )
+                        ),
+                        hasProperty("comunidad", hasProperty("c_Id", is(2L))),
+                        hasProperty("roles", is("adm"))
+                )
+        );
+
+        try {
+            usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 4L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_GetUserFullComuByUserAndComu_1() throws EntityException
     {
 
         // UsuarioComunidad no existe en BD. Devuelve null.
         UsuarioComunidad usuarioComunidad;
-        assertThat(usuarioDao.getUserComuByUserAndComu("juan@noauth.com", 1L), nullValue());
+        assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());
 
-        usuarioComunidad = usuarioDao.getUserComuByUserAndComu("pedro@pedro.com", 1L);
+        usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu("pedro@pedro.com", 1L);
         assertThat(usuarioComunidad, notNullValue());
         // Usuario
         Usuario usuario = usuarioComunidad.getUsuario();

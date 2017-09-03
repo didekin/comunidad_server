@@ -1,5 +1,9 @@
 package com.didekin.incidservice.repository;
 
+import static com.didekin.incidservice.repository.IncidTables.INCID_IMPORTANCIA_RESOLUCION_VIEW;
+import static com.didekin.incidservice.repository.IncidTables.INCID_IMPORTANCIA_TB;
+import static com.didekin.userservice.repository.UsuarioTables.USUARIO_TB;
+
 /**
  * User: pedro
  * Date: 31/03/15
@@ -11,6 +15,7 @@ enum IncidenciaSql {
             " WHERE incid_id = ? and fecha_cierre IS NULL"),
 
     COUNT_RESOLUCION_BY_INCID("select count(*) from " + IncidTables.INCID_RESOLUCION_TB + " where incid_id = ?"),
+    // TODO: ¿puedo evitar estar query mirando si fechaAlta de la resolución is not null.
 
     DELETE_INCIDENCIA("DELETE ic FROM " + IncidTables.INCID_COMU_TB + " AS ic " +
             " left join " + IncidTables.INCID_RESOLUCION_TB + " AS ir ON ic.incid_id = ir.incid_id" +
@@ -22,10 +27,15 @@ enum IncidenciaSql {
             "from " + IncidTables.INCID_COMU_VIEW + " AS ic " +
             "where ic.incid_id = ? "),
 
+    IS_IMPORTANCIA_USER("select count(*) " +
+            " FROM " + INCID_IMPORTANCIA_TB +
+            " WHERE u_id = ? AND incid_id = ? " +
+            " AND importancia > 0 AND fecha_alta IS NOT NULL "),
+
     IS_INCID_OPEN("SELECT incid_id FROM " + IncidTables.INCID_COMU_TB +
             " WHERE incid_id = ? AND fecha_cierre IS NULL"),
 
-    MODIFY_INCID_IMPORTANCIA("UPDATE " + IncidTables.INCID_IMPORTANCIA_TB + " as ii " +
+    MODIFY_INCID_IMPORTANCIA("UPDATE " + INCID_IMPORTANCIA_TB + " as ii " +
             " left join " + IncidTables.INCID_COMU_TB + " as ic ON ii.incid_id = ic.incid_id" +
             " SET ii.importancia = ? " +
             " WHERE ii.incid_id = ? AND ii.c_id = ? AND ii.u_id = ? AND ic.fecha_cierre IS NULL"),
@@ -47,7 +57,7 @@ enum IncidenciaSql {
             " (incid_id, c_id, u_id, descripcion) " +
             "VALUES (?,?,?,?)"),
 
-    REG_INCID_IMPORTANCIA("INSERT INTO " + IncidTables.INCID_IMPORTANCIA_TB +
+    REG_INCID_IMPORTANCIA("INSERT INTO " + INCID_IMPORTANCIA_TB +
             " (incid_id, c_id, u_id, importancia) VALUES (?,?,?,?)"),
 
     REG_RESOLUCION("INSERT INTO " + IncidTables.INCID_RESOLUCION_TB +
@@ -63,7 +73,7 @@ enum IncidenciaSql {
             " from " + IncidTables.INCID_COMMENT_VIEW + " where incid_id = ? " +
             " order by fecha_alta"),
 
-    SEE_IMPORTANCIA_BY_USER("select * from " + IncidTables.INCID_IMPORTANCIA_USER_VIEW +
+    SEE_IMPORTANCIA_BY_USER("select * from " + INCID_IMPORTANCIA_RESOLUCION_VIEW +
             " where user_name = ? and incid_id = ?"),
 
     SEE_INCIDS_CLOSED_BY_COMU("select " +
@@ -89,8 +99,11 @@ enum IncidenciaSql {
 
     SEE_RESOLUCION("select * from " + IncidTables.INCID_RESOLUCION_TB + " where incid_id = ?"),
 
-    SEE_USER_COMUS_IMPORTANCIA("select alias, importancia from " + IncidTables.INCID_IMPORTANCIA_USER_VIEW +
-            " where incid_id = ? ORDER by alias"),;
+    SEE_USER_COMUS_IMPORTANCIA("SELECT u.u_id, u.alias, i.incid_id, i.importancia " +
+            " FROM " + INCID_IMPORTANCIA_TB + " AS i " +
+            " INNER JOIN " + USUARIO_TB + " AS u" +
+            " USING (u_id) " +
+            " WHERE i.incid_id = ? ORDER by u.alias"),;
 
     String sqlText;
 

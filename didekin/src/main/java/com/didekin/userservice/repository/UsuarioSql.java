@@ -98,6 +98,11 @@ enum UsuarioSql {
     USUARIO_BY_EMAIL("SELECT u_id, alias, user_name, password " +
             " FROM usuario as u WHERE u.user_name = ?"),
 
+    USERCOMU_BY_EMAIL("SELECT u.u_id, u.alias, u.user_name, cu.c_id, cu.roles " +
+            " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
+            " USING (u_id) " +
+            " WHERE u.user_name = ? AND cu.c_id = ?"),
+
     USERCOMUS_BY_USER("select * from usuarios_comunidades_view" +
             " where user_name = ? " +
             " ORDER BY pr_id, m_cd, nombre_via"),

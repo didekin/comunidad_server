@@ -71,9 +71,8 @@ class IncidenciaController extends AppControllerAbstract {
                                 @PathVariable long incidenciaId) throws EntityException
     {
         logger.debug("deleteIncidencia()");
-        return incidenciaManager.deleteIncidencia(getUserNameFromAuthentication(), incidenciaId); // TODO: test.
+        return incidenciaManager.deleteIncidencia(getUserNameFromAuthentication(), incidenciaId);
     }
-
 
     @RequestMapping(value = MOD_INCID_IMPORTANCIA, method = PUT, consumes = MIME_JSON)
     public int modifyIncidImportancia(@RequestHeader("Authorization") String accessToken,
@@ -91,16 +90,6 @@ class IncidenciaController extends AppControllerAbstract {
         return incidenciaManager.modifyResolucion(getUserNameFromAuthentication(), resolucion);
     }
 
-    /**
-     * Preconditions:
-     * 1. There exists an incidencia OPEN to which the comment is to be associated.
-     * 2. The user is associated to the comunidad to which belongs the incidencia.
-     * Postconditions:
-     * 1. The comment is inserted in the DB.
-     *
-     * @throws EntityException USER_NAME_NOT_FOUND,
-     *                         INCIDENCIA_NOT_FOUND, if the incidencia is closed (fechaCierre != null).
-     */
     @RequestMapping(value = REG_INCID_COMMENT, method = POST, consumes = MIME_JSON)
     public int regIncidComment(@RequestHeader("Authorization") String accessToken,
                                @RequestBody final IncidComment comment) throws EntityException
@@ -109,23 +98,6 @@ class IncidenciaController extends AppControllerAbstract {
         return incidenciaManager.regIncidComment(getUserNameFromAuthentication(), comment);
     }
 
-    /**
-     * The method persists an incidencia, if not already persisted, and a new usuario_incidencia_importancia relationship.
-     * <p>
-     * Preconditions:
-     * 1. The user is associated to the comunidad to which belongs the incidencia.
-     * 2. The incidencia is open.
-     * <p>
-     * Postconditions:
-     * 1. The incidencia is persisted, if necessary.
-     * 2. An IncidImportancia instance is persisted for the user, with default importancia value (0), if
-     * not provided an explicit one.
-     *
-     * @return number of rows inserted: it should be 2.
-     * @throws EntityException USER_NAME_NOT_FOUND,
-     *                         INCIDENCIA_NOT_REGISTERED (see regIncidencia() below),
-     *                         USERCOMU_WRONG_INIT.
-     */
     @RequestMapping(value = REG_INCID_IMPORTANCIA, method = RequestMethod.POST, consumes = MIME_JSON)
     public int regIncidImportancia(@RequestHeader("Authorization") String accessToken,
                                    @RequestBody IncidImportancia incidImportancia) throws EntityException
@@ -134,18 +106,6 @@ class IncidenciaController extends AppControllerAbstract {
         return incidenciaManager.regIncidImportancia(getUserNameFromAuthentication(), incidImportancia);
     }
 
-    /**
-     * Preconditions:
-     * 1. The user has functional role adm in the comunidad of the incidencia.
-     * 2. The incidencia is open.
-     * Postconditions:
-     * 1. The resolucion is persisted in DB.
-     * 2. A notification is sent to the users in the comunidad.
-     *
-     * @throws EntityException INCIDENCIA_NOT_FOUND if the incidencia doesn't exist or is closed.
-     *                         USERCOMU_WRONG_INIT (if the FK restriction incidencia.usuarioComunidad is violated).
-     *                         RESOLUCION_DUPLICATE.
-     */
     @SuppressWarnings("UnnecessaryLocalVariable")
     @RequestMapping(value = REG_RESOLUCION, method = POST, consumes = MIME_JSON)
     public int regResolucion(@RequestHeader("Authorization") String accessToken,
@@ -183,66 +143,24 @@ class IncidenciaController extends AppControllerAbstract {
     public IncidAndResolBundle seeIncidImportancia(@RequestHeader("Authorization") String accessToken,
                                                    @PathVariable long incidenciaId) throws EntityException
     {
-        logger.debug("seeIncidImportancia");
-        return incidenciaManager.seeIncidImportancia(getUserNameFromAuthentication(), incidenciaId);
+        logger.debug("seeIncidImportanciaByUser");
+        return incidenciaManager.seeIncidImportanciaByUser(getUserNameFromAuthentication(), incidenciaId);
     }
 
-    /**
-     * Preconditions:
-     * 1. The user is registered in the comunidad of the incidencia.
-     * Postconditions:
-     * A list of the closed incidencias in the comunidad, with fechaAlta NOT OLDER than 2 years,
-     * are returned as a list of IncidenciaUser instances, with
-     * the following fields:
-     * - incidencia.incidenciaId.
-     * - incidencia.comunidad.c_id.
-     * - incidencia.userName (user who registered the incidencia).
-     * - incidencia.descripcion.
-     * - incidencia.ambito.ambitoId.
-     * - incidencia.importanciaAvg.
-     * - incidencia.fechaAlta.
-     * - incidencia.fechaCierre (not null, by definition).
-     * - usuario.uId. (user who registered the incidencia)
-     * - usuario.alias (user who registered the incidencia).
-     *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
-     *                         the incidencia doesn't exist.
-     */
     @RequestMapping(value = SEE_INCIDS_CLOSED_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public List<IncidenciaUser> seeIncidsClosedByComu(@RequestHeader("Authorization") String accessToken,
                                                       @PathVariable long comunidadId) throws EntityException
     {
         logger.debug("seeIncidsClosedByComu()");
-        incidenciaManager.getUsuarioConnector().checkUserInComunidad(getUserNameFromAuthentication(), comunidadId);
-        return incidenciaManager.seeIncidsClosedByComu(comunidadId);
+        return incidenciaManager.seeIncidsClosedByComu(getUserNameFromAuthentication(), comunidadId);
     }
 
-    /**
-     * Preconditions:
-     * 1. The user is registered in the comunidad of the incidencia.
-     * Postconditions:
-     * A list of the open incidencias in the comunidad are returned as a list of IncidenciaUser instances, with
-     * the following fields:
-     * - incidencia.incidenciaId.
-     * - incidencia.comunidad.c_id.
-     * - incidencia.userName (user who registered the incidencia).
-     * - incidencia.descripcion.
-     * - incidencia.ambito.ambitoId.
-     * - incidencia.importanciaAvg.
-     * - incidencia.fechaAlta.
-     * - incidencia.fechaCierre (null, by definition).
-     * - usuario.uId. (user who registered the incidencia)
-     * - usuario.alias (user who registered the incidencia).
-     *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or the incidencia doesn't exist.
-     */
     @RequestMapping(value = SEE_INCIDS_OPEN_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public List<IncidenciaUser> seeIncidsOpenByComu(@RequestHeader("Authorization") String accessToken,
                                                     @PathVariable long comunidadId) throws EntityException
     {
         logger.debug("seeIncidsOpenByComu()");
-        incidenciaManager.getUsuarioConnector().checkUserInComunidad(getUserNameFromAuthentication(), comunidadId);
-        return incidenciaManager.seeIncidsOpenByComu(comunidadId);
+        return incidenciaManager.seeIncidsOpenByComu(getUserNameFromAuthentication(),comunidadId);
     }
 
     @RequestMapping(value = SEE_RESOLUCION + "/{resolucionId}", produces = MIME_JSON, method = GET)
@@ -253,20 +171,11 @@ class IncidenciaController extends AppControllerAbstract {
         return incidenciaManager.seeResolucion(getUserNameFromAuthentication(), resolucionId);
     }
 
-    /**
-     * Preconditions:
-     * 1. The user is registered in the comunidad of the incidencia.
-     * 2. The incidencia can be OPEN or CLOSED.
-     * Postconditions:
-     *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
-     * @throws EntityException INCIDENCIA_NOT_FOUND, if the incidenciaId doesn't exist.
-     */
     @RequestMapping(value = SEE_USERCOMUS_IMPORTANCIA + "/{incidenciaId}", produces = MIME_JSON, method = GET)
     List<ImportanciaUser> seeUserComusImportancia(@RequestHeader("Authorization") String accessToken,
                                                   @PathVariable long incidenciaId) throws EntityException
     {
         logger.debug("seeUserComusImportancia()");
-        return incidenciaManager.seeUserComusImportancia(getUserNameFromAuthentication(), incidenciaId);    // TODO: test.
+        return incidenciaManager.seeUserComusImportancia(getUserNameFromAuthentication(), incidenciaId);
     }
 }

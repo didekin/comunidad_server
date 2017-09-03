@@ -1,7 +1,6 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.EntityException;
-import com.didekin.incidservice.testutils.IncidenciaTestUtils;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.incidencia.dominio.AmbitoIncidencia;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -9,12 +8,9 @@ import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
 import com.didekinlib.model.incidencia.dominio.IncidImportancia;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg;
 import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
 import com.didekinlib.model.incidencia.dominio.Resolucion;
-import com.didekinlib.model.usuario.Usuario;
 
-import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +20,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_la_fuente_11;
+import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_olmo_55;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_plazuela_23;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
@@ -41,6 +38,7 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco_olmo;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro;
+import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro_lafuente;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
@@ -48,6 +46,7 @@ import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INC
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -93,12 +92,72 @@ public abstract class IncidenciaManagerTest {
         }
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void test_CheckIncidImportanciaByUserInDb() throws Exception
+    {
+        assertThat(incidenciaManager.checkIncidImportanciaInDb(juan.getUserName(), 5L), is(false));
+        assertThat(incidenciaManager.checkIncidImportanciaInDb(paco.getUserName(), 5L), is(true));
+    }
+
     // ======================================  MANAGER  ========================================
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testCloseIncidencia_1() throws EntityException, IOException
+    {
+        // Caso OK: añadimos un avance a una resolución con avances, y cerramos la incidencia.
+        // Premisas.
+        Resolucion resolucion = incidenciaManager.seeResolucion(luis.getUserName(), 3L);
+        assertThat(resolucion.getAvances().size(), is(2));
+        final Incidencia incidencia = incidenciaManager.seeIncidenciaById(resolucion.getIncidencia().getIncidenciaId());
+        assertThat(incidencia.getFechaCierre(), nullValue());
+        // Nuevos datos.
+        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
+        List<Avance> avances = new ArrayList<>(1);
+        avances.add(avance);
+        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));
+        resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
+                .copyResolucion(resolucion)
+                .fechaPrevista(fechaPrevNew)
+                .costeEstimado(1111)
+                .avances(avances)
+                .build();
+        // Exec and check: return 3 (incidencia, resolucion y avance).
+        assertThat(incidenciaManager.closeIncidencia(luis.getUserName(), resolucion), is(3));
+        assertThat(incidenciaManager.seeResolucion(luis.getUserName(), 3L).getAvances().size(), is(3));
+        assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
+    }
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testCloseIncidencia_2() throws EntityException, IOException
+    {
+        // Caso OK: cierra la incidencia sin añadir avance.
+        // Premisas.
+        Resolucion resolucion = incidenciaManager.seeResolucion(luis.getUserName(), 3L);
+        final Incidencia incidencia = incidenciaManager.seeIncidenciaById(resolucion.getIncidencia().getIncidenciaId());
+        assertThat(incidencia.getFechaCierre(), nullValue());
+        // Nuevos datos.
+        resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
+                .copyResolucion(resolucion)
+                .avances(null)
+                .build();
+        // Devuelve 2: no modifica avances.
+        assertThat(incidenciaManager.closeIncidencia(luis.getUserName(), resolucion), is(2));
+        assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
+    }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_1()
+    public void testCloseIncidencia_3()
     {
         // Premise: la incidencia is closed.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
@@ -208,18 +267,18 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testModifyIncidImportancia_1() throws EntityException
     {
-        // Premisas: SIN registro previo de incidImportancia; NO usuario ADM.
-        IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportancia(juan.getUserName(), 4L);
+        // Premisas: SIN registro previo de incidImportancia; NO usuario ADM, ni iniciador; existe registro de incidencia.
+        IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), 4L);
         assertThat(resolBundle.getIncidImportancia().getImportancia(), is((short) 0));
         assertThat(resolBundle.getIncidImportancia().getFechaAlta(), nullValue());
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 4L), is(false));
-        // Data.
         Incidencia incidencia = resolBundle.getIncidImportancia().getIncidencia();
+        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), 4L, incidencia.getUserName()), is(false));
+        /* Data.*/
         IncidImportancia newIncidImp = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 3).usuarioComunidad(juan_plazuela23).build();
         // Exec: inserta registro incidImportancia.
         assertThat(incidenciaManager.modifyIncidImportancia(juan.getUserName(), newIncidImp), is(1));
         // Check.
-        resolBundle = incidenciaManager.seeIncidImportancia(juan.getUserName(), incidencia.getIncidenciaId());
+        resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), incidencia.getIncidenciaId());
         assertThat(resolBundle.getIncidImportancia().getImportancia(), is((short) 3));
     }
 
@@ -229,19 +288,18 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testModifyIncidImportancia_2() throws EntityException
     {
-        // Premisas: SIN registro previo de incidImportancia; usuario iniciador.
-        try {
-            assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(paco.getUserName(), 6L, paco.getUserName()), is(true));
-            incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 6L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
-        }
+        // Premisas: usuario iniciador ( -> existe registro previo de incidImportancia), no ADM.
+        final IncidImportancia incidImportancia = incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 6L).getIncidImportancia();
+        Incidencia incidencia = incidImportancia.getIncidencia();
+        assertThat(incidencia.getComunidad(), is(calle_olmo_55));
+        assertThat(incidencia.getUserName(), is(paco.getUserName()));
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), calle_olmo_55.getC_Id()), is(false));
+        assertThat(incidImportancia.getImportancia(), is((short) 2));
         // Data
-        IncidImportancia incidImpIn = new IncidImportancia.IncidImportanciaBuilder(incidenciaManager.seeIncidenciaById(6L)).importancia((short) 2).usuarioComunidad(paco_olmo).build();
+        IncidImportancia incidImpIn = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 1).usuarioComunidad(paco_olmo).build();
         // Exec and check: insert incidImportancia and update incidencia (although it hasn't changed).
         assertThat(incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidImpIn), is(2));
-        assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 6L).getImportancia(), is((short) 2));
+        assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 6L).getIncidImportancia().getImportancia(), is((short) 1));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_incidencia_a.sql"})
@@ -251,7 +309,7 @@ public abstract class IncidenciaManagerTest {
     public void testModifyIncidImportancia_3() throws EntityException
     {
         // Premisa: CON registro previo de incidImportancia, sin cambiar nada. Usuario no iniciador ADM.
-        IncidImportancia incidImportancia = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 2L);
+        IncidImportancia incidImportancia = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 2L).getIncidImportancia();
         assertThat(incidImportancia.getFechaAlta(), notNullValue());
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(pedro.getUserName(), 2L), is(true));
         // Data: no change.
@@ -277,7 +335,7 @@ public abstract class IncidenciaManagerTest {
         Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
         List<Avance> avances = new ArrayList<>(1);
         avances.add(avance);
-        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
+        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
                 .fechaPrevista(fechaPrevNew)
@@ -440,7 +498,13 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testRegIncidImportancia_2() throws Exception
     {
-        // Caso OK.  TODO: test.
+        // Premisas: no existe incidencia;  no usuario ADM.
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
+        Incidencia incidencia = doIncidencia(juan.getUserName(), "Nueva incidencia en Cámaras de vigilancia", 2L, (short) 11);
+        // Data
+        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(pedro_lafuente).importancia((short) 4).build();
+        // Exec and check
+        assertThat(incidenciaManager.regIncidImportancia(pedro.getUserName(), incidImportancia), is(2));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -496,13 +560,14 @@ public abstract class IncidenciaManagerTest {
     public void testSeeIncidImportancia_1() throws EntityException, InterruptedException, SQLException
     {
         // Premise: existe registro de incidImportancia en BD para el usuario.
-        assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 4L).getFechaAlta(), notNullValue());
+        final IncidAndResolBundle resolBundle = incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 4L);
+        assertThat(resolBundle.getIncidImportancia().getFechaAlta(), notNullValue());
         // Exec.
-        IncidImportancia incidImportancia = incidenciaManager.seeIncidImportancia(paco.getUserName(), 4L).getIncidImportancia();
+        IncidAndResolBundle resolBundleOut = incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 4L);
         // Check.
-        checkCommonIncidImpByUser(incidImportancia, paco, 4L, 4L, "adm");
-        assertThat(incidImportancia.getImportancia(), is((short) 4));
-        assertThat(incidImportancia.getFechaAlta().getTime() > 0L, is(true));
+        assertThat(resolBundleOut.getIncidImportancia(), is(resolBundle.getIncidImportancia()));
+        assertThat(resolBundleOut.hasResolucion(),
+                allOf(is(false), is(resolBundle.hasResolucion())));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -515,7 +580,7 @@ public abstract class IncidenciaManagerTest {
         assertThat(incidenciaManager.seeIncidenciaById(5L).getFechaCierre(), notNullValue());
         // Exec.
         try {
-            incidenciaManager.seeIncidImportancia(paco.getUserName(), 5L);
+            incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 5L);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
@@ -528,44 +593,20 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeIncidImportancia_3() throws EntityException
     {
-        // Caso: no hay registro incidImportancia para el usuario.
-        try {
-            incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
-        }
-
-        IncidImportancia incidImportancia = incidenciaManager.seeIncidImportancia(juan.getUserName(), 4L).getIncidImportancia();
-        checkCommonIncidImpByUser(incidImportancia, juan, 4L, 4L, "inq");
-        assertThat(incidImportancia,
-                allOf(
-                        hasProperty("importancia", is((short) 0)),
-                        hasProperty("fechaAlta", nullValue()),
-                        hasProperty("incidencia",
-                                allOf(
-                                        hasProperty("userName", is(paco.getUserName())),
-                                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 37))),
-                                        hasProperty("fechaAlta", notNullValue()),
-                                        hasProperty("fechaCierre", nullValue()),
-                                        hasProperty("comunidad",
-                                                allOf(
-                                                        Matchers.hasProperty("tipoVia", is(calle_plazuela_23.getTipoVia())),
-                                                        Matchers.hasProperty("nombreVia", is(calle_plazuela_23.getNombreVia())),
-                                                        Matchers.hasProperty("numero", is(calle_plazuela_23.getNumero())),
-                                                        Matchers.hasProperty("sufijoNumero", is(calle_plazuela_23.getSufijoNumero()))
-                                                )
-                                        )
-                                )
-                        )
-                )
-        );
+        // Caso: no hay registro incidImportancia para el usuario; existen usuarioComunidad e incidencia-comunidad.
+        incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
+        // TODO: seguir aquí.
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void test_SeeIncidsClosedByComu() throws Exception
     {
-        // TODO: test.
+        // Premisa: comunidad sin incidencias cerradas.
+        assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L), notNullValue());
+        assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L).size(), is(0));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -574,7 +615,7 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeIncidsOpenByComu_1() throws EntityException, InterruptedException
     {
-        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(ronda_plazuela_10bis.getC_Id());
+        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(luis.getUserName(), ronda_plazuela_10bis.getC_Id());
         assertThat(incidenciasUser.size(), is(2));
         assertThat(incidenciasUser.get(0).getIncidencia(), allOf(
                 hasProperty("descripcion", is("incidencia_1")),
@@ -613,12 +654,12 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeIncidsOpenByComu_2() throws EntityException
     {
-        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(IncidenciaTestUtils.calle_la_fuente_11.getC_Id());
+        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(pedro.getUserName(), calle_la_fuente_11.getC_Id());
         assertThat(incidenciasUser.size(), is(1));
         assertThat(incidenciasUser.get(0).getIncidencia(), hasProperty("descripcion", is("incidencia_2")));
         assertThat(incidenciasUser.get(0).getIncidencia().getImportanciaAvg(), is((float) 3.5));
 
-        incidenciasUser = incidenciaManager.seeIncidsOpenByComu(calle_plazuela_23.getC_Id());
+        incidenciasUser = incidenciaManager.seeIncidsOpenByComu(paco.getUserName(), calle_plazuela_23.getC_Id());
         assertThat(incidenciasUser.size(), is(1));
         assertThat(incidenciasUser.get(0).getIncidencia(), hasProperty("descripcion", is("incidencia_4")));
         assertThat(incidenciasUser.get(0).getIncidencia().getImportanciaAvg(), is((float) 4));
@@ -631,7 +672,7 @@ public abstract class IncidenciaManagerTest {
     public void testSeeIncidsOpenByComu_3() throws EntityException
     {
         // Caso: no incidencias en la comunidad.
-        List<IncidenciaUser> incidenciaUsers = incidenciaManager.seeIncidsOpenByComu(999L);
+        List<IncidenciaUser> incidenciaUsers = incidenciaManager.seeIncidsOpenByComu(pedro.getUserName(), 999L);
         assertThat(incidenciaUsers.size(), is(0));
     }
 
@@ -641,8 +682,18 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeResolucion_1() throws EntityException
     {
-        // Caso: OK . TODO:
-
+        // Premisa: resolucion sin avances.
+        Resolucion resolucion = incidenciaManager.seeResolucion(paco.getUserName(), 5L);
+        assertThat(resolucion,
+                allOf(
+                        hasProperty("incidencia",
+                                allOf(
+                                        hasProperty("incidenciaId", is(5L)),
+                                        hasProperty("comunidad", hasProperty("c_Id", is(4L)))
+                                ))
+                )
+        );
+        assertThat(resolucion.getAvances().size(), is(0));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -661,33 +712,5 @@ public abstract class IncidenciaManagerTest {
     }
 
 //    ================================ Helper methods =======================
-
-    @SuppressWarnings("SameParameterValue")
-    private void checkCommonIncidImpByUser(IncidImportancia incidImportancia, Usuario userInSession, long comunidadId, long incidenciaId, String rolInComunidad)
-    {
-        assertThat(incidImportancia,
-                allOf(
-                        hasProperty("incidencia",
-                                allOf(
-                                        hasProperty("incidenciaId", is(incidenciaId)),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(comunidadId)))
-                                )
-                        ),
-                        hasProperty("userComu",
-                                allOf(
-                                        hasProperty("usuario",
-                                                allOf(
-                                                        hasProperty("userName", is(userInSession.getUserName())),
-                                                        hasProperty("alias", is(userInSession.getAlias())),
-                                                        hasProperty("uId", is(userInSession.getuId()))
-                                                )
-                                        ),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(comunidadId))),
-                                        hasProperty("roles", is(rolInComunidad))
-                                )
-                        )
-                )
-        );
-    }
 
 }

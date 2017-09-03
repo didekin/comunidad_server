@@ -1,15 +1,14 @@
 package com.didekin.common.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-/**w
+/**
+ * w
  * User: pedro@didekin
  * Date: 05/11/15
  * Time: 15:59
@@ -20,10 +19,6 @@ public class RepositoryConfig {
 
     private static final String JDBC_URL_DEFAULT_PORT = "3306";
     private static final String SSL_DEFAULT_VALUE = "useSSL=false";
-
-    @SuppressWarnings("unused")
-    @Autowired
-    Environment env; // TODO: testar quitarlo.
 
     @Bean
     public DataSource dataSource()
@@ -46,8 +41,8 @@ public class RepositoryConfig {
         ds.setUrl("jdbc:mysql://"
                 + System.getenv("RDS_HOSTNAME")
                 + ":" + jdbcUrlPort
-                + "/"  + System.getenv("RDS_DB_NAME")
-                + "?"  + SSL_DEFAULT_VALUE
+                + "/" + System.getenv("RDS_DB_NAME")
+                + "?" + SSL_DEFAULT_VALUE
         );
         ds.setUsername(System.getenv("RDS_USERNAME"));
         ds.setPassword(System.getenv("RDS_PASSWORD"));

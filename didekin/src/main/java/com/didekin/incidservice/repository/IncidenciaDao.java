@@ -5,6 +5,7 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.AmbitoIncidencia;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
 import com.didekinlib.model.incidencia.dominio.IncidImportancia;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
@@ -36,6 +37,7 @@ import static com.didekin.incidservice.repository.IncidenciaSql.COUNT_RESOLUCION
 import static com.didekin.incidservice.repository.IncidenciaSql.DELETE_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_PK;
+import static com.didekin.incidservice.repository.IncidenciaSql.IS_IMPORTANCIA_USER;
 import static com.didekin.incidservice.repository.IncidenciaSql.IS_INCID_OPEN;
 import static com.didekin.incidservice.repository.IncidenciaSql.MODIFY_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.MODIFY_INCID_IMPORTANCIA;
@@ -130,6 +132,12 @@ public class IncidenciaDao {
         );
     }
 
+    int isImportanciaUser(long userId, long incidenciaId)
+    {
+        logger.debug("isImportanciaUser()");
+        return jdbcTemplate.queryForObject(IS_IMPORTANCIA_USER.toString(), new Object[]{userId, incidenciaId}, Integer.class);
+    }
+
     boolean isIncidenciaOpen(long incidenciaId)
     {
         logger.debug("isIncidenciaOpen()");
@@ -182,7 +190,7 @@ public class IncidenciaDao {
                 )
                 .findFirst().orElseThrow(() -> new EntityException(RESOLUCION_WRONG_INIT));
 
-        if (rowsUpdated == 0){
+        if (rowsUpdated == 0) {
             throw new EntityException(INCIDENCIA_NOT_FOUND);
         }
         if (resolucion.getAvances() != null && resolucion.getAvances().size() == 1) {
@@ -318,19 +326,19 @@ public class IncidenciaDao {
     /**
      * This method queries the incidencia_comunidad_view exclusively; therefore data pertaining to the user level,
      * such as the importancia_avg are not available in the returned object.
-     *
+     * <p>
      * Postconditions:
-     1. An Incidencia instance is returned with:
-     - incidenciaId.
-     - comunidad.c_Id.
-     - comunidad.tipoVia.
-     - comunidad.nombreVia
-     - comunidad.numero.
-     - comunidad.sufijoNumero
-     - userName
-     - descripcion
-     - fechaAlta
-     - fechaCierra NULL (it's open).
+     * 1. An Incidencia instance is returned with:
+     * - incidenciaId.
+     * - comunidad.c_Id.
+     * - comunidad.tipoVia.
+     * - comunidad.nombreVia
+     * - comunidad.numero.
+     * - comunidad.sufijoNumero
+     * - userName
+     * - descripcion
+     * - fechaAlta
+     * - fechaCierre (NULL if it's open).
      */
     Incidencia seeIncidenciaById(long incidenciaId) throws EntityException
     {
@@ -363,60 +371,76 @@ public class IncidenciaDao {
     }
 
     /**
-     Postconditions:
-     1. An IncidImportancia instance is returned with:
-       - incidencia.incidenciaId.
-       - incidencia.comunidad.c_Id.
-       - usuarioComunidad.usuario.userName (user in session).
-       - usuarioComunidad.usuario.alias.
-       - usuarioComunidad.usuario.uId.
-       - usuarioComunidad.comunidad.c_Id.
-       - incidImportancia.importancia.
-       - incidImportancia.fechaAlta
+     * Preconditions:
+     * 1. The incidencia is open.
+     * Postconditions:
+     * @return an IncidAndResolBundle instance is returned with:
+     * - incidImportancia.incidencia.incidenciaId.
+     * - incidImportancia.incidencia.userName (user who registered the incidencia).
+     * - incidImportancia.incidencia.descripcion.
+     * - incidImportancia.incidencia.ambito.ambitoId.
+     * - incidImportancia.incidencia.fechaAlta.
+     * - incidImportancia.incidencia.comunidad.c_Id.
+     * - incidImportancia.incidencia.comunidad.tipoVia.
+     * - incidImportancia.incidencia.comunidad.nombreVia.
+     * - incidImportancia.incidencia.comunidad.numero.
+     * - incidImportancia.incidencia.comunidad.sufijoNumero.
+     * - incidImportancia.usuarioComunidad.usuario.uId.
+     * - incidImportancia.usuarioComunidad.usuario.userName (user who ranked the importancia in this instance-record).
+     * - incidImportancia.usuarioComunidad.usuario.alias.
+     * - incidImportancia.usuarioComunidad.roles.
+     * - incidImportancia.importancia.
+     * - incidImportancia.fechaAlta
+     * - hasResolucion (from fechaAltaResolucion == null).
+     * 2. If the user hasn't registered an incidImportancia record previously, the incidenciaResolBundle contains also:
+     * - incidImportancia.importancia == 0.
+     * - incidImportancia.fechaAlta == null.
+     *
+     * @throws EntityException INCID_IMPORTANCIA_NOT_FOUND, if there isn't incidImportancia record for the user or the incidencia is closed.
+     *
      */
-    IncidImportancia seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
+    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
     {
-        logger.debug("seeIncidImportancia()");
-        IncidImportancia incidImportancia;
+        logger.debug("seeIncidImportanciaByUser()");
+
         try {
-            incidImportancia = jdbcTemplate.queryForObject(
+            return jdbcTemplate.queryForObject(
                     SEE_IMPORTANCIA_BY_USER.toString(),
                     new Object[]{userName, incidenciaId},
-                    (rs, rowNum) -> {
-                        Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                                .c_id(rs.getLong("c_id"))
-                                .build();
-
-                        return new IncidImportancia.IncidImportanciaBuilder(
-                                new Incidencia.IncidenciaBuilder()
-                                        .incidenciaId(rs.getLong("incid_id"))
-                                        .comunidad(comunidad)
-                                        .build())
-                                .usuarioComunidad(
-                                        new UsuarioComunidad.UserComuBuilder(
-                                                comunidad,
-                                                new Usuario.UsuarioBuilder()
-                                                        .uId(rs.getLong("u_id"))
-                                                        .userName(rs.getString("user_name"))
-                                                        .alias(rs.getString("alias"))
-                                                        .build())
-                                                .build())
-                                .importancia(rs.getShort("importancia"))
-                                .fechaAlta(rs.getTimestamp("fecha_alta"))
-                                .build();
-                    });
+                    (rs, rowNum) -> doIncidImpResolView(rs));
         } catch (EmptyResultDataAccessException e) {
             throw new EntityException(INCID_IMPORTANCIA_NOT_FOUND);
         }
-        return incidImportancia;
     }
 
+    /**
+     * Postconditions:
+     * A list of the closed incidencias in the comunidad, with fechaAlta NOT OLDER than 2 years,
+     * is returned as a list of IncidenciaUser instances, with the following fields:
+     * - incidencia.incidenciaId.
+     * - incidencia.comunidad.c_id.
+     * - incidencia.userName (user who registered the incidencia).
+     * - incidencia.descripcion.
+     * - incidencia.ambito.ambitoId.
+     * - incidencia.importanciaAvg.
+     * - incidencia.fechaAlta.
+     * - incidencia.fechaCierre (not null, by definition).
+     * - usuario.uId. (user who registered the incidencia)
+     * - usuario.alias (user who registered the incidencia).
+     */
     List<IncidenciaUser> seeIncidsClosedByComu(long comunidadId)
     {
         logger.debug("seeIncidsClosedByComu()");
         return jdbcTemplate.query(SEE_INCIDS_CLOSED_BY_COMU.toString(), new Object[]{comunidadId}, (rs, rowNum) -> doBasicIncidenciaUser(rs));
     }
 
+    /**
+     * Postconditions:
+     * 1. A list of the closed incidencias in the comunidad, as produced by
+     * {@link #seeIncidsClosedByComu(long comunidadId) seeIncidsClosedByComu method}
+     * plus:
+     * - incidenciaUser.fechaAltaResolucion.
+     */
     List<IncidenciaUser> seeIncidsOpenByComu(long comunidadId)
     {
         logger.debug("seeIncidsOpenByComu()");
@@ -432,6 +456,18 @@ public class IncidenciaDao {
         );
     }
 
+    /**
+     * A Resolucion instance is returned with:
+     * - incidencia.incidencia_id
+     * - userName.
+     * - descripcion.
+     * - costeEstimado.
+     * - costeFinal.
+     * - fechaAlta.
+     * - fechaPrevista.
+     * - moraleja.
+     * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
+     */
     Resolucion seeResolucion(final long resolucionId) throws EntityException
     {
         logger.debug("seeResolucion()");
@@ -457,7 +493,13 @@ public class IncidenciaDao {
         }
     }
 
-    List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)   // TODO: testar.
+    /**
+     * @return list of ImportanciaUser instances with:
+     * - userAlias
+     * - importancia
+     * @throws EntityException INCIDENCIA_NOT_FOUND.
+     */
+    List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)
     {
         logger.debug("seeUserComusImportancia()");
         return Stream.of(
@@ -467,28 +509,6 @@ public class IncidenciaDao {
         ).findFirst()
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
-    }
-
-//    =========================== HELPERS ==================================
-
-    private void doCatchIncidenciaUserIntegrity(DataAccessException de) throws EntityException
-    {
-        if (de.getMessage().contains("FOREIGN KEY (`c_id`, `u_id`)")) {
-            logger.error(de.getMessage());
-            throw new EntityException(USERCOMU_WRONG_INIT);
-        }
-        if (de.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
-            logger.error(de.getMessage());
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
-        }
-    }
-
-    private void doCatchDuplicateResolucionForIncid(DataAccessException e) throws EntityException
-    {
-        if (e.getMessage().contains(EntityException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
-            logger.error(e.getMessage());
-            throw new EntityException(RESOLUCION_DUPLICATE);
-        }
     }
 
 //    =========================== MAPPERS ==================================
@@ -511,13 +531,7 @@ public class IncidenciaDao {
                                     )
                                     .build()
                     )
-                    .redactor(
-                            new Usuario.UsuarioBuilder()
-                                    .uId(rs.getLong("u_id"))
-                                    .userName(rs.getString("user_name"))
-                                    .alias(rs.getString("alias"))
-                                    .build()
-                    )
+                    .redactor(doUsuarioFromDb(rs))
                     .fechaAlta(rs.getTimestamp("fecha_alta"))
                     .build();
         }
@@ -552,17 +566,74 @@ public class IncidenciaDao {
                 .fechaCierre(rs.getTimestamp("fecha_cierre"))
                 .build();
 
-        Usuario usuario = null;
-
-        if (rs.getString("alias") != null) {
-            usuario = new Usuario.UsuarioBuilder()
-                    .uId(rs.getLong("u_id"))
-                    .alias(rs.getString("alias"))
-                    .build();
-        }
+        final Usuario usuario = new Usuario.UsuarioBuilder()
+                .uId(rs.getLong("u_id"))
+                .alias(rs.getString("alias"))
+                .build();
 
         return new IncidenciaUser.IncidenciaUserBuilder(incidencia)
                 .usuario(usuario)
+                .build();
+    }
+
+    private void doCatchIncidenciaUserIntegrity(DataAccessException de) throws EntityException
+    {
+        if (de.getMessage().contains("FOREIGN KEY (`c_id`, `u_id`)")) {
+            logger.error(de.getMessage());
+            throw new EntityException(USERCOMU_WRONG_INIT);
+        }
+        if (de.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
+            logger.error(de.getMessage());
+            throw new EntityException(INCIDENCIA_NOT_FOUND);
+        }
+    }
+
+    private void doCatchDuplicateResolucionForIncid(DataAccessException e) throws EntityException
+    {
+        if (e.getMessage().contains(EntityException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
+            logger.error(e.getMessage());
+            throw new EntityException(RESOLUCION_DUPLICATE);
+        }
+    }
+
+    private static IncidAndResolBundle doIncidImpResolView(ResultSet rs) throws SQLException
+    {
+        Comunidad comunidad = new Comunidad.ComunidadBuilder()
+                .c_id(rs.getLong("c_id"))
+                .tipoVia(rs.getString("comunidad_tipo_via"))
+                .nombreVia(rs.getString("comunidad_nombre_via"))
+                .numero(rs.getShort("comunidad_numero"))
+                .sufijoNumero(rs.getString("comunidad_sufijo"))
+                .build();
+
+        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(
+                new Incidencia.IncidenciaBuilder()
+                        .incidenciaId(rs.getLong("incid_id"))
+                        .comunidad(comunidad)
+                        .userName(rs.getString("incid_user_initiator"))
+                        .descripcion(rs.getString("descripcion"))
+                        .ambitoIncid(new AmbitoIncidencia(rs.getShort("ambito")))
+                        .fechaAlta(rs.getTimestamp("fecha_alta_incidencia"))
+                        .build())
+                .usuarioComunidad(
+                        new UsuarioComunidad.UserComuBuilder(
+                                comunidad,
+                                doUsuarioFromDb(rs))
+                                .roles(rs.getString("roles"))
+                                .build())
+                .importancia(rs.getShort("importancia"))
+                .fechaAlta(rs.getTimestamp("fecha_alta"))
+                .build();
+
+        return new IncidAndResolBundle(incidImportancia, rs.getTimestamp("fecha_alta_resolucion") != null);
+    }
+
+    private static Usuario doUsuarioFromDb(ResultSet rs) throws SQLException
+    {
+        return new Usuario.UsuarioBuilder()
+                .uId(rs.getLong("u_id"))
+                .userName(rs.getString("user_name"))
+                .alias(rs.getString("alias"))
                 .build();
     }
 }

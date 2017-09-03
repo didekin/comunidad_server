@@ -93,59 +93,18 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testCloseIncidencia_1() throws EntityException, IOException
     {
-        // Caso OK: añadimos un avance y cerramos la incidencia.
-        // Premisas.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        assertThat(resolucion.getAvances().size(), is(2));
-        Incidencia incidencia = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia().getIncidencia();
-        assertThat(incidencia.getFechaCierre(), nullValue());
-
-        // Nuevos datos.
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
-        List<Avance> avances = new ArrayList<>(1);
-        avances.add(avance);
-        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
-        resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
-                .copyResolucion(resolucion)
-                .fechaPrevista(fechaPrevNew)
-                .costeEstimado(1111)
-                .avances(avances)
-                .build();
-
-        assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(3));
-        resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        assertThat(resolucion.getAvances().size(), is(3));
-        // No encuentra la incidencia porque ya está cerrada.
-        assertThat(isIncidenciaFound(ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute()), is(false));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testCloseIncidencia_2() throws EntityException, IOException
-    {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        assertThat(resolucion.getAvances().size(), is(2));
         Incidencia incidencia = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia().getIncidencia();
         assertThat(incidencia.getFechaCierre(), nullValue());
-
         // Nuevos datos.
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("").userName(resolucion.getUserName()).build();
-        List<Avance> avances = new ArrayList<>(1);
-        avances.add(avance);
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
-                .avances(avances)
+                .avances(null)
                 .build();
         // Devuelve 2: no modifica avances.
         assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(2));
-        resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        assertThat(resolucion.getAvances().size(), CoreMatchers.is(2));
-        // No encuentra la incidencia porque ya está cerrada.
-        assertThat(isIncidenciaFound(ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute()), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -467,7 +426,7 @@ abstract class IncidenciaControllerTest {
 
         Response<Integer> response = ENDPOINT.modifyResolucion(tokenPaco(), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(ROLES_NOT_FOUND.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -811,7 +770,7 @@ abstract class IncidenciaControllerTest {
         // 2. Existe incidencia, existe usuario, no existe relación usuario_comunidad, ni, por lo tanto, usuario_incidencia.
         response = ENDPOINT.seeIncidImportancia(tokenPedro(), 5L).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(ROLES_NOT_FOUND.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -851,23 +810,6 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), IncidenciaTestUtils.calle_olmo_55.getC_Id()).execute().body();
         assertThat(incidencias.size(), is(1));
-        assertThat(incidencias.get(0).getIncidencia(), allOf(
-                hasProperty("descripcion", is("incidencia_6_6")),
-                hasProperty("ambitoIncidencia", is(new AmbitoIncidencia((short) 33))),
-                hasProperty("importanciaAvg", is(0f)),
-                hasProperty("incidenciaId", is(6L)),
-                hasProperty("comunidad", Is.is(IncidenciaTestUtils.calle_olmo_55)),
-                hasProperty("userName", Is.is(IncidenciaTestUtils.paco.getUserName())),
-                hasProperty("fechaAlta", notNullValue()),
-                hasProperty("fechaCierre", notNullValue())
-        ));
-        assertThat(incidencias.get(0),
-                hasProperty("usuario", allOf(
-                        hasProperty("uId", Is.is(IncidenciaTestUtils.paco.getuId())),
-                        hasProperty("userName", nullValue()),
-                        hasProperty("alias", Is.is(IncidenciaTestUtils.paco.getAlias()))
-                ))
-        );
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -1062,17 +1004,17 @@ abstract class IncidenciaControllerTest {
 
     private String tokenPedro() throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(IncidenciaTestUtils.pedro.getUserName(), IncidenciaTestUtils.pedro.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(IncidenciaTestUtils.pedro.getUserName(), IncidenciaTestUtils.pedro.getPassword());
     }
 
     private String tokenLuis() throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(IncidenciaTestUtils.luis.getUserName(), IncidenciaTestUtils.luis.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(IncidenciaTestUtils.luis.getUserName(), IncidenciaTestUtils.luis.getPassword());
     }
 
     private String tokenPaco() throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(IncidenciaTestUtils.paco.getUserName(), IncidenciaTestUtils.paco.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(IncidenciaTestUtils.paco.getUserName(), IncidenciaTestUtils.paco.getPassword());
     }
 
     private boolean isIncidenciaFound(Response<?> responseEndPoint) throws IOException

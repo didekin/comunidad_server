@@ -209,13 +209,11 @@ public abstract class UserComuControllerTest {
     public void testIsOldestAdmonUserComu_1() throws IOException, EntityException
     {
         // Oldest.
-        String token = new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader("pedro@pedro.com", "password3");
-        assertThat(sujetosService.getHighestFunctionalRol("pedro@pedro.com", 1L), is(PROPIETARIO.function));
+        String token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("pedro@pedro.com", "password3");
         assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 1L).execute().body(), is(true));
 
         // ADM.
-        token = new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader("luis@luis.com", "password5");
-        assertThat(sujetosService.getHighestFunctionalRol("luis@luis.com", 1L), is(ADMINISTRADOR.function));
+        token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("luis@luis.com", "password5");
         assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 1L).execute().body(), is(true));
 
         // luis: PRO, not oldest, in comunidad 2.
@@ -224,7 +222,6 @@ public abstract class UserComuControllerTest {
                 .planta("planta2").puerta("puertaB").roles(PROPIETARIO.function).build();
         int isInserted = USERCOMU_ENDPOINT.regUserComu(token, usuarioComunidad).execute().body();
         assertThat(isInserted, is(1));
-        assertThat(sujetosService.getHighestFunctionalRol("luis@luis.com", 2L), is(PROPIETARIO.function));
         assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 2L).execute().body(), is(false));
     }
 
@@ -233,7 +230,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testIsOldestAdmonUserComu_2() throws IOException, EntityException
     {
-        String token = new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader("pedro@pedro.com", "password3");
+        String token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("pedro@pedro.com", "password3");
         Response<Boolean> response = USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 999L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
@@ -309,7 +306,7 @@ public abstract class UserComuControllerTest {
 
         // The password encoded in the http request for an accessToken should be the original one, not encoded.
         boolean isRegOk = USERCOMU_ENDPOINT.regComuAndUserComu(
-                new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(USER_JUAN.getUserName(), USER_JUAN.getPassword()),
+                new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_JUAN.getUserName(), USER_JUAN.getPassword()),
                 usuarioCom)
                 .execute().body();
 

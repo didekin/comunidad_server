@@ -37,12 +37,9 @@ import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MOD
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * User: pedro@didekin
@@ -83,6 +80,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     @Override
     public Usuario completeUser(String userName) throws EntityException
     {
+        logger.debug("completeUser()");
         return new Usuario.UsuarioBuilder()
                 .copyUsuario(getUserByUserName(userName))
                 .password(null)
@@ -90,13 +88,10 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public UsuarioComunidad completeWithHighestRol(String userName, long comunidadId) throws EntityException
+    public UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws EntityException
     {
-        logger.debug("completeWithHighestRol()");
-        return new UsuarioComunidad.UserComuBuilder(
-                new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                new Usuario.UsuarioBuilder().copyUsuario(completeUser(userName)).build()
-        ).roles(getHighestFunctionalRol(userName, comunidadId)).build();
+        logger.debug("completeWithUserComuRoles()");
+        return usuarioDao.getUserComuRolesByUserName(userName, comunidadId);
     }
 
     @Override
@@ -172,6 +167,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     @Override
     public Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName)
     {
+        logger.debug("getAccessTokenByUserName()");
         return tokenStore.findTokensByUserName(userName)
                 .stream()
                 .filter(oAuth2Token -> oAuth2Token.getValue() != null)
@@ -219,21 +215,6 @@ public class UsuarioManager implements UsuarioManagerIf {
                 .findFirst().get();
     }
 
-    /**
-     * The method return the first string in the rol array. The order corresponds to the definition
-     * of the roles variable in the database: SET('adm', 'pre', 'pro', 'inq').
-     * The roles 'adm' and 'pre' are hierarchically equivalent.
-     */
-    @Override
-    public String getHighestFunctionalRol(String userName, long comunidadId) throws EntityException
-    {
-        logger.debug("getHighestFunctionalRol()");
-
-        String[] functionalRoles = usuarioDao.getFuncionRolesArrayByUserComu(userName, comunidadId);
-        checkState(functionalRoles.length > 0);
-        return functionalRoles[0];
-    }
-
     @Override
     public List<String> getRolesSecurity(Usuario usuario)
     {
@@ -259,8 +240,8 @@ public class UsuarioManager implements UsuarioManagerIf {
     @Override
     public UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws EntityException
     {
-        logger.debug("getUserComuByUserAndComu()");
-        UsuarioComunidad usuarioComunidad = usuarioDao.getUserComuByUserAndComu(userName, comunidadId);
+        logger.debug("getUserComuFullByUserAndComu()");
+        UsuarioComunidad usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
         if (usuarioComunidad == null) {
             // Si la comunidad no existe, la búsqueda lanza una excepción.
             comunidadDao.getComunidadById(comunidadId);
@@ -277,14 +258,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         } catch (UsernameNotFoundException e) {
             throw new EntityException(USER_NAME_NOT_FOUND);
         }
-    }
-
-    @Override
-    public boolean hasAuthorityAdmInComunidad(String userName, long comunidadId) throws EntityException
-    {
-        logger.debug("getHighestFuncitonalRol()");
-        String rol = getHighestFunctionalRol(userName, comunidadId);
-        return rol.equals(ADMINISTRADOR.function) || rol.equals(PRESIDENTE.function);
     }
 
     @Override

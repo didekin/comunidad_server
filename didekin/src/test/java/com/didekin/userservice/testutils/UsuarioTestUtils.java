@@ -161,23 +161,23 @@ public final class UsuarioTestUtils {
 
     public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, RetrofitHandler retrofitHandler) throws IOException
     {
-        return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(usuario.getUserName(),
+        return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
                 usuario.getPassword())).execute().body();
     }
 
     public static String tokenPedro(RetrofitHandler retrofitHandler) throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(pedro.getUserName(), pedro.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
     }
 
     public static String tokenLuis(RetrofitHandler retrofitHandler) throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(luis.getUserName(), luis.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
     }
 
     public static String tokenPepe(RetrofitHandler retrofitHandler) throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(USER_PEPE.getUserName(), USER_PEPE.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());
     }
 
     public static void checkGeneratedPassword(String password)

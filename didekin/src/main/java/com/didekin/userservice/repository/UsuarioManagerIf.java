@@ -20,7 +20,7 @@ public interface UsuarioManagerIf {
 
     Usuario completeUser(String userName) throws EntityException;
 
-    UsuarioComunidad completeWithHighestRol(String userName, long comunidadId) throws EntityException;
+    UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws EntityException;
 
     boolean deleteAccessToken(String accessTkValue) throws EntityException;
 
@@ -50,8 +50,6 @@ public interface UsuarioManagerIf {
 
     List<String> getGcmTokensByComunidad(long comunidadId);
 
-    String getHighestFunctionalRol(String userName, long comunidadId) throws EntityException;
-
     /**
      * From the functional role, it obtains the security role.
      */
@@ -62,8 +60,6 @@ public interface UsuarioManagerIf {
     Usuario getUserByUserName(String email) throws EntityException;
 
     UsuarioDao getUsuarioDao();
-
-    boolean hasAuthorityAdmInComunidad(String userName, long comunidadId) throws EntityException;
 
     boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException;
 

@@ -2,7 +2,6 @@ package com.didekin.incidservice.repository;
 
 import com.didekin.common.EntityException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -11,12 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.google.common.base.Preconditions.checkState;
-import static java.util.stream.Stream.of;
 
 /**
  * User: pedro@didekin
@@ -39,7 +33,7 @@ public class UserManagerConnector {
     boolean checkAuthorityInComunidad(String userName, long comunidadId) throws EntityException
     {
         logger.debug("checkAuthorityInComunidad()");
-        return usuarioManager.hasAuthorityAdmInComunidad(userName, comunidadId);
+        return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();
     }
 
     /**
@@ -70,24 +64,9 @@ public class UserManagerConnector {
         return usuarioManager.completeUser(userName);
     }
 
-    UsuarioComunidad completeWithHighestRol(String userName, Comunidad comunidad)
+    UsuarioComunidad completeUserAndComuRoles(String userName, long comunidadId)
     {
-        logger.debug("completeWithHighestRol()");
-        return usuarioManager.completeWithHighestRol(userName, comunidad.getC_Id());
-    }
-
-    public String addHighestFunctionalRol(String userName, long comunidadId) throws EntityException
-    {
-        logger.debug("addHighestFunctionalRol()");
-        return usuarioManager.getHighestFunctionalRol(userName, comunidadId);
-    }
-
-    UsuarioComunidad getUserComunidad(String userName, long comunidadId)
-    {
-        logger.debug("getUserNameFromAuthentication()");
-        return of(usuarioManager.getUserComuByUserAndComu(userName, comunidadId))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new EntityException(USERCOMU_WRONG_INIT));
+        logger.debug("completeWithUserComuRoles()");
+        return usuarioManager.completeWithUserComuRoles(userName, comunidadId);
     }
 }

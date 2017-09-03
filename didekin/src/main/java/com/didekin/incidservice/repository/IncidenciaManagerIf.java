@@ -40,19 +40,21 @@ public interface IncidenciaManagerIf {
 
     Incidencia seeIncidenciaById(long incidenciaId) throws EntityException;
 
-    IncidAndResolBundle seeIncidImportancia(String userName, long incidenciaId) throws EntityException;
+    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException;
 
-    List<IncidenciaUser> seeIncidsOpenByComu(long comunidadId);
+    List<IncidenciaUser> seeIncidsOpenByComu(String userNameFromAuthentication, long comunidadId);
 
     Resolucion seeResolucion(String userNameFromAuthentication, long resolucionId) throws EntityException;
 
     int modifyResolucion(String userName, Resolucion resolucion) throws EntityException;
 
-    List<IncidenciaUser> seeIncidsClosedByComu(long comunidadId);
+    List<IncidenciaUser> seeIncidsClosedByComu(String userNameFromAuthentication, long comunidadId);
 
     List<ImportanciaUser> seeUserComusImportancia(String userNameFromAuthentication, long incidenciaId) throws EntityException;
 
     UserManagerConnector getUsuarioConnector();
 
     boolean checkIncidenciaOpen(long incidenciaId);
+
+    boolean checkIncidImportanciaInDb(String userNameInSession, long incidenciaId);
 }

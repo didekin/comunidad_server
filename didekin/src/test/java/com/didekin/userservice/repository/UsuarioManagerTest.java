@@ -8,10 +8,8 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.Rol;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,7 +49,6 @@ import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.ROLES_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -68,7 +65,7 @@ import static org.junit.Assert.fail;
  * User: pedro@didekin
  * Date: 20/04/15
  * Time: 16:23
- *
+ * <p>
  * See in UsuarioControllerTest:
  * testDeleteAccessToken_1(),
  * test_deleteAccessTokenByUserName_1(),
@@ -118,44 +115,9 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testCompleteUserWithHighestRol_1() throws EntityException
+    public void test_CompleteWithUserComuRoles() throws Exception
     {
-        UsuarioComunidad userComu = usuarioManager.completeWithHighestRol("luis@luis.com", 1L);
-        assertThat(userComu, allOf(
-                hasProperty("comunidad", hasProperty("c_Id", is(1L))),
-                hasProperty("usuario", hasProperty("userName", is("luis@luis.com"))),
-                hasProperty("roles", is(ADMINISTRADOR.function))
-        ));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testCompleteUserWithHighestRol_2()
-    {
-        // Caso: no existe usuario.
-        try {
-            usuarioManager.completeWithHighestRol("no_existo", 1L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
-        }
-
-        // Caso: no existe comunidad.
-        try {
-            usuarioManager.completeWithHighestRol("luis@luis.com", 999L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
-        }
-
-        // Caso: existen usuario y comunidad, pero no hay relación entre ambos.
-        try {
-            usuarioManager.completeWithHighestRol("luis@luis.com", 4L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(ROLES_NOT_FOUND));
-        }
+        assertThat(usuarioManager.completeWithUserComuRoles(luis.getUserName(), 1L).getRoles(), is("adm,pre,pro"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -368,16 +330,6 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_getHighestFunctionalRol() throws EntityException
-    {
-        assertThat(usuarioManager.getHighestFunctionalRol("pedro@pedro.com", 3L), is(ADMINISTRADOR.function));
-        assertThat(usuarioManager.getHighestFunctionalRol("luis@luis.com", 1L), is(ADMINISTRADOR.function));
-        assertThat(usuarioManager.getHighestFunctionalRol("juan@noauth.com", 2L), is(INQUILINO.function));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void test_getRolesSecurity()
     {
         List<String> authorities = usuarioManager.getRolesSecurity(
@@ -424,16 +376,6 @@ public abstract class UsuarioManagerTest {
         assertThat(usuario.getuId() > 0L, is(true));
         assertThat(usuario.getAlias(), is(pedro.getAlias()));
         assertThat(new BCryptPasswordEncoder().matches(pedro.getPassword(), usuario.getPassword()), is(true));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_hasAuthorityAdmInComunidad() throws EntityException
-    {
-        assertThat(usuarioManager.hasAuthorityAdmInComunidad("pedro@pedro.com", 1L), is(true));
-        assertThat(usuarioManager.hasAuthorityAdmInComunidad("juan@noauth.com", 2L), is(false));
-        assertThat(usuarioManager.hasAuthorityAdmInComunidad("luis@luis.com", 1L), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -727,7 +669,7 @@ public abstract class UsuarioManagerTest {
         // Valid new password.
         assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(newPswd).build()), is(true));
         // Check mail.
-        Thread.sleep(9000);
+        Thread.sleep(10000);
         javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
         // Cleaning and closing.
         javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.

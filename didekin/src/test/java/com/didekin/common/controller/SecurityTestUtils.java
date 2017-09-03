@@ -43,7 +43,7 @@ public final class SecurityTestUtils {
                 PASSWORD_GRANT).execute();
     }
 
-    public String getBearerAccessTokenHeader(String userName, String password) throws IOException
+    public String doAuthHeaderFromRemoteToken(String userName, String password) throws IOException
     {
         Response<SpringOauthToken> response = getPasswordUserToken(userName, password);
 

@@ -91,7 +91,7 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("isOldestOrAdmonUserComu()");
         return usuarioService.isOldestUserComu(getUserFromDb(usuarioService), comunidadId)
-                || usuarioService.hasAuthorityAdmInComunidad(getUserNameFromAuthentication(), comunidadId);
+                || usuarioService.completeWithUserComuRoles(getUserNameFromAuthentication(), comunidadId).hasAdministradorAuthority();
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)

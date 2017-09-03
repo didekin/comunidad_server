@@ -10,8 +10,8 @@ import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
-import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.oauth2.SpringOauthToken;
 import com.didekinlib.http.retrofit.Oauth2EndPoints;
 import com.didekinlib.http.retrofit.RetrofitHandler;
@@ -21,7 +21,6 @@ import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -37,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
@@ -54,6 +55,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getUserData;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.insertUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
@@ -96,11 +98,6 @@ public abstract class UsuarioControllerTest {
         USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
     }
 
-    @After
-    public void clear()
-    {
-    }
-
     //    ==============================  USERSERVICE TESTS ========================================
 
     /* UserService tests requiring http client. */
@@ -124,16 +121,29 @@ public abstract class UsuarioControllerTest {
         assertThat(usuarioManager.getAccessToken(token.getValue()), nullValue());
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_GetAccessToken() throws Exception
     {
-        // TODO: tst.
+        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), pedro.getPassword()).body();
+        assertThat(usuarioManager.getAccessToken(token.getValue()).getValue(), is(token.getValue()));
+        assertThat(usuarioManager.getAccessToken(token.getValue()).getRefreshToken().getValue(), is(token.getRefreshToken().getValue()));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_GetAccessTokenByUserName() throws Exception
     {
-        // TODO: tst.
+        // No existe usuario in BD.
+        assertThat(usuarioManager.getAccessTokenByUserName("noexisto@no.com").isPresent(), is(false));
+
+        // Existe usuario.
+        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), pedro.getPassword()).body();
+        Optional<OAuth2AccessToken> oAuth2AccessToken = usuarioManager.getAccessTokenByUserName(pedro.getUserName());
+        assertThat(oAuth2AccessToken.isPresent(), is(true));
+        assertThat(oAuth2AccessToken.get().getValue(), is(token.getValue()));
     }
 
 //    ===================================== CONTROLLER TESTS =======================================
@@ -238,7 +248,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_1() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
 
@@ -258,7 +268,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_2() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 =
                 getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
@@ -287,7 +297,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_3() throws IOException, EntityException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         // Change userName with usuarioDao.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
@@ -310,7 +320,7 @@ public abstract class UsuarioControllerTest {
     public void testModifyUserGcmToken() throws IOException
     {
         Usuario usuario = new Usuario.UsuarioBuilder().uId(5L).userName("luis@luis.com").password("password5").build();
-        String tokenLuis = new SecurityTestUtils(retrofitHandler).getBearerAccessTokenHeader(usuario.getUserName(), usuario.getPassword());
+        String tokenLuis = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(), usuario.getPassword());
         assertThat(USER_ENDPOINT.modifyUserGcmToken(tokenLuis, "GCMtoKen1234X").execute().body(),
                 is(1));
         assertThat(USER_ENDPOINT.getGcmToken(tokenLuis).execute().body().getToken(), is("GCMtoKen1234X"));
