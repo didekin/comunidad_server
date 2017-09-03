@@ -99,17 +99,6 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCountResolucionByIncid_1() throws EntityException, InterruptedException
-    {
-        assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
-        assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));
-        assertThat(incidenciaDao.countResolucionByIncid(5L), is(1));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
     public void testDeleteIndcidencia_1() throws EntityException
     {
         // Existe incidencia.
@@ -482,19 +471,19 @@ public abstract class IncidenciaDaoTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
+        // Data.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(4L);
         incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 1)
                 .usuarioComunidad(new UsuarioComunidad.UserComuBuilder(incidencia.getComunidad(), juan).build())
                 .build();
-
-        // Registro el nuevo par incidencia_usuario, y verifico.
+        // Exec.
         assertThat(incidenciaDao.regIncidImportancia(incidImportancia), is(1));
         // Check.
         incidImportancia = incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L).getIncidImportancia();
         assertThat(incidImportancia.getIncidencia(), is(incidencia));
-        assertThat(incidImportancia.getUserComu().getUsuario(), notNullValue());
-        assertThat(incidImportancia.getImportancia(), is((short) 1));    // TODO: testar resolución.
+        assertThat(incidImportancia.getUserComu().getUsuario(),is(juan));
+        assertThat(incidImportancia.getImportancia(), is((short) 1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")

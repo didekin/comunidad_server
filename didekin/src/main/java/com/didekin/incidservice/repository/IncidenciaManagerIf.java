@@ -22,8 +22,6 @@ public interface IncidenciaManagerIf {
 
     int deleteIncidencia(String userNameFromAuthentication, long incidenciaId) throws EntityException;
 
-    boolean isIncidenciaWithResolucion(long incidenciaId);
-
     int modifyIncidencia(String userNameInSession, Incidencia incidencia) throws EntityException;
 
     int modifyIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws EntityException;

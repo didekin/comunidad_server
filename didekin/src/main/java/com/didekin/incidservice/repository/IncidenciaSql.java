@@ -14,9 +14,6 @@ enum IncidenciaSql {
     CLOSE_INCIDENCIA("UPDATE " + IncidTables.INCID_COMU_TB + " SET fecha_cierre = NOW() " +
             " WHERE incid_id = ? and fecha_cierre IS NULL"),
 
-    COUNT_RESOLUCION_BY_INCID("select count(*) from " + IncidTables.INCID_RESOLUCION_TB + " where incid_id = ?"),
-    // TODO: ¿puedo evitar estar query mirando si fechaAlta de la resolución is not null.
-
     DELETE_INCIDENCIA("DELETE ic FROM " + IncidTables.INCID_COMU_TB + " AS ic " +
             " left join " + IncidTables.INCID_RESOLUCION_TB + " AS ir ON ic.incid_id = ir.incid_id" +
             " WHERE ir.incid_id IS NULL AND  ic.incid_id = ?"),

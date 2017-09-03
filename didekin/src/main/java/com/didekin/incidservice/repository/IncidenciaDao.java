@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.didekin.incidservice.repository.IncidenciaSql.CLOSE_INCIDENCIA;
-import static com.didekin.incidservice.repository.IncidenciaSql.COUNT_RESOLUCION_BY_INCID;
 import static com.didekin.incidservice.repository.IncidenciaSql.DELETE_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_PK;
@@ -88,14 +87,6 @@ public class IncidenciaDao {
             throw new EntityException(INCIDENCIA_NOT_FOUND);
         }
         return rowsUpdated;
-    }
-
-    int countResolucionByIncid(long incidenciaId)
-    {
-        logger.debug("countResolucionByIncid()");
-        return jdbcTemplate.queryForObject(COUNT_RESOLUCION_BY_INCID.toString(),
-                new Object[]{incidenciaId},
-                Integer.class);
     }
 
     /**
@@ -374,6 +365,7 @@ public class IncidenciaDao {
      * Preconditions:
      * 1. The incidencia is open.
      * Postconditions:
+     *
      * @return an IncidAndResolBundle instance is returned with:
      * - incidImportancia.incidencia.incidenciaId.
      * - incidImportancia.incidencia.userName (user who registered the incidencia).
@@ -392,12 +384,7 @@ public class IncidenciaDao {
      * - incidImportancia.importancia.
      * - incidImportancia.fechaAlta
      * - hasResolucion (from fechaAltaResolucion == null).
-     * 2. If the user hasn't registered an incidImportancia record previously, the incidenciaResolBundle contains also:
-     * - incidImportancia.importancia == 0.
-     * - incidImportancia.fechaAlta == null.
-     *
      * @throws EntityException INCID_IMPORTANCIA_NOT_FOUND, if there isn't incidImportancia record for the user or the incidencia is closed.
-     *
      */
     IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
     {
@@ -409,6 +396,7 @@ public class IncidenciaDao {
                     new Object[]{userName, incidenciaId},
                     (rs, rowNum) -> doIncidImpResolView(rs));
         } catch (EmptyResultDataAccessException e) {
+
             throw new EntityException(INCID_IMPORTANCIA_NOT_FOUND);
         }
     }

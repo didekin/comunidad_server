@@ -118,13 +118,6 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 .findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
     }
 
-    @Override
-    public boolean isIncidenciaWithResolucion(long incidenciaId)
-    {
-        logger.debug("isIncidenciaWithResolucion()");
-        return incidenciaDao.countResolucionByIncid(incidenciaId) == 1;
-    }
-
     /**
      * Preconditions:
      * 1. The user has powers to modify the incidencia: he/she is the user who initiates the incidencia or has adm function rol.
@@ -396,7 +389,12 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * <p>
      * Postconditions:
      * 1. An IncidAndResolBundle instance is returned with an IncidImportancia instance as produced by
-     * {@link IncidenciaDao#seeIncidImportanciaByUser(String userName, long incidenciaId) IncidenciaDao.seeIncidImportanciaByUser method}
+     * {@link IncidenciaDao#seeIncidImportanciaByUser(String userName, long incidenciaId) IncidenciaDao.seeIncidImportanciaByUser method}.
+     * 2. If the user hasn't registered an incidImportancia record previously, an incidenciaResolBundle is composed by this method with:
+     * - a fully initialized incidencia, comunidad and usuarioComunidad.
+     * - incidImportancia.importancia == 0.
+     * - incidImportancia.fechaAlta == null.
+     * - hasResolucion = false.
      *
      * @throws EntityException INCIDENCIA_NOT_FOUND (or not open)
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
@@ -410,7 +408,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 .filter(this::checkIncidenciaOpen) // If none, we throw at the end INCIDENCIA_NOT_FOUND.
                 .filter(incidenciaIdIn -> checkIncidImportanciaInDb(userNameInSession, incidenciaIdIn))
                 .map(incidenciaIdIn -> incidenciaDao.seeIncidImportanciaByUser(userNameInSession, incidenciaIdIn))
-                .findFirst().orElseGet(() -> {
+                .findFirst()
+                .orElseGet(() -> {
                             Incidencia incidenciaIn = seeIncidenciaById(incidenciaId);
                             UsuarioComunidad usuarioComunidad = getUsuarioConnector().completeUserAndComuRoles(userNameInSession, incidenciaIn.getComunidadId());
                             return new IncidAndResolBundle(
@@ -422,8 +421,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
                                                                     .build(),
                                                             new Usuario.UsuarioBuilder()
                                                                     .copyUsuario(usuarioComunidad.getUsuario())
-                                                                    .build()
-                                                    ).roles(usuarioComunidad.getRoles())
+                                                                    .build())
+                                                            .roles(usuarioComunidad.getRoles())
                                                             .build()
                                             ).build(),
                                     false

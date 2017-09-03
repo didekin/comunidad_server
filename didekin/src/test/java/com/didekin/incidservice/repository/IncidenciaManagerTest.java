@@ -45,6 +45,7 @@ import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -206,16 +207,6 @@ public abstract class IncidenciaManagerTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testIsIncidenciaWithResolucion_1() throws EntityException, InterruptedException
-    {
-        assertThat(incidenciaManager.isIncidenciaWithResolucion(4L), is(false));
-        assertThat(incidenciaManager.isIncidenciaWithResolucion(3L), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_incidencia_a.sql"})
@@ -594,8 +585,50 @@ public abstract class IncidenciaManagerTest {
     public void testSeeIncidImportancia_3() throws EntityException
     {
         // Caso: no hay registro incidImportancia para el usuario; existen usuarioComunidad e incidencia-comunidad.
-        incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
-        // TODO: seguir aquí.
+        try {
+            incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
+        }
+        // Data.
+        IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), 4L);
+        assertThat(resolBundle.getIncidImportancia(),
+                allOf(
+                        hasProperty("incidencia",
+                                allOf(
+                                        hasProperty("incidenciaId", is(4L)),
+                                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 37))),
+                                        hasProperty("fechaAlta", notNullValue()),
+                                        hasProperty("comunidad",
+                                                allOf(
+                                                        hasProperty("c_Id", is(calle_plazuela_23.getC_Id())),
+                                                        hasProperty("tipoVia", is(calle_plazuela_23.getTipoVia())),
+                                                        hasProperty("nombreVia", is(calle_plazuela_23.getNombreVia())),
+                                                        hasProperty("numero", is(calle_plazuela_23.getNumero())),
+                                                        hasProperty("sufijoNumero", is(calle_plazuela_23.getSufijoNumero()))
+                                                )
+                                        )
+                                )
+                        ),
+                        hasProperty("userComu",
+                                allOf(
+                                        hasProperty("usuario",
+                                                allOf(
+                                                        hasProperty("userName", is(juan.getUserName())),
+                                                        hasProperty("alias", is(juan.getAlias())),
+                                                        hasProperty("uId", is(juan.getuId()))
+                                                )
+                                        ),
+                                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getC_Id()))),
+                                        hasProperty("roles", is(INQUILINO.function))
+                                )
+                        ),
+                        hasProperty("importancia", is((short) 0)),
+                        hasProperty("fechaAlta", nullValue())
+                )
+        );
+        assertThat(resolBundle.hasResolucion(), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")

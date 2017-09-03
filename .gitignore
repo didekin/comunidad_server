@@ -28,6 +28,8 @@ didekin/src/test/resources/aws_*_test.properties
 # Build and logs
 logs/
 build/
+/**/out
+
 didekin/build/**
 /**/libs/*.jar
 /**/*.bat

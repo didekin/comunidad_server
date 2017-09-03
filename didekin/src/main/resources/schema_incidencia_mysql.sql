@@ -124,12 +124,45 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 # ....................... VIEWS .............................
 
+DROP VIEW IF EXISTS incidencia_comunidad_view;
+DROP VIEW IF EXISTS incid_importancia_user_view;
 DROP VIEW IF EXISTS incid_importancia_resolucion_view;
 DROP VIEW IF EXISTS incidencia_avg_view;
 DROP VIEW IF EXISTS incidencia_comment_view;
-DROP VIEW IF EXISTS incidencia_comunidad_view;
-DROP VIEW IF EXISTS incid_importancia_user_view;
 DROP VIEW IF EXISTS incidencia_user_alta_view;
+
+CREATE VIEW incid_importancia_user_view AS
+  SELECT DISTINCT
+    im.incid_id,
+    im.c_id,
+    im.u_id,
+    -- usuario who ranked importancia.
+    u.user_name,
+    u.alias,
+    uc.roles
+  FROM incidencia_importancia AS im
+    INNER JOIN usuario_comunidad AS uc
+      ON im.u_id = uc.u_id AND im.c_id = uc.c_id
+    INNER JOIN usuario AS u
+      ON im.u_id = u.u_id;
+
+CREATE VIEW incidencia_comunidad_view AS
+  SELECT DISTINCT
+    ic.incid_id,
+    ic.c_id,
+    ic.user_name,
+    -- user who initiates the incidencia.
+    ic.descripcion,
+    ic.ambito,
+    ic.fecha_alta,
+    ic.fecha_cierre,
+    c.tipo_via,
+    c.nombre_via,
+    c.numero,
+    c.sufijo_numero
+  FROM incidencia AS ic
+    INNER JOIN comunidad AS c
+    USING (c_id);
 
 # Open incidencias only.
 CREATE VIEW incid_importancia_resolucion_view AS
@@ -178,39 +211,6 @@ CREATE VIEW incidencia_comment_view AS
   FROM incidencia_comment AS ic
     INNER JOIN usuario AS u
       ON ic.u_id = u.u_id;
-
-CREATE VIEW incidencia_comunidad_view AS
-  SELECT DISTINCT
-    ic.incid_id,
-    ic.c_id,
-    ic.user_name,
-    -- user who initiates the incidencia.
-    ic.descripcion,
-    ic.ambito,
-    ic.fecha_alta,
-    ic.fecha_cierre,
-    c.tipo_via,
-    c.nombre_via,
-    c.numero,
-    c.sufijo_numero
-  FROM incidencia AS ic
-    INNER JOIN comunidad AS c
-    USING (c_id);
-
-CREATE VIEW incid_importancia_user_view AS
-  SELECT DISTINCT
-    im.incid_id,
-    im.c_id,
-    im.u_id,
-    -- usuario who ranked importancia.
-    u.user_name,
-    u.alias,
-    uc.roles
-  FROM incidencia_importancia AS im
-    INNER JOIN usuario_comunidad AS uc
-      ON im.u_id = uc.u_id AND im.c_id = uc.c_id
-    INNER JOIN usuario AS u
-      ON im.u_id = u.u_id;
 
 CREATE VIEW incidencia_user_alta_view AS
   SELECT
