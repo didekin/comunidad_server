@@ -63,8 +63,6 @@ public interface UsuarioManagerIf {
 
     boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException;
 
-    boolean isUserInComunidad(String userName, long comunidadId);
-
     boolean login(Usuario usuario) throws EntityException;
 
     String makeNewPassword(Usuario user) throws EntityException;

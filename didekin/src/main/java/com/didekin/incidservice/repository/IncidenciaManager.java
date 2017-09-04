@@ -193,6 +193,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
     /**
      * Preconditions:
      * 1. There exists an incidencia OPEN to which the resolución is assigned.
+     * 2. Only these fields can be modified:
+     * - resolucion.fechaPrevista.
+     * - resolucion.costeEstimado.
+     * - resolucion.avances.
+     *
      * Postconditions:
      * 1. The resolución is updated and a new avance is inserted in the DB, if that is the case.
      *
@@ -207,12 +212,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
         return of(resolucion)
                 .filter(resolucion1 -> usuarioConnector.checkAuthorityInComunidad(userName, resolucion1.getComunidadId()))
-                .map(resolucion1 -> (
-                                resolucion1.getAvances() != null && resolucion1.getAvances().size() == 1 && !resolucion1.getAvances().get(0).getAvanceDesc().isEmpty() ?
-                                        doResolucionModifiedWithNewAvance(resolucion1, userName) :
-                                        resolucion1
-                        )
-                ).map(incidenciaDao::modifyResolucion).findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
+                .map(resolucion1 -> doResolucionModifiedWithNewAvance(resolucion1, userName))
+                .map(incidenciaDao::modifyResolucion).findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
     }
 
     /**

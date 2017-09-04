@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_GCM_TOKEN;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_USER_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.IS_USER_IN_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USUARIO_BY_EMAIL;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -176,18 +178,18 @@ public class UsuarioDao {
         return usuario;
     }
 
+    /**
+     * @return a fully initialized UsuarioComuidad instance or null if the pair usuario-comunidad is not in DB.
+     */
     UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws EntityException
     {
         logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        UsuarioComunidad userComu;
-
         try {
-            userComu = jdbcTemplate.queryForObject(UsuarioSql.USERCOMU_BY_COMU.toString(),
+            return jdbcTemplate.queryForObject(USERCOMU_BY_COMU.toString(),
                     new UsuarioFullComunidadMapper(), userName, comunidadId);
         } catch (EmptyResultDataAccessException e) {
-            userComu = null;
+            return null;
         }
-        return userComu;
     }
 
     UsuarioComunidad getUserComuRolesByUserName(String userName, long comunidadId)
@@ -252,6 +254,15 @@ public class UsuarioDao {
             }
         }
         return usuarioId;
+    }
+
+    public boolean isUserInComunidad(String userName, long comunidadId)
+    {
+        logger.debug("isUserInComunidad()");
+        return jdbcTemplate.queryForObject(
+                IS_USER_IN_COMUNIDAD.toString(),
+                new Object[]{userName, comunidadId},
+                Integer.class) > 0;
     }
 
     /**

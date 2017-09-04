@@ -1,6 +1,7 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.EntityException;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
@@ -20,7 +21,6 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_la_fuente_11;
@@ -45,6 +45,7 @@ import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.sql.Timestamp.from;
 import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -67,6 +68,8 @@ public abstract class IncidenciaDaoTest {
 
     @Autowired
     private IncidenciaDao incidenciaDao;
+    @Autowired
+    private UsuarioManager usuarioManager;
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
@@ -262,7 +265,6 @@ public abstract class IncidenciaDaoTest {
                 .importancia((short) 11)
                 .build();
         assertThat(incidenciaDao.modifyIncidImportancia(incidImportancia), is(0));
-        assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 5L).getIncidImportancia().getImportancia(), is((short) 2));
     }
 
     /**
@@ -482,7 +484,7 @@ public abstract class IncidenciaDaoTest {
         // Check.
         incidImportancia = incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L).getIncidImportancia();
         assertThat(incidImportancia.getIncidencia(), is(incidencia));
-        assertThat(incidImportancia.getUserComu().getUsuario(),is(juan));
+        assertThat(incidImportancia.getUserComu().getUsuario(), is(juan));
         assertThat(incidImportancia.getImportancia(), is((short) 1));
     }
 
@@ -582,7 +584,7 @@ public abstract class IncidenciaDaoTest {
     {
         // Caso OK.
         Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
-        Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4", 111, now().plus(12, ChronoUnit.DAYS));
+        Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4", 111, now().plus(12, DAYS));
         assertThat(incidenciaDao.regResolucion(resolucion), is(1));
     }
 
@@ -594,8 +596,8 @@ public abstract class IncidenciaDaoTest {
     {
         // Caso: dos resoluciones para una misma incidencia.
         Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
-        Resolucion resolucion_1 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_A", 111, now().plus(12, ChronoUnit.DAYS));
-        Resolucion resolucion_2 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_B", 111, now().plus(13, ChronoUnit.DAYS));
+        Resolucion resolucion_1 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_A", 111, now().plus(12, DAYS));
+        Resolucion resolucion_2 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_B", 111, now().plus(13, DAYS));
         assertThat(incidenciaDao.regResolucion(resolucion_1), is(1));
         try {
             incidenciaDao.regResolucion(resolucion_2);
@@ -613,7 +615,7 @@ public abstract class IncidenciaDaoTest {
     {
         // Caso: incidencia no existe en BD.
         Incidencia incidencia = doIncidenciaWithId(juan.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 31);
-        Resolucion resolucion = doResolucion(incidencia, juan.getUserName(), "resol_incid_4_4", 111, now().plus(12, ChronoUnit.DAYS));
+        Resolucion resolucion = doResolucion(incidencia, juan.getUserName(), "resol_incid_4_4", 111, now().plus(12, DAYS));
         try {
             incidenciaDao.regResolucion(resolucion);
             fail();
@@ -724,14 +726,14 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeIncidImportanciaByUser_1() throws SQLException, EntityException
     {
-        // Incidencia con resolución.
+        // Incidencia con resolución. Hay registro incidImportancia para el usuario
         IncidAndResolBundle resolBundle = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 3L);
         assertThat(resolBundle.getIncidImportancia(),
                 allOf(
                         hasProperty("incidencia",
                                 allOf(
                                         hasProperty("incidenciaId", is(3L)),
-                                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short)46))),
+                                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 46))),
                                         hasProperty("fechaAlta", notNullValue()),
                                         hasProperty("comunidad",
                                                 allOf(
@@ -805,7 +807,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 5L);
             fail();
-        }          catch (EntityException e){
+        } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
     }
@@ -814,21 +816,23 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsClosedByComu_1() throws EntityException
+    public void test_SeeIncidsClosedByComu_1() throws EntityException
     {
         // Premisas: comunidad con 2 incidencias cerradas; una con antigüedad superior a 2 años.
+
+        // Check: sólo aparece la incidencia con antigüedad < 2 años.
         List<IncidenciaUser> incidencias = incidenciaDao.seeIncidsClosedByComu(calle_olmo_55.getC_Id());
-        // Verificamos antigüedad < 2 años.
-        assertThat(incidencias.get(0).getIncidencia().getFechaAlta().compareTo(from(now().minus(730, ChronoUnit.DAYS))) > 0, is(true));
-        // Check fields.
         assertThat(incidencias.size(), is(1));
-        assertThat(incidencias.get(0).getIncidencia(),
+        Incidencia incidencia = incidencias.get(0).getIncidencia();
+        assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) > 0, is(true));
+        // Check fields.
+        assertThat(incidencia,
                 allOf(
                         hasProperty("incidenciaId", is(6L)),
                         hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))),
                         hasProperty("userName", is(paco.getUserName())),
                         hasProperty("descripcion", is("incidencia_6_6")),
-                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 33))),                             //is(new AmbitoIncidencia((short) 33))
+                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 33))),
                         hasProperty("importanciaAvg", is(0f)),
                         hasProperty("fechaAlta", notNullValue()),
                         hasProperty("fechaCierre", notNullValue())
@@ -838,24 +842,23 @@ public abstract class IncidenciaDaoTest {
                 hasProperty("usuario", allOf
                         (
                                 hasProperty("uId", is(paco.getuId())),
-                                hasProperty("userName", nullValue()),
+                                hasProperty("userName", is(paco.getUserName())),
                                 hasProperty("alias", is(paco.getAlias()))
                         )
                 )
         );
 
+        // Verificamos la premisa de que existe otra incidencia en misma comunidad con antigüedad > 2 años.
+        incidencia = incidenciaDao.seeIncidenciaById(8L);
+        assertThat(incidencia, hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))));
+        assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) < 0, is(true));
+    }
 
-        // Check incidencia con antigüedad superior 2 años.
-        Incidencia incidencia = incidenciaDao.seeIncidenciaById(8L);
-        assertThat(incidencia,
-                allOf(
-                        hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))),
-                        hasProperty("descripcion", is("incidencia_8_6")),
-                        hasProperty("fechaCierre", notNullValue())
-                )
-        );
-        // Verificamos antigüedad > 2 años.
-        assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, ChronoUnit.DAYS))) < 0, is(true));
+    @Test
+    public void test_SeeIncidsClosedByComu_2()
+    {
+        // CASO NOT OK : si comunidadId no existe, devuelve una lista vacía.
+        assertThat(incidenciaDao.seeIncidsClosedByComu(999L).size(), is(0));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -864,9 +867,48 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeIncidsOpenByComu_1()
     {
-        // CASO NOT OK : si comunidadId no existe, devuelve una lista vacía.
-        assertThat(incidenciaDao.seeIncidsOpenByComu(999L), notNullValue());
-        assertThat(incidenciaDao.seeIncidsOpenByComu(999L).size(), is(0));
+        // Caso OK: comunidad con 2 incidencias abiertas.
+
+        List<IncidenciaUser> incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(ronda_plazuela_10bis.getC_Id());
+        assertThat(incidenciaUsers.size(), is(2));
+        assertThat(incidenciaUsers.get(0).getIncidencia(),
+                allOf(
+                        hasProperty("incidenciaId", is(1L)),
+                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getC_Id()))),
+                        hasProperty("userName", is(luis.getUserName())),
+                        hasProperty("descripcion", is("incidencia_1")),
+                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 41))),
+                        hasProperty("importanciaAvg", is(1.5f)),
+                        hasProperty("fechaAlta", notNullValue()),
+                        hasProperty("fechaCierre", nullValue())
+
+                )
+        );
+        assertThat(incidenciaUsers.get(0),
+                allOf(
+                        hasProperty("usuario", allOf
+                                (
+                                        hasProperty("uId", is(luis.getuId())),
+                                        hasProperty("userName", is(luis.getUserName())),
+                                        hasProperty("alias", is(luis.getAlias()))
+                                )
+                        ),
+                        hasProperty("fechaAltaResolucion", nullValue())
+                )
+        );
+
+        // Verificamos fechaAltaResolucion not null en 2ª incidencia.
+        assertThat(incidenciaUsers.get(1),
+                allOf(
+                        hasProperty("incidencia",
+                                allOf(
+                                        hasProperty("incidenciaId", is(3L)),
+                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getC_Id())))
+                                )
+                        ),
+                        hasProperty("fechaAltaResolucion", notNullValue())
+                )
+        );
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -875,60 +917,35 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeIncidsOpenByComu_2()
     {
-        // Caso OK: el usuario iniciador aún continúa como usuario de la aplicación.
-
-        List<IncidenciaUser> incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(ronda_plazuela_10bis.getC_Id());
-        assertThat(incidenciaUsers.size(), is(2));
-        IncidenciaUser incidenciaUser = incidenciaUsers.get(0);
-        assertThat(incidenciaUser.getIncidencia().getIncidenciaId(), is(1L));
-        assertThat(incidenciaUser.getIncidencia().getUserName(), is(luis.getUserName()));
-        assertThat(incidenciaUser.getIncidencia().getComunidad().getC_Id(), is(ronda_plazuela_10bis.getC_Id()));
-        assertThat(incidenciaUser.getIncidencia().getDescripcion(), is("incidencia_1"));
-        assertThat(incidenciaUser.getIncidencia().getAmbitoIncidencia().getAmbitoId(), is((short) 41));
-        assertThat(incidenciaUser.getIncidencia().getFechaAlta().getTime() > 1000L, is(true));
-        assertThat(incidenciaUser.getIncidencia().getFechaCierre(), nullValue());
-        assertThat(incidenciaUser.getIncidencia().getImportanciaAvg(), is(1.5f));
-        assertThat(incidenciaUser.getUsuario().getuId(), is(luis.getuId()));
-        // Username null en Usuario: para evitar duplicar el dato con incidencia.userName.
-        assertThat(incidenciaUser.getUsuario().getUserName(), nullValue());
-        assertThat(incidenciaUser.getUsuario().getAlias(), is(luis.getAlias()));
-        // Fecha alta resolución nula: no tiene resolución.
-        assertThat(incidenciaUser.getFechaAltaResolucion(), nullValue());
-
-        // Fecha alta OK: incidencia abierta con resolución.
-        incidenciaUser = incidenciaUsers.get(1);
-        assertThat(incidenciaUser.getFechaAltaResolucion(), notNullValue());
-        assertThat(incidenciaUser.getFechaAltaResolucion().getTime() > 0L, is(true));
-
-        incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id());
-        assertThat(incidenciaUsers.size(), is(1));
-        assertThat(incidenciaUsers.get(0).getFechaAltaResolucion(), nullValue());
-
-        incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(calle_plazuela_23.getC_Id());
-        // Hay una incidencia cerrada. La abierta no tiene resolución.
-        assertThat(incidenciaUsers.size(), is(1));
-        assertThat(incidenciaUsers.get(0).getFechaAltaResolucion(), nullValue());
+        // Premisa: the user who initiates the incidencia is no longer a usuarioComunidad, or an user in didekin.
+        assertThat(incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0).getUsuario(), is(juan));
+        // Delete user in comunidad.
+        assertThat(usuarioManager.deleteUser(juan.getUserName()), is(true));
+        // Exec
+        IncidenciaUser incidenciaUser = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0);
+        // Check: usuario data are not longer fulfilled, with the exception of userName (taken for the incidencia record).
+        assertThat(incidenciaUser,
+                allOf(
+                        hasProperty("usuario",
+                                allOf(
+                                        hasProperty("uId", is(0L)),
+                                        hasProperty("alias", nullValue()),
+                                        hasProperty("userName", is(juan.getUserName()))
+                                )
+                        ),
+                        hasProperty("incidencia", hasProperty("userName", is(juan.getUserName())))
+                )
+        );
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsOpenByComu_3() throws SQLException
+    public void testSeeIncidsOpenByComu_3()
     {
-        // Caso OK: el usuario iniciador ya no es usuario de la aplicación.
-        Incidencia incidencia = doIncidencia("no_existiré_user", "Incidencia_test", calle_la_fuente_11.getC_Id(), (short) 11);
-        assertThat(incidenciaDao.regIncidencia(incidencia) > 1L, is(true));
-
-        List<IncidenciaUser> incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id());
-        assertThat(incidenciaUsers.size(), is(2));
-        IncidenciaUser incidenciaUser = incidenciaUsers.get(1);
-        assertThat(incidenciaUser.getIncidencia().getUserName(), is(incidencia.getUserName()));
-        assertThat(incidenciaUser.getIncidencia().getDescripcion(), is("Incidencia_test"));
-        // No tiene registro incidImportancia.
-        assertThat(incidenciaUser.getIncidencia().getImportanciaAvg(), is(0f));
-        // Usuario null.
-        assertThat(incidenciaUser.getUsuario(), nullValue());
+        // CASO NOT OK : si comunidadId no existe, devuelve una lista vacía.
+        assertThat(incidenciaDao.seeIncidsOpenByComu(999L).size(), is(0));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -1001,8 +1018,7 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeUserComusImportancia_1()
     {
-        // CASOS OK.
-
+        /* CASOS OK.*/
         List<ImportanciaUser> importanciaUsers = incidenciaDao.seeUserComusImportancia(2L);
         assertThat(importanciaUsers.size(), is(2));
         assertThat(importanciaUsers.get(0), allOf(

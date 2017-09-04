@@ -68,14 +68,6 @@ CREATE TABLE oauth_access_token (
     ON DELETE CASCADE
 );
 
-/*CREATE TABLE oauth_client_token (
-  token_id          VARCHAR(100),
-  token             BLOB,
-  authentication_id VARCHAR(100),
-  user_name         VARCHAR(100),
-  client_id         VARCHAR(100)
-);*/
-
 CREATE TABLE oauth_refresh_token (
   token_id       VARCHAR(100) NOT NULL ,
   token          BLOB,

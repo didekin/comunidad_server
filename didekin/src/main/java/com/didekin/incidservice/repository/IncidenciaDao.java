@@ -57,7 +57,6 @@ import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INC
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.util.stream.Stream.of;
 
@@ -162,32 +161,26 @@ public class IncidenciaDao {
      * Control of the state 'incidencia is open' is made in the sql query.
      *
      * @return number of rows updated: 1 without new avance; 2 with new avance.
-     * @throws EntityException RESOLUCION_WRONG_INIT if resolucion/incidencia not found or resolucion.avance.size > 1.
-     *                         INCIDENCIA_NOT_FOUND if incidencia is closed or doesn't exist.
+     * @throws EntityException INCIDENCIA_NOT_FOUND if incidencia is closed or doesn't exist.
      */
     int modifyResolucion(Resolucion resolucion) throws EntityException
     {
         logger.debug("modifyResolucion()");
 
-        int rowsUpdated = of(resolucion)
-                .filter(resolucionIn -> resolucion.getAvances() == null || resolucion.getAvances().isEmpty() || resolucion.getAvances().size() == 1)
-                .map(
-                        resolucion1 -> jdbcTemplate.update(
-                                MODIFY_RESOLUCION.toString(),
-                                resolucion1.getFechaPrev(),
-                                resolucion1.getCosteEstimado(),
-                                resolucion1.getIncidencia().getIncidenciaId()
-                        )
-                )
-                .findFirst().orElseThrow(() -> new EntityException(RESOLUCION_WRONG_INIT));
-
-        if (rowsUpdated == 0) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
-        }
-        if (resolucion.getAvances() != null && resolucion.getAvances().size() == 1) {
-            rowsUpdated += regAvance(resolucion.getIncidencia().getIncidenciaId(), resolucion.getAvances().get(0));
-        }
-        return rowsUpdated;
+        return of(resolucion)
+                .mapToInt(
+                        resolucion1 -> {
+                            int updateCount = jdbcTemplate.update(
+                                    MODIFY_RESOLUCION.toString(),
+                                    resolucion1.getFechaPrev(),
+                                    resolucion1.getCosteEstimado(),
+                                    resolucion1.getIncidencia().getIncidenciaId()
+                            );
+                            List<Avance> avances = resolucion1.getAvances();
+                            return (avances == null || avances.size() == 0) ? updateCount : (updateCount + regAvance(resolucion1.getIncidencia().getIncidenciaId(), avances.get(0)));
+                        }
+                ).filter(rowsUpdated -> rowsUpdated > 0)
+                .findFirst().orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
     }
 
     int modifyIncidImportancia(IncidImportancia incidImportancia) throws EntityException
@@ -414,7 +407,8 @@ public class IncidenciaDao {
      * - incidencia.fechaAlta.
      * - incidencia.fechaCierre (not null, by definition).
      * - usuario.uId. (user who registered the incidencia)
-     * - usuario.alias (user who registered the incidencia).
+     * - usuario.userName.
+     * - usuario.alias.
      */
     List<IncidenciaUser> seeIncidsClosedByComu(long comunidadId)
     {
@@ -424,7 +418,7 @@ public class IncidenciaDao {
 
     /**
      * Postconditions:
-     * 1. A list of the closed incidencias in the comunidad, as produced by
+     * 1. A list of the open incidencias in the comunidad, as produced by
      * {@link #seeIncidsClosedByComu(long comunidadId) seeIncidsClosedByComu method}
      * plus:
      * - incidenciaUser.fechaAltaResolucion.
@@ -556,6 +550,7 @@ public class IncidenciaDao {
 
         final Usuario usuario = new Usuario.UsuarioBuilder()
                 .uId(rs.getLong("u_id"))
+                .userName(rs.getString("user_name"))
                 .alias(rs.getString("alias"))
                 .build();
 

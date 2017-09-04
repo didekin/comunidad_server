@@ -243,8 +243,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         logger.debug("getUserComuFullByUserAndComu()");
         UsuarioComunidad usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
         if (usuarioComunidad == null) {
-            // Si la comunidad no existe, la búsqueda lanza una excepción.
-            comunidadDao.getComunidadById(comunidadId);
+            throw new EntityException(USERCOMU_WRONG_INIT);
         }
         return usuarioComunidad;
     }
@@ -273,18 +272,6 @@ public class UsuarioManager implements UsuarioManagerIf {
             }
         }
         return user.getuId() == idOldestUser;
-    }
-
-    @Override
-    public boolean isUserInComunidad(String userName, long comunidadId)
-    {
-        logger.debug("isUserInComunidad");
-        try {
-            return getUserComuByUserAndComu(userName, comunidadId) != null;
-        } catch (EntityException ee) {
-            logger.error("isUserInComunidad(): " + ee.getExceptionMsg().getHttpMessage());
-            return false;
-        }
     }
 
     /**

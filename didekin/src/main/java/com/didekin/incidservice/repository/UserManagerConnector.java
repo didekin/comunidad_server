@@ -30,7 +30,7 @@ public class UserManagerConnector {
         this.usuarioManager = usuarioManager;
     }
 
-    boolean checkAuthorityInComunidad(String userName, long comunidadId) throws EntityException
+    public boolean checkAuthorityInComunidad(String userName, long comunidadId) throws EntityException
     {
         logger.debug("checkAuthorityInComunidad()");
         return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();
@@ -52,7 +52,7 @@ public class UserManagerConnector {
     public boolean checkUserInComunidad(String userName, long comunidadId) throws EntityException
     {
         logger.debug("checkUserInComunidad()");
-        if (!usuarioManager.isUserInComunidad(userName, comunidadId)) {
+        if (!usuarioManager.getUsuarioDao().isUserInComunidad(userName, comunidadId)) {
             throw new EntityException(USERCOMU_WRONG_INIT);
         }
         return true;

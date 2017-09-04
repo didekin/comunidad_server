@@ -1,5 +1,8 @@
 package com.didekin.userservice.repository;
 
+import static com.didekin.userservice.repository.UsuarioTables.USUARIO_COMUNIDAD_TB;
+import static com.didekin.userservice.repository.UsuarioTables.USUARIO_TB;
+
 /**
  * User: pedro
  * Date: 31/03/15
@@ -37,6 +40,11 @@ enum UsuarioSql {
             "ORDER BY gcm_token"),
 
     INSERT("INSERT INTO usuario values (?,?,?,?,?)"),
+
+    IS_USER_IN_COMUNIDAD("SELECT COUNT(*) FROM " + USUARIO_TB +
+            " INNER JOIN " + USUARIO_COMUNIDAD_TB +
+            " USING (u_id) " +
+            " WHERE user_name = ? AND c_id = ?"),
 
     MAX_PK("SELECT MAX(u_id) AS u_id FROM usuario"),
 
@@ -80,11 +88,6 @@ enum UsuarioSql {
             " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
             " ON u.u_id = cu.u_id " +
             " WHERE u.user_name = ?"),
-
-    ROL_BY_COMUNIDAD("SELECT cu.roles " +
-            " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
-            " ON u.u_id = cu.u_id " +
-            " WHERE u.user_name = ? AND cu.c_id = ?"),
 
     USERCOMU_BY_COMU("select * from usuarios_comunidades_view" +
             " where user_name = ? AND c_id = ? "),

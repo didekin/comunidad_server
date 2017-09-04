@@ -47,12 +47,12 @@ public class UserComuController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UserComuController.class.getCanonicalName());
 
-    private final UsuarioManagerIf usuarioService;
+    private final UsuarioManagerIf usuarioManager;
 
     @Autowired
-    public UserComuController(UsuarioManagerIf usuarioService)
+    public UserComuController(UsuarioManagerIf usuarioManager)
     {
-        this.usuarioService = usuarioService;
+        this.usuarioManager = usuarioManager;
     }
 
     @RequestMapping(value = USERCOMU_DELETE + "/{comunidadId}", method = DELETE)
@@ -60,11 +60,11 @@ public class UserComuController extends AppControllerAbstract {
                               @PathVariable long comunidadId) throws EntityException
     {
         logger.debug("deleteUserComu()");
-        return usuarioService.deleteUserComunidad(
+        return usuarioManager.deleteUserComunidad(
                 new UsuarioComunidad
                         .UserComuBuilder(
                         new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                        getUserFromDb(usuarioService))
+                        getUserFromDb(usuarioManager))
                         .build()
         );
     }
@@ -73,7 +73,7 @@ public class UserComuController extends AppControllerAbstract {
     public List<Comunidad> getComusByUser(@RequestHeader("Authorization") String accessToken)
     {
         logger.debug("getComusByUser()");
-        return usuarioService.getComusByUser(getUserNameFromAuthentication());
+        return usuarioManager.getComusByUser(getUserNameFromAuthentication());
     }
 
 
@@ -82,7 +82,7 @@ public class UserComuController extends AppControllerAbstract {
             comunidadId) throws EntityException
     {
         logger.debug("getUserComuByUserAndComu");
-        return usuarioService.getUserComuByUserAndComu(getUserNameFromAuthentication(), comunidadId);
+        return usuarioManager.getUserComuByUserAndComu(getUserNameFromAuthentication(), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_OLDEST_USER + "/{comunidadId}", method = GET)
@@ -90,8 +90,8 @@ public class UserComuController extends AppControllerAbstract {
                                            @PathVariable long comunidadId) throws EntityException
     {
         logger.debug("isOldestOrAdmonUserComu()");
-        return usuarioService.isOldestUserComu(getUserFromDb(usuarioService), comunidadId)
-                || usuarioService.completeWithUserComuRoles(getUserNameFromAuthentication(), comunidadId).hasAdministradorAuthority();
+        return usuarioManager.isOldestUserComu(getUserFromDb(usuarioManager), comunidadId)
+                || usuarioManager.completeWithUserComuRoles(getUserNameFromAuthentication(), comunidadId).hasAdministradorAuthority();
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)
@@ -100,7 +100,7 @@ public class UserComuController extends AppControllerAbstract {
             throws EntityException
     {
         logger.info("modifyComuData()");
-        return usuarioService.modifyComuData(getUserFromDb(usuarioService), comunidad);
+        return usuarioManager.modifyComuData(getUserFromDb(usuarioManager), comunidad);
     }
 
     @RequestMapping(value = USERCOMU_MODIFY, method = PUT, consumes = MIME_JSON)
@@ -108,8 +108,8 @@ public class UserComuController extends AppControllerAbstract {
                               @RequestBody final UsuarioComunidad userComu) throws EntityException
     {
         logger.debug("modifyUserComu()");
-        return usuarioService.modifyUserComu(new UsuarioComunidad
-                .UserComuBuilder(userComu.getComunidad(), getUserFromDb(usuarioService)) // agika
+        return usuarioManager.modifyUserComu(new UsuarioComunidad
+                .UserComuBuilder(userComu.getComunidad(), getUserFromDb(usuarioManager)) // agika
                 .userComuRest(userComu)
                 .build()
         );
@@ -120,7 +120,7 @@ public class UserComuController extends AppControllerAbstract {
             throws EntityException
     {
         logger.debug("regComuAndUserAndUserComu()");
-        return usuarioService.regComuAndUserAndUserComu(usuarioCom);
+        return usuarioManager.regComuAndUserAndUserComu(usuarioCom);
         // TODO: hay que controlar que no se dan de alta dos administradores o dos presidentes.
         // TODO: si la comunidad ya existe y el userComu no, hacer un regUserAndUserComu.
         // TODO: si el userComu existe y la comunidad no, hacer un regComuAndUserComu.
@@ -136,17 +136,17 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("regComuAndUserComu()");
 
-        Usuario usuario = getUserFromDb(usuarioService);
+        Usuario usuario = getUserFromDb(usuarioManager);
         UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuario)
                 .userComuRest(usuarioCom).build();
-        return usuarioService.regComuAndUserComu(usuarioComBis);
+        return usuarioManager.regComuAndUserComu(usuarioComBis);
     }
 
     @RequestMapping(value = REG_USER_USERCOMU, method = POST, consumes = MIME_JSON)
     public boolean regUserAndUserComu(@RequestBody UsuarioComunidad userComu) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
-        return usuarioService.regUserAndUserComu(userComu);
+        return usuarioManager.regUserAndUserComu(userComu);
 //         TODO: notificación de alta de usuario al resto de la comunidad.
     }
 
@@ -155,10 +155,10 @@ public class UserComuController extends AppControllerAbstract {
                            @RequestBody UsuarioComunidad usuarioComunidad) throws EntityException
     {
         logger.debug("regUserComu()");
-        Usuario usuario = getUserFromDb(usuarioService);
+        Usuario usuario = getUserFromDb(usuarioManager);
         UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioComunidad.getComunidad(), usuario)
                 .userComuRest(usuarioComunidad).build();
-        return usuarioService.regUserComu(usuarioComBis);
+        return usuarioManager.regUserComu(usuarioComBis);
 //         TODO: notificación de alta de usuario al resto de la comunidad.
     }
 
@@ -167,7 +167,7 @@ public class UserComuController extends AppControllerAbstract {
                                                      @PathVariable long comunidadId)
     {
         logger.debug("seeUserComusByComu()");
-        return usuarioService.seeUserComusByComu(comunidadId);
+        return usuarioManager.seeUserComusByComu(comunidadId);
     }
 
     @RequestMapping(value = USERCOMUS_BY_USER, produces = MIME_JSON, method = GET)
@@ -175,6 +175,6 @@ public class UserComuController extends AppControllerAbstract {
             throws EntityException
     {
         logger.debug("seeUserComusByUser()");
-        return usuarioService.seeUserComusByUser(getUserFromDb(usuarioService).getUserName());
+        return usuarioManager.seeUserComusByUser(getUserFromDb(usuarioManager).getUserName());
     }
 }

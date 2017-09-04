@@ -355,14 +355,19 @@ public abstract class UsuarioManagerTest {
     public void testGetUserComuByUserAndComu() throws EntityException
     {
         // No existe la combinación (usario, comunidad); existe la comunidad.
-        assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
+        try {
+            usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L);
+            fail();
+        }          catch (EntityException e){
+            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
+        }
 
         // No existe la comunidad.
         try {
             usuarioManager.getUserComuByUserAndComu("paco@paco.com", 111L);
             fail();
         } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
 
@@ -399,21 +404,6 @@ public abstract class UsuarioManagerTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testIsUserInComunidad()
-    {
-        // No existe relación entre usuario y comunidad.
-        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 4L), is(false));
-        // Sí existe.
-        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 1L), is(true));
-        // La comunidad no existe.
-        assertThat(usuarioManager.isUserInComunidad("pedro@pedro.com", 111L), is(false));
-        // Ni el usuario, ni la comunidad existen.
-        assertThat(usuarioManager.isUserInComunidad("noexisto@no.com", 111L), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

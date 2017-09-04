@@ -284,7 +284,6 @@ public abstract class UsuarioDaoTest {
         assertThat(usuarioComunidad.getPuerta(), is("J"));
     }
 
-
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testInsertUsuario_1() throws Exception
@@ -325,6 +324,18 @@ public abstract class UsuarioDaoTest {
                 conn.close();
             }
         }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_IsUserInComunidad() throws Exception
+    {
+        assertThat(usuarioDao.isUserInComunidad(pedro.getUserName(), 1L)
+                        && usuarioDao.isUserInComunidad(pedro.getUserName(), 2L)
+                        && usuarioDao.isUserInComunidad(pedro.getUserName(), 3L),
+                is(true));
+        assertThat(usuarioDao.isUserInComunidad(pedro.getUserName(), 4L), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

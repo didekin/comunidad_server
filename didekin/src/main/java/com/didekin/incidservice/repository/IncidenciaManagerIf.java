@@ -20,7 +20,7 @@ public interface IncidenciaManagerIf {
 
     int closeIncidencia(String userName, Resolucion resolucion) throws EntityException;
 
-    int deleteIncidencia(String userNameFromAuthentication, long incidenciaId) throws EntityException;
+    int deleteIncidencia(String userNameInSession, long incidenciaId) throws EntityException;
 
     int modifyIncidencia(String userNameInSession, Incidencia incidencia) throws EntityException;
 

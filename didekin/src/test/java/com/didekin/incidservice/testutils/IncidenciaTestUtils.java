@@ -95,10 +95,13 @@ public final class IncidenciaTestUtils {
             .build();
 
     public static final UsuarioComunidad luis_plazuelas_10bis = makeUsuarioComunidad(
-            ronda_plazuela_10bis, luis, null, null, null, null, PROPIETARIO.function.concat(",").concat(ADMINISTRADOR.function));
+            ronda_plazuela_10bis, luis, null, null, null, null, ADMINISTRADOR.function.concat(",").concat(PROPIETARIO.function));
 
     public static final UsuarioComunidad pedro_lafuente = makeUsuarioComunidad(
             calle_la_fuente_11, pedro, "A", null, null, null, ADMINISTRADOR.function.concat(",").concat(INQUILINO.function));
+
+    public static final UsuarioComunidad luis_lafuente = makeUsuarioComunidad(
+            calle_la_fuente_11, luis, "B", null, null, null, PROPIETARIO.function);
 
     public static final UsuarioComunidad paco_plazuela23 = makeUsuarioComunidad(
             calle_plazuela_23, paco, "BC", null, null, null, ADMINISTRADOR.function.concat(",").concat(PROPIETARIO.function));
