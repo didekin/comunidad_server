@@ -672,11 +672,10 @@ public abstract class IncidenciaManagerTest {
                         hasProperty("incidencia",
                                 allOf(
                                         hasProperty("incidenciaId", is(5L)),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(4L)))
+                                        hasProperty("comunidad", hasProperty("c_Id", is(4L)))   // Difference with the DAO.
                                 ))
                 )
         );
-        assertThat(resolucion.getAvances().size(), is(0));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")

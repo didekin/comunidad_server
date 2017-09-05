@@ -439,7 +439,8 @@ public class IncidenciaDao {
     }
 
     /**
-     * A Resolucion instance is returned with:
+     * @return
+     * 1. a resolucion instance is returned with:
      * - incidencia.incidencia_id
      * - userName.
      * - descripcion.
@@ -449,6 +450,7 @@ public class IncidenciaDao {
      * - fechaPrevista.
      * - moraleja.
      * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
+     * 2. null, if the resolucion does not exist.
      */
     Resolucion seeResolucion(final long resolucionId) throws EntityException
     {
@@ -471,7 +473,7 @@ public class IncidenciaDao {
                             .avances(seeAvancesByResolucion(resolucionId))
                             .build());
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityException(RESOLUCION_NOT_FOUND);
+            return null;
         }
     }
 

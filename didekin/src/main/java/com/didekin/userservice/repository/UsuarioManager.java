@@ -233,9 +233,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     /**
-     * If the pair usuarioComunidad doesn't exist, the method returns a UsuarioComunidad instance null.
-     * If the comunidad doesn't exist either, then it throws an exception.
-     * This method is used mainly to check if a user is associated to a comunidad, both already registered.
+     * @return a EntityException USERCOMU_WRONG_INIT if the pair usuarioComunidad doesn't exist.
      */
     @Override
     public UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws EntityException

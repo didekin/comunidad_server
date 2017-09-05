@@ -991,9 +991,17 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeResolucion_2() throws EntityException
     {
-        /* Caso: resolución sin avances.*/
+        // Premisa: resolucion sin avances.
         Resolucion resolucion = incidenciaDao.seeResolucion(5L);
-        assertThat(resolucion, hasProperty("incidencia", hasProperty("incidenciaId", is(5L))));
+        assertThat(resolucion,
+                allOf(
+                        hasProperty("incidencia",
+                                allOf(
+                                        hasProperty("incidenciaId", is(5L)),
+                                        hasProperty("comunidad", nullValue())  // Difference with the manager.
+                                ))
+                )
+        );
         assertThat(resolucion.getAvances().size(), is(0));
     }
 
@@ -1004,12 +1012,7 @@ public abstract class IncidenciaDaoTest {
     public void testSeeResolucion_3()
     {
         /* Caso: incidencia sin resolución.*/
-        try {
-            incidenciaDao.seeResolucion(4L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(RESOLUCION_NOT_FOUND));
-        }
+        assertThat(incidenciaDao.seeResolucion(4L), nullValue());
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")

@@ -476,22 +476,15 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Preconditions:
      * 1. The user is registered in the comunidad of the incidencia.
      * 2. The incidencia can be OPEN or CLOSED.
-     * Postconditions:
-     * 1. A resolucion instance is returned with:
-     * - incidencia.incidencia_id
+     * @return
+     * 1. A resolucion instance is returned as produced by
+     * {@link IncidenciaDao#seeResolucion(long resolucionId) IncidenciaDao.seeResolucion method}
+     * plus:
      * - incidencia.comunidad.c_Id
-     * - userName.
-     * - descripcion.
-     * - costeEstimado.
-     * - costeFinal.
-     * - fechaAlta.
-     * - fechaPrevista.
-     * - moraleja.
-     * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
+     * 2. null, there does not exists the resolucion.
      *
-     * @return resolucion in BD, with comunidad initialized in the incidencia field.
      * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
-     * @throws EntityException INCIDENCIA_NOT_FOUND or RESOLUCION_NOT_FOUND, if the resolucionId (incidenciaId) doesn't exist.
+     * @throws EntityException INCIDENCIA_NOT_FOUND if the incidenciaId (same as resolucionId) doesn't exist.
      */
     @Override
     public Resolucion seeResolucion(String userName, long resolucionId) throws EntityException
@@ -502,7 +495,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
         getUsuarioConnector().checkUserInComunidad(userName, incidencia.getComunidadId()); // USERCOMU_WRONG_INIT exception.
 
         return of(resolucionId)
-                .map(incidenciaDao::seeResolucion)  // RESOLUCION_NOT_FOUND exception.
+                .map(incidenciaDao::seeResolucion)
                 .map(resolucionIn -> new Resolucion.ResolucionBuilder(
                         new Incidencia.IncidenciaBuilder()
                                 .copyIncidencia(incidencia)
