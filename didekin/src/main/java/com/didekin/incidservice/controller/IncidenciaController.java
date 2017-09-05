@@ -163,7 +163,7 @@ class IncidenciaController extends AppControllerAbstract {
         return incidenciaManager.seeIncidsOpenByComu(getUserNameFromAuthentication(),comunidadId);
     }
 
-    @RequestMapping(value = SEE_RESOLUCION + "/{resolucionId}", produces = MIME_JSON, method = GET)
+    @RequestMapping(value = SEE_RESOLUCION + "/{incidenciaId}", produces = MIME_JSON, method = GET)
     public Resolucion seeResolucion(@RequestHeader("Authorization") String accessToken,
                                     @PathVariable long incidenciaId) throws EntityException
     {
