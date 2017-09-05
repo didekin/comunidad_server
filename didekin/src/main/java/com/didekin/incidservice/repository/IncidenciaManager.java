@@ -99,7 +99,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
     /**
      * Preconditions:
-     * 1. The user has adm functions in the comunidad.
+     * 1. The user has adm functions in the comunidad or she is the initiator user.
      * 2. The incidencia hasn't got a resolucion open.
      * Postconditions:
      * 1. If the user hasn't got now the necessary powers or a resolucion is open, an exception is thrown.
@@ -114,7 +114,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
     {
         logger.debug("deleteIncidencia()");
         return of(seeIncidenciaById(incidenciaId))
-                .filter(incidencia -> usuarioConnector.checkIncidModificationPower(userNameInSession, incidencia.getComunidad().getC_Id(), incidencia.getUserName()))
+                .filter(incidencia -> usuarioConnector.checkIncidModificationPower(userNameInSession, incidencia))
                 .map(incidencia -> incidenciaDao.deleteIncidencia(incidencia.getIncidenciaId()))
                 .findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
     }
@@ -143,7 +143,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
         }
         return of(incidencia)
                 .filter(incidenciaIn ->
-                        usuarioConnector.checkIncidModificationPower(userNameInSession, incidenciaIn.getComunidadId(), incidenciaIn.getUserName()))
+                        usuarioConnector.checkIncidModificationPower(userNameInSession, incidenciaIn))
                 .mapToInt(incidenciaDao::modifyIncidencia)
                 .findFirst().orElse(0);
     }
@@ -198,7 +198,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * - resolucion.fechaPrevista.
      * - resolucion.costeEstimado.
      * - resolucion.avances.
-     *
+     * <p>
      * Postconditions:
      * 1. The resolución is updated and a new avance is inserted in the DB, if that is the case.
      *
@@ -477,13 +477,12 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Preconditions:
      * 1. The user is registered in the comunidad of the incidencia.
      * 2. The incidencia can be OPEN or CLOSED.
-     * @return
-     * 1. A resolucion instance is returned as produced by
+     *
+     * @return 1. A resolucion instance is returned as produced by
      * {@link IncidenciaDao#seeResolucion(long resolucionId) IncidenciaDao.seeResolucion method}
      * plus:
      * - incidencia.comunidad.c_Id
      * 2. null, there does not exists the resolucion.
-     *
      * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
      * @throws EntityException INCIDENCIA_NOT_FOUND if the incidenciaId (same as resolucionId) doesn't exist.
      */

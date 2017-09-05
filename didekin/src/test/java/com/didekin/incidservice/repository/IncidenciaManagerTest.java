@@ -244,7 +244,7 @@ public abstract class IncidenciaManagerTest {
     {
         // Premisas: usuario no ADM ni iniciador incidencia.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), 4L, incidencia.getUserName()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
         // Datos.
         incidencia = new Incidencia.IncidenciaBuilder().copyIncidencia(incidencia).descripcion("new_description").build();
         // Exec and check: returns 0.
@@ -262,7 +262,7 @@ public abstract class IncidenciaManagerTest {
         assertThat(resolBundle.getIncidImportancia().getImportancia(), is((short) 0));
         assertThat(resolBundle.getIncidImportancia().getFechaAlta(), nullValue());
         Incidencia incidencia = resolBundle.getIncidImportancia().getIncidencia();
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), 4L, incidencia.getUserName()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
         /* Data.*/
         IncidImportancia newIncidImp = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 3).usuarioComunidad(juan_plazuela23).build();
         // Exec: inserta registro incidImportancia.

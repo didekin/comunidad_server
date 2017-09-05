@@ -2,6 +2,7 @@ package com.didekin.incidservice.repository;
 
 import com.didekin.common.EntityException;
 import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -38,15 +39,13 @@ public class UserManagerConnector {
 
     /**
      * The method checks if a user initiated an incidencia or has the authority 'adm'.
-     *
-     * @param userNameInSession: user in session.
-     * @param comunidadId:       comunidad where the incidencia belongs to.
-     * @param incidUserName:     userName authoring the incidencia.
+     *  @param userNameInSession : user in session.
+     * @param incidencia : incidencia to be modified.
      */
-    boolean checkIncidModificationPower(String userNameInSession, long comunidadId, String incidUserName) throws EntityException
+    boolean checkIncidModificationPower(String userNameInSession, Incidencia incidencia) throws EntityException
     {
         logger.debug("checkIncidModificationPower()");
-        return userNameInSession.equals(incidUserName) || checkAuthorityInComunidad(userNameInSession, comunidadId);
+        return userNameInSession.equals(incidencia.getUserName()) || checkAuthorityInComunidad(userNameInSession, incidencia.getComunidadId());
     }
 
     public boolean checkUserInComunidad(String userName, long comunidadId) throws EntityException

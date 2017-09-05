@@ -3,6 +3,7 @@ package com.didekin.incidservice.repository;
 import com.didekin.common.DbPre;
 import com.didekin.common.EntityException;
 import com.didekin.common.LocalDev;
+import com.didekinlib.model.incidencia.dominio.Incidencia;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -16,7 +17,6 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.juan;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -52,7 +52,9 @@ public abstract class UserManagerConnectorTest {
         // Premises: user with rol 'inq' in DB.
         assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
         // Exec and check: user initiates incidencia.
-        assertThat(connector.checkIncidModificationPower(juan.getUserName(), 2L, juan.getUserName()), is(true));
+        assertThat(connector.checkIncidModificationPower(juan.getUserName(),
+                new Incidencia.IncidenciaBuilder().incidenciaId(2L).userName(juan.getUserName()).build()),
+                is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
