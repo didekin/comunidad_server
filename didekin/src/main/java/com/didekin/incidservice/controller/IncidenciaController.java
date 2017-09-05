@@ -165,10 +165,10 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = SEE_RESOLUCION + "/{resolucionId}", produces = MIME_JSON, method = GET)
     public Resolucion seeResolucion(@RequestHeader("Authorization") String accessToken,
-                                    @PathVariable long resolucionId) throws EntityException
+                                    @PathVariable long incidenciaId) throws EntityException
     {
         logger.debug("seeResolucion()");
-        return incidenciaManager.seeResolucion(getUserNameFromAuthentication(), resolucionId);
+        return incidenciaManager.seeResolucion(getUserNameFromAuthentication(), incidenciaId);
     }
 
     @RequestMapping(value = SEE_USERCOMUS_IMPORTANCIA + "/{incidenciaId}", produces = MIME_JSON, method = GET)

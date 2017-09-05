@@ -452,13 +452,13 @@ public class IncidenciaDao {
      * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
      * 2. null, if the resolucion does not exist.
      */
-    Resolucion seeResolucion(final long resolucionId) throws EntityException
+    Resolucion seeResolucion(final long incidenciaId) throws EntityException
     {
         logger.debug("seeResolucion()");
 
         try {
             return jdbcTemplate.queryForObject(SEE_RESOLUCION.toString(),
-                    new Object[]{resolucionId},
+                    new Object[]{incidenciaId},
                     (rs, rowNum) -> new Resolucion.ResolucionBuilder(
                             new Incidencia.IncidenciaBuilder()
                                     .incidenciaId(rs.getLong("incid_id"))
@@ -470,7 +470,7 @@ public class IncidenciaDao {
                             .fechaAlta(rs.getTimestamp("fecha_alta"))
                             .fechaPrevista(rs.getTimestamp("fecha_prevista"))
                             .moraleja(rs.getString("moraleja"))
-                            .avances(seeAvancesByResolucion(resolucionId))
+                            .avances(seeAvancesByResolucion(incidenciaId))
                             .build());
         } catch (EmptyResultDataAccessException e) {
             return null;

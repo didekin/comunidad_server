@@ -42,7 +42,7 @@ public interface IncidenciaManagerIf {
 
     List<IncidenciaUser> seeIncidsOpenByComu(String userNameFromAuthentication, long comunidadId);
 
-    Resolucion seeResolucion(String userNameFromAuthentication, long resolucionId) throws EntityException;
+    Resolucion seeResolucion(String userNameFromAuthentication, long incidenciaId) throws EntityException;
 
     int modifyResolucion(String userName, Resolucion resolucion) throws EntityException;
 

@@ -678,6 +678,18 @@ public abstract class IncidenciaManagerTest {
         );
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testSeeResolucion_2() throws EntityException
+    {
+        // Premisa: incidencia sin resolucion.
+        assertThat(incidenciaDao.seeResolucion(2L), nullValue());
+        // Exec.
+        assertThat(incidenciaManager.seeResolucion(juan.getUserName(), 2L), nullValue());
+    }
+
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})

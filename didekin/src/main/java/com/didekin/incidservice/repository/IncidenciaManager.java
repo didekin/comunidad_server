@@ -34,6 +34,7 @@ import static com.didekinlib.model.incidencia.dominio.Resolucion.doResolucionMod
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.resolucion_open_type;
+import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 
 /**
@@ -487,15 +488,16 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * @throws EntityException INCIDENCIA_NOT_FOUND if the incidenciaId (same as resolucionId) doesn't exist.
      */
     @Override
-    public Resolucion seeResolucion(String userName, long resolucionId) throws EntityException
+    public Resolucion seeResolucion(String userName, long incidenciaId) throws EntityException
     {
         logger.debug("seeResolucion()");
 
-        final Incidencia incidencia = seeIncidenciaById(resolucionId);  // INCIDENCIA_NOT_FOUND exception.
+        final Incidencia incidencia = seeIncidenciaById(incidenciaId);  // INCIDENCIA_NOT_FOUND exception.
         getUsuarioConnector().checkUserInComunidad(userName, incidencia.getComunidadId()); // USERCOMU_WRONG_INIT exception.
 
-        return of(resolucionId)
+        return of(incidenciaId)
                 .map(incidenciaDao::seeResolucion)
+                .flatMap(resolucionIn -> resolucionIn != null ? of(resolucionIn) : empty())
                 .map(resolucionIn -> new Resolucion.ResolucionBuilder(
                         new Incidencia.IncidenciaBuilder()
                                 .copyIncidencia(incidencia)
@@ -505,7 +507,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
                                 .build())
                         .copyResolucion(resolucionIn)
                         .build())
-                .findFirst().get();
+                .findFirst()
+                .orElse(null);
     }
 
     /**
