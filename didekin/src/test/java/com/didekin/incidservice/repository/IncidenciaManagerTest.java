@@ -506,15 +506,14 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeIncidImportanciaByUser_1() throws EntityException, InterruptedException, SQLException
     {
-        // Premise: existe registro de incidImportancia en BD para el usuario.
-        final IncidAndResolBundle resolBundle = incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 4L);
-        assertThat(resolBundle.getIncidImportancia().getFechaAlta(), notNullValue());
+        // Premise: existe registro de incidImportancia en BD para el usuario; incidencia sin resolución iniciada.
+        assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
         // Exec.
         IncidAndResolBundle resolBundleOut = incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 4L);
         // Check.
-        assertThat(resolBundleOut.getIncidImportancia(), is(resolBundle.getIncidImportancia()));
-        assertThat(resolBundleOut.hasResolucion(),
-                allOf(is(false), is(resolBundle.hasResolucion())));
+        assertThat(resolBundleOut.getIncidImportancia().getFechaAlta(), notNullValue());
+        assertThat(resolBundleOut.getIncidImportancia().getImportancia() > 0, is(true));
+        assertThat(resolBundleOut.hasResolucion(), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -540,15 +539,17 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testSeeIncidImportanciaByUser_3() throws EntityException
     {
-        // Caso: no hay registro incidImportancia para el usuario; existen usuarioComunidad e incidencia-comunidad.
+        // Caso: no hay registro incidImportancia para el usuario; existen usuario-comunidad e incidencia-comunidad; NO resolución asociada.
         try {
             incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
+        assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
         // Data.
         IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), 4L);
+        // Check.
         assertThat(resolBundle.getIncidImportancia(),
                 allOf(
                         hasProperty("incidencia",
@@ -585,6 +586,32 @@ public abstract class IncidenciaManagerTest {
                 )
         );
         assertThat(resolBundle.hasResolucion(), is(false));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testSeeIncidImportanciaByUser_4() throws EntityException, InterruptedException, SQLException
+    {
+        // Caso: no hay registro incidImportancia para el usuario; existen usuario-comunidad e incidencia-comunidad; SÍ resolución asociada.
+        try {
+            incidenciaDao.seeIncidImportanciaByUser(luis.getUserName(), 3L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
+        }
+        assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));
+        // Data.
+        IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(luis.getUserName(), 3L);
+        // Check.
+        assertThat(resolBundle.getIncidImportancia(),
+                allOf(
+                        hasProperty("importancia", is((short) 0)),
+                        hasProperty("fechaAlta", nullValue())
+                )
+        );
+        assertThat(resolBundle.hasResolucion(), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")

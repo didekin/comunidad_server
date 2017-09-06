@@ -124,8 +124,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 # ....................... VIEWS .............................
 
-DROP VIEW IF EXISTS incidencia_comunidad_view;
 DROP VIEW IF EXISTS incid_importancia_user_view;
+DROP VIEW IF EXISTS incidencia_comunidad_view;
 DROP VIEW IF EXISTS incid_importancia_resolucion_view;
 DROP VIEW IF EXISTS incidencia_avg_view;
 DROP VIEW IF EXISTS incidencia_comment_view;

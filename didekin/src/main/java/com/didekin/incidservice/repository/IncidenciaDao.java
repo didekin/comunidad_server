@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.didekin.incidservice.repository.IncidenciaSql.CLOSE_INCIDENCIA;
+import static com.didekin.incidservice.repository.IncidenciaSql.COUNT_RESOLUCION_BY_INCID;
 import static com.didekin.incidservice.repository.IncidenciaSql.DELETE_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.GET_INCID_BY_PK;
@@ -88,8 +89,16 @@ public class IncidenciaDao {
         return rowsUpdated;
     }
 
+    int countResolucionByIncid(long incidenciaId)
+    {
+        logger.debug("countResolucionByIncid()");
+        return jdbcTemplate.queryForObject(COUNT_RESOLUCION_BY_INCID.toString(),
+                new Object[]{incidenciaId},
+                Integer.class);
+    }
+
     /**
-     * The update controls the existence of a resolucion for the incidencia.
+     * The update query controls the existence of a resolucion for the incidencia.
      */
     int deleteIncidencia(long incidenciaId) throws EntityException
     {
@@ -376,7 +385,7 @@ public class IncidenciaDao {
      * - incidImportancia.usuarioComunidad.roles.
      * - incidImportancia.importancia.
      * - incidImportancia.fechaAlta
-     * - hasResolucion (from fechaAltaResolucion == null).
+     * - hasResolucion (from fechaAltaResolucion == null?).
      * @throws EntityException INCID_IMPORTANCIA_NOT_FOUND, if there isn't incidImportancia record for the user or the incidencia is closed.
      */
     IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
@@ -389,7 +398,6 @@ public class IncidenciaDao {
                     new Object[]{userName, incidenciaId},
                     (rs, rowNum) -> doIncidImpResolView(rs));
         } catch (EmptyResultDataAccessException e) {
-
             throw new EntityException(INCID_IMPORTANCIA_NOT_FOUND);
         }
     }
@@ -439,8 +447,7 @@ public class IncidenciaDao {
     }
 
     /**
-     * @return
-     * 1. a resolucion instance is returned with:
+     * @return 1. a resolucion instance is returned with:
      * - incidencia.incidencia_id
      * - userName.
      * - descripcion.

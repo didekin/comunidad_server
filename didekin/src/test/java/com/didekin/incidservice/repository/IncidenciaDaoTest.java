@@ -727,7 +727,10 @@ public abstract class IncidenciaDaoTest {
     public void testSeeIncidImportanciaByUser_1() throws SQLException, EntityException
     {
         // Incidencia con resolución. Hay registro incidImportancia para el usuario
+        assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));
+        // Data.
         IncidAndResolBundle resolBundle = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 3L);
+        // Check.
         assertThat(resolBundle.getIncidImportancia(),
                 allOf(
                         hasProperty("incidencia",
@@ -780,6 +783,22 @@ public abstract class IncidenciaDaoTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
+
+        // Caso: no existe la incidencia, existe el usuario.
+        try {
+            incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 999L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
+        }
+
+        // Caso: incidencia cerrada.
+        try {
+            incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 5L);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
+        }
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
@@ -788,28 +807,18 @@ public abstract class IncidenciaDaoTest {
     @Test
     public void testSeeIncidImportanciaByUser_3() throws EntityException
     {
-        // Caso: no existe la incidencia, existe el usuario.
-        try {
-            incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 999L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
-        }
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testSeeIncidImportanciaByUser_4() throws EntityException
-    {
-        // Caso: incidencia cerrada.
-        try {
-            incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 5L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
-        }
+        // Incidencia SIN resolución. Hay registro incidImportancia para el usuario
+        assertThat(incidenciaDao.countResolucionByIncid(2L), is(0));
+        // Data.
+        IncidAndResolBundle resolBundle = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 2L);
+        // Check.
+        assertThat(resolBundle.getIncidImportancia(),
+                allOf(
+                        hasProperty("fechaAlta", notNullValue()),
+                        hasProperty("importancia", is((short) 3))
+                )
+        );
+        assertThat(resolBundle.hasResolucion(), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")

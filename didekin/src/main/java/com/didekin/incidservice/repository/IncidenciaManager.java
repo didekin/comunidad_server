@@ -105,6 +105,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. If the user hasn't got now the necessary powers or a resolucion is open, an exception is thrown.
      * 2. The incidencia and all its incidenciaUsers are deleted.
      *
+     * @return number of rows deleted (1).
      * @throws EntityException INCIDENCIA_NOT_FOUND,
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         UNAUTHORIZED_TX_TO_USER.
@@ -396,7 +397,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * - a fully initialized incidencia, comunidad and usuarioComunidad.
      * - incidImportancia.importancia == 0.
      * - incidImportancia.fechaAlta == null.
-     * - hasResolucion = false.
+     * - hasResolucion = state in table of resolucion.
      *
      * @throws EntityException INCIDENCIA_NOT_FOUND (or not open)
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
@@ -408,7 +409,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
         return of(incidenciaId)
                 .filter(this::checkIncidenciaOpen) // If none, we throw at the end INCIDENCIA_NOT_FOUND.
-                .filter(incidenciaIdIn -> checkIncidImportanciaInDb(userNameInSession, incidenciaIdIn))
+                .filter(incidenciaIdIn -> checkIncidImportanciaInDb(userNameInSession, incidenciaIdIn)) // Evita exception en incidenciaDao.seeIncidImportanciaByUser().
                 .map(incidenciaIdIn -> incidenciaDao.seeIncidImportanciaByUser(userNameInSession, incidenciaIdIn))
                 .findFirst()
                 .orElseGet(() -> {
@@ -427,7 +428,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
                                                             .roles(usuarioComunidad.getRoles())
                                                             .build()
                                             ).build(),
-                                    false
+                                    incidenciaDao.countResolucionByIncid(incidenciaId) > 0
                             );
                         }
                 );

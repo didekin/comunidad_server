@@ -18,7 +18,9 @@ enum IncidenciaSql {
     CLOSE_INCIDENCIA("UPDATE " + INCID_COMU_TB + " SET fecha_cierre = NOW() " +
             " WHERE incid_id = ? and fecha_cierre IS NULL"),
 
-    DELETE_INCIDENCIA("DELETE ic FROM " + INCID_COMU_TB + " AS ic " +
+    COUNT_RESOLUCION_BY_INCID("select count(*) from " + INCID_RESOLUCION_TB + " where incid_id = ?"),
+
+    DELETE_INCIDENCIA("DELETE ic FROM " + IncidTables.INCID_COMU_TB + " AS ic " +
             " left join " + INCID_RESOLUCION_TB + " AS ir ON ic.incid_id = ir.incid_id" +
             " WHERE ir.incid_id IS NULL AND  ic.incid_id = ?"),
 
