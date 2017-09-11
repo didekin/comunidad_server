@@ -15,7 +15,6 @@ import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
 import com.didekinlib.model.incidencia.dominio.Resolucion;
 
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import java.util.List;
 
 import retrofit2.Response;
 
+import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_plazuela_23;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
@@ -150,8 +150,7 @@ abstract class IncidenciaControllerTest {
         // No hay registro: fechaAlta == null.
         assertThat(incidImportancia0.getFechaAlta(), nullValue());
         assertThat(incidImportancia0.getImportancia(), is((short) 0));
-        assertThat(incidImportancia0.getIncidencia(), hasProperty("descripcion", is("incidencia_3_1")));
-
+        // Data
         incidImportancia0 = new IncidImportancia.IncidImportanciaBuilder(
                 new Incidencia.IncidenciaBuilder().copyIncidencia(incidImportancia0.getIncidencia()).descripcion("new_3_1").build())
                 .copyIncidImportancia(incidImportancia0)
@@ -159,10 +158,6 @@ abstract class IncidenciaControllerTest {
                 .build();
 
         assertThat(ENDPOINT.modifyIncidImportancia(tokenLuis(), incidImportancia0).execute().body(), is(2));
-        incidImportancia0 = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia();
-        assertThat(incidImportancia0.getFechaAlta(), notNullValue());
-        assertThat(incidImportancia0.getImportancia(), is((short) 1));
-        assertThat(incidImportancia0.getIncidencia(), hasProperty("descripcion", is("new_3_1")));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -179,32 +174,6 @@ abstract class IncidenciaControllerTest {
         Response<Integer> response = ENDPOINT.modifyIncidImportancia("token_faked", incidImportancia).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testModifyIncidImportancia_7() throws EntityException, IOException
-    {
-        // Caso OK: usuario sin perfil administrador no tiene registro previo de incidImportancia.
-        // Premisas:
-        assertThat(IncidenciaTestUtils.paco_olmo.hasAdministradorAuthority(), is(false));
-        IncidImportancia incidImportancia = ENDPOINT.seeIncidImportancia(tokenPaco(), 7L).execute().body().getIncidImportancia();
-        Incidencia incidencia = incidImportancia.getIncidencia();
-        // IncidImportancia con importancia == 0 : condición de 'no tiene incidImportancia en BD'.
-        assertThat(incidImportancia.getImportancia(), is((short) 0));
-
-        incidImportancia = new IncidImportancia.IncidImportanciaBuilder(
-                new Incidencia.IncidenciaBuilder().copyIncidencia(incidencia).build())
-                .importancia((short) 4)
-                .build();
-
-        // Devuelve 2 porque es usuario iniciador y entra a moficar incidencia, aunque no haya cambios en ella.
-        assertThat(ENDPOINT.modifyIncidImportancia(tokenPaco(), incidImportancia).execute().body(), CoreMatchers.is(2));
-        incidImportancia = ENDPOINT.seeIncidImportancia(tokenPaco(), incidencia.getIncidenciaId()).execute().body().getIncidImportancia();
-        assertThat(incidImportancia.getImportancia(), is((short) 4));
-        assertThat(incidImportancia.getUserComu(), Is.is(IncidenciaTestUtils.paco_olmo));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -315,7 +284,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso EntityException: USERCOMU_WRONG_INIT.
         IncidenciaUser incidUserComu = IncidenciaTestUtils.doIncidenciaUser(
-                doIncidenciaWithId(luis.getUserName(), 5L, IncidenciaTestUtils.calle_plazuela_23.getC_Id(), (short) 24), luis);
+                doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 24), luis);
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidUserComu.getIncidencia(), pedro);
 
         Response<Integer> response = ENDPOINT.regIncidComment(tokenPedro(), comment).execute();
@@ -331,7 +300,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: la incidencia no existe en BD.
         IncidenciaUser incidUserComu = IncidenciaTestUtils.doIncidenciaUser(
-                doIncidenciaWithId(luis.getUserName(), 999L, IncidenciaTestUtils.calle_plazuela_23.getC_Id(), (short) 24), luis);
+                doIncidenciaWithId(luis.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 24), luis);
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidUserComu.getIncidencia(), luis);
         Response<Integer> response = ENDPOINT.regIncidComment(tokenLuis(), comment).execute();
         assertThat(response.isSuccessful(), is(false));
@@ -359,29 +328,15 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testRegIncidImportancia_1() throws EntityException, IOException
     {
-        // Caso OK: usuario registrado en comunidad. IncidImportancia completa.
-        Incidencia incidencia = IncidenciaTestUtils.doIncidencia(luis.getUserName(), "incidencia_6_4", IncidenciaTestUtils.calle_plazuela_23.getC_Id(), (short) 14);
+        // Caso OK: usuario NO adm registrado en comunidad. No existe registro previo de incidencia.
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), 4L), is(false));
+        // Data.
+        Incidencia incidencia = IncidenciaTestUtils.doIncidencia(luis.getUserName(), "incidencia_6_4", calle_plazuela_23.getC_Id(), (short) 14);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 3)
                 .build();
+        // Exec and check: inserta incidencia e incidenciImportancia.
         assertThat(ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute().body(), is(2));
-
-        long incidenciaId = ENDPOINT.seeIncidsOpenByComu(tokenLuis(), IncidenciaTestUtils.calle_plazuela_23.getC_Id())
-                .execute().body().get(1).getIncidencia().getIncidenciaId();
-        IncidImportancia incidImportanciaDB =
-                ENDPOINT.seeIncidImportancia(tokenLuis(), incidenciaId).execute().body().getIncidImportancia();
-        assertThat(incidImportanciaDB, allOf(
-                hasProperty("incidencia", hasProperty("comunidad", Is.is(IncidenciaTestUtils.calle_plazuela_23))),
-                hasProperty("importancia", is((short) 3)),
-                hasProperty("userComu", allOf(
-                        hasProperty("usuario", allOf(
-                                hasProperty("uId", Is.is(luis.getuId())),
-                                hasProperty("userName", Is.is(luis.getUserName())),
-                                hasProperty("alias", Is.is(luis.getAlias()))
-                        )),
-                        hasProperty("comunidad", hasProperty("c_Id", Is.is(IncidenciaTestUtils.calle_plazuela_23.getC_Id())))
-                ))
-        ));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
@@ -390,24 +345,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testRegIncidImportancia_2() throws EntityException, IOException
     {
-        // Caso: falla la restricción usuario está registrado en incidencia.comunidad.
-        Incidencia incidencia = IncidenciaTestUtils.doIncidencia(pedro.getUserName(), "incidencia_6_4", IncidenciaTestUtils.calle_plazuela_23.getC_Id(), (short) 14);
-        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
-                .importancia((short) 1)
-                .build();
-
-        Response<Integer> response = ENDPOINT.regIncidImportancia(tokenPedro(), incidImportancia).execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testRegIncidImportancia_3() throws EntityException, IOException
-    {
-        // Caso: no existe la comunidad en la incidencia.
+        // Caso: no existe la comunidad asociada la incidencia.
         Incidencia incidencia = IncidenciaTestUtils.doIncidencia(luis.getUserName(), "incidencia_6_4", 999L, (short) 14);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 1)
@@ -422,24 +360,7 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_4() throws EntityException, IOException
-    {
-        // Caso: no existe el usuario que intenta el registro de la incidencia.
-        Incidencia incidencia = IncidenciaTestUtils.doIncidencia(luis.getUserName(), "incidencia_6_4", 999L, (short) 14);
-        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
-                .importancia((short) 1)
-                .build();
-
-        Response<Integer> response = ENDPOINT.regIncidImportancia("no_existo", incidImportancia).execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testRegIncidImportancia_5() throws EntityException, IOException
+    public void testRegIncidImportancia_3() throws EntityException, IOException
     {
         // Caso: incidencia ya dada de alta en BD. Registro devuelve '1', en lugar de '2'.
         Incidencia incidencia = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia().getIncidencia();
@@ -612,7 +533,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidsOpenByComu_4() throws IOException
     {
         // Caso: usuario no relacionado con la comunidad.
-        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), IncidenciaTestUtils.calle_plazuela_23.getC_Id()).execute();
+        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), calle_plazuela_23.getC_Id()).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }

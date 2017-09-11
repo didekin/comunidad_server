@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
-import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
@@ -122,8 +121,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
     /**
      * Preconditions:
-     * 1. The user has powers to modify the incidencia: he/she is the user who initiates the incidencia or has adm function rol.
-     * 2. The incidencia is OPEN.
+     * 1. Incidencia.incidenciaId > 0 and Incidencia.userName != null.
+     * 2. The user has powers to modify the incidencia: he/she is the user who initiates the incidencia or has adm function rol.
      * Postconditions:
      * 1. The incidencia is modified in BD.
      *
@@ -134,12 +133,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         INCIDENCIA_USER_WRONG_INIT.
      */
-    @Override
-    public int modifyIncidencia(String userNameInSession, final Incidencia incidencia) throws EntityException
+    int modifyIncidencia(String userNameInSession, final Incidencia incidencia) throws EntityException
     {
         logger.debug("modifyIncidencia()");
 
-        if (incidencia == null || incidencia.getUserName() == null) {
+        if (incidencia == null || incidencia.getIncidenciaId() <= 0 || incidencia.getUserName() == null) {
             throw new EntityException(INCIDENCIA_USER_WRONG_INIT);
         }
         return of(incidencia)
@@ -168,10 +166,14 @@ class IncidenciaManager implements IncidenciaManagerIf {
     {
         logger.debug("modifyIncidImportancia()");
 
+        // Checking invariants.
+        checkIncidenciaOpen(incidImportancia.getIncidencia().getIncidenciaId());
+        getUsuarioConnector().checkUserInComunidad(userNameInSession, incidImportancia.getIncidencia().getComunidadId());
+
         // Modificamos incidencia.
         int rowsIncidMod = modifyIncidencia(userNameInSession, incidImportancia.getIncidencia());
 
-        // Registramos o modificamos incidImportancia: registramos si modificación devuelve entero < 1.
+        // Registramos o modificamos incidImportancia.
         int rowsIncidImpMod = of(incidImportancia)
                 .filter(incidImpIn -> incidImpIn.getImportancia() > 0)
                 .map(incidImpIn -> new IncidImportancia.IncidImportanciaBuilder(incidImpIn.getIncidencia())
@@ -186,8 +188,8 @@ class IncidenciaManager implements IncidenciaManagerIf {
                         .importancia(incidImpIn.getImportancia())
                         .build()
                 ).mapToInt(
-                        incidImpIn -> incidenciaDao.modifyIncidImportancia(incidImpIn) < 1 ? regIncidImportancia(userNameInSession, incidImpIn) : 1
-                ).findFirst().orElseThrow(() -> new EntityException(INCID_IMPORTANCIA_WRONG_INIT));  // Exception related to filter pass 0.
+                        incidImpIn -> incidenciaDao.modifyIncidImportancia(incidImpIn) < 1 ? regIncidImportancia(userNameInSession, incidImpIn) : 1  //registramos si modificación devuelve entero < 1
+                ).findFirst().orElseThrow(() -> new EntityException(INCID_IMPORTANCIA_WRONG_INIT));  // Exception related to filter importancia MUST be > 0.
 
         return rowsIncidMod + rowsIncidImpMod;
     }
@@ -246,8 +248,6 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
 
     /**
-     * Preconditions:
-     * 1. The user is registered in the comunidad of the incidencia. It may have a gcm token in data base.
      * Postconditions:
      * 1. the incidencia is inserted in the DB, if necessary.
      * 2. A data message is sent to the GCM server if the incidencia is inserted.
@@ -257,16 +257,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * @param incidencia : an Incidencia instance with userName.
      * @return Incidencia: the incidencia inserted or the one already in BD.
      * @throws EntityException INCIDENCIA_NOT_REGISTERED (if a SQLException is thrown).
+     *                         INCIDENCIA_NOT_FOUND if the incidencia is closed.
      */
-    @Override
-    public Incidencia regIncidencia(Incidencia incidencia) throws EntityException
+    Incidencia regIncidencia(Incidencia incidencia) throws EntityException
     {
         logger.debug("regIncidencia()");
-
-        // Si la incidencia ya está registrada y abierta, la devolvemos; si no, lanzamos una excepción 'incidencia not found'.
-        if (incidencia.getIncidenciaId() > 0L && checkIncidenciaOpen(incidencia.getIncidenciaId())) {
-            return incidencia;
-        }
 
         return of(incidencia)
                 .filter(incidencia1 -> incidencia.getIncidenciaId() == 0L)
@@ -275,9 +270,6 @@ class IncidenciaManager implements IncidenciaManagerIf {
                     try {
                         pK = incidenciaDao.regIncidencia(incidencia1);
                     } catch (SQLException e) {
-                        if (e.getMessage().contains(EntityException.COMUNIDAD_FK)) {
-                            throw new EntityException(COMUNIDAD_NOT_FOUND);
-                        }
                         throw new EntityException(INCIDENCIA_NOT_REGISTERED);
                     }
                     return new Incidencia.IncidenciaBuilder()
@@ -288,7 +280,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
                 .peek(incidencia1 -> {
                     GcmIncidRequestData requestData = new GcmIncidRequestData(incidencia_open_type, incidencia1.getComunidadId());
                     gcmUserComuService.sendGcmMessageToComunidad(incidencia1, requestData);
-                }).findFirst().get();
+                }).findFirst().orElse(incidencia);  // Return original parameter if incidenciaId != 0
     }
 
     /**
@@ -311,15 +303,22 @@ class IncidenciaManager implements IncidenciaManagerIf {
     public int regIncidImportancia(String userName, IncidImportancia incidImportancia) throws EntityException
     {
         logger.debug("regIncidImportancia()");
-        long incidenciaIdIn = incidImportancia.getIncidencia().getIncidenciaId();
 
-        return of(incidImportancia.getIncidencia())
+        Incidencia incidencia = incidImportancia.getIncidencia();
+
+        return of(incidencia)
                 .filter(incidenciaIn -> usuarioConnector.checkUserInComunidad(userName, incidenciaIn.getComunidadId()))
-                .map(incidenciaIn -> regIncidencia(
-                        new Incidencia.IncidenciaBuilder()
-                                .copyIncidencia(incidenciaIn)
-                                .userName(userName)
-                                .build()))
+                .map(incidenciaIn -> {
+                    // Si la incidencia ya está registrada y abierta, la devolvemos.
+                    if (incidenciaIn.getIncidenciaId() > 0L && checkIncidenciaOpen(incidenciaIn.getIncidenciaId())) { // INCIDENCIA_NOT_FOUND.
+                        return incidenciaIn;
+                    }
+                    return regIncidencia(
+                            new Incidencia.IncidenciaBuilder()
+                                    .copyIncidencia(incidenciaIn)
+                                    .userName(userName)
+                                    .build());
+                })
                 .map(incidenciaOut -> incidenciaDao.regIncidImportancia(
                         new IncidImportancia.IncidImportanciaBuilder(regIncidencia(incidenciaOut))
                                 .usuarioComunidad(usuarioConnector.completeUserAndComuRoles(userName, incidenciaOut.getComunidadId()))
@@ -327,7 +326,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
                                 .build()
                         )
                 )
-                .map(rowsUpdated -> (incidenciaIdIn == 0L) ? ++rowsUpdated : rowsUpdated)
+                .map(rowsUpdated -> (incidencia.getIncidenciaId() == 0L) ? ++rowsUpdated : rowsUpdated)
                 .findFirst().get();
     }
 

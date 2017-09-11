@@ -28,7 +28,6 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -55,10 +54,12 @@ import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_OPEN_
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_RESOLUCION;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_USER_COMUS_IMPORTANCIA;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.stream.Stream.of;
 
 /**
@@ -151,6 +152,16 @@ public class IncidenciaDao {
         return rowsSelected > 0;
     }
 
+    /**
+     * Preconditions:
+     * 2. The incidencia is OPEN (checked in sql query).
+     * Postconditions:
+     * 1. The incidencia is modified in BD.
+     *
+     * @param incidencia : an Incidencia instance with incidenciaId, descripcion and ambitoId.
+     * @return number of rows modified in DB (0 or 1).
+     * @throws EntityException INCIDENCIA_NOT_FOUND (or closed).
+     */
     int modifyIncidencia(Incidencia incidencia)
     {
         logger.debug("modifyIncidencia()");
@@ -192,6 +203,9 @@ public class IncidenciaDao {
                 .findFirst().orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
     }
 
+    /**
+     *  @return 1 if incidImportancia is updated; 0 if not (incidencia is closed, p.e.)
+     */
     int modifyIncidImportancia(IncidImportancia incidImportancia) throws EntityException
     {
         logger.debug("modifyIncidImportancia()");
@@ -237,6 +251,36 @@ public class IncidenciaDao {
         return insertedRow;
     }
 
+    /**
+     * @return incidenciaId.
+     */
+    long regIncidencia(Incidencia incidencia) throws SQLException, EntityException
+    {
+        logger.debug("regIncidencia()");
+        ResultSet rs;
+        long incidenciaPk;
+
+        try (Connection conn = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement regIncidencia = conn.prepareStatement(REG_INCID.toString(), RETURN_GENERATED_KEYS)) {
+
+            regIncidencia.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
+            regIncidencia.setLong(2, incidencia.getComunidad().getC_Id());
+            regIncidencia.setString(3, incidencia.getUserName());
+            regIncidencia.setString(4, incidencia.getDescripcion());
+            regIncidencia.setShort(5, incidencia.getAmbitoIncidencia().getAmbitoId());
+            regIncidencia.setNull(6, JDBCType.TIMESTAMP.getVendorTypeNumber());
+            regIncidencia.executeUpdate();
+
+            rs = regIncidencia.getGeneratedKeys();
+            if (rs.next()) {
+                incidenciaPk = rs.getLong(1);
+            } else {
+                throw new EntityException(INCIDENCIA_NOT_REGISTERED);
+            }
+        }
+        return incidenciaPk;
+    }
+
     int regIncidImportancia(IncidImportancia incidImportancia) throws EntityException
     {
         logger.debug("regIncidImportancia()");
@@ -253,34 +297,6 @@ public class IncidenciaDao {
             throw de;
         }
         return rowInserted;
-    }
-
-    long regIncidencia(Incidencia incidencia) throws SQLException
-    {
-        logger.debug("regIncidencia()");
-        ResultSet rs;
-        long incidenciaPk;
-
-        try (Connection conn = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement regIncidencia = conn.prepareStatement(REG_INCID.toString(), Statement.RETURN_GENERATED_KEYS)) {
-
-            regIncidencia.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
-            regIncidencia.setLong(2, incidencia.getComunidad().getC_Id());
-            regIncidencia.setString(3, incidencia.getUserName());
-            regIncidencia.setString(4, incidencia.getDescripcion());
-            regIncidencia.setShort(5, incidencia.getAmbitoIncidencia().getAmbitoId());
-            regIncidencia.setNull(6, JDBCType.TIMESTAMP.getVendorTypeNumber());
-            regIncidencia.executeUpdate();
-
-            rs = regIncidencia.getGeneratedKeys();
-            if (rs.next()) {
-                incidenciaPk = rs.getLong(1);
-            } else {
-                throw new SQLException(EntityException.GENERATED_KEY);
-            }
-        }
-
-        return incidenciaPk;
     }
 
     int regResolucion(Resolucion resolucion) throws EntityException

@@ -22,13 +22,9 @@ public interface IncidenciaManagerIf {
 
     int deleteIncidencia(String userNameInSession, long incidenciaId) throws EntityException;
 
-    int modifyIncidencia(String userNameInSession, Incidencia incidencia) throws EntityException;
-
     int modifyIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws EntityException;
 
     int regIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws EntityException;
-
-    Incidencia regIncidencia(Incidencia incidencia) throws EntityException;
 
     int regIncidComment(String userNameFromAuthentication, IncidComment build) throws EntityException;
 
