@@ -37,7 +37,6 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco_plazuela23;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
@@ -353,7 +352,10 @@ public abstract class IncidenciaDaoTest {
         // Premisa.
         assertThat(resolucion.getAvances().size(), is(2));
 
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
+        Avance avance = new Avance.AvanceBuilder()
+                .avanceDesc("avance3")
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build();
         assertThat(incidenciaDao.regAvance(resolucion.getIncidencia().getIncidenciaId(), avance), is(1));
         List<Avance> avances = incidenciaDao.seeAvancesByResolucion(resolucion.getIncidencia().getIncidenciaId());
         assertThat(avances.size(), is(3));
@@ -371,7 +373,10 @@ public abstract class IncidenciaDaoTest {
         // Premisa.
         assertThat(resolucion.getAvances().size(), is(0));
 
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance1").userName(resolucion.getUserName()).build();
+        Avance avance = new Avance.AvanceBuilder()
+                .avanceDesc("avance1")
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build();
         assertThat(incidenciaDao.regAvance(resolucion.getIncidencia().getIncidenciaId(), avance), is(1));
         List<Avance> avances = incidenciaDao.seeAvancesByResolucion(resolucion.getIncidencia().getIncidenciaId());
         assertThat(avances.size(), is(1));
@@ -395,7 +400,7 @@ public abstract class IncidenciaDaoTest {
                 .build();
 
         Avance avance = new Avance.AvanceBuilder().avanceDesc("avanceCrash")
-                .userName(resolucion.getUserName())
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
                 .build();
         try {
             incidenciaDao.regAvance(resolucion.getIncidencia().getIncidenciaId(), avance);
@@ -641,7 +646,8 @@ public abstract class IncidenciaDaoTest {
         assertThat(avances.get(0), allOf(
                 hasProperty("avanceId", is(1L)),
                 hasProperty("avanceDesc", is("descripcion_avance_1_3")),
-                hasProperty("userName", is(pedro.getUserName()))
+                hasProperty("userName", is(pedro.getUserName())),
+                hasProperty("alias", is(pedro.getAlias()))
         ));
         assertThat(avances.get(0).getFechaAlta().getTime() > 0L, is(true));
     }
@@ -985,6 +991,7 @@ public abstract class IncidenciaDaoTest {
                 allOf(
                         hasProperty("avanceDesc", is("descripcion_avance_1_3")),
                         hasProperty("userName", is(pedro.getUserName())),
+                        hasProperty("alias", is(pedro.getAlias())),
                         hasProperty("fechaAlta", notNullValue())
                 )
         );

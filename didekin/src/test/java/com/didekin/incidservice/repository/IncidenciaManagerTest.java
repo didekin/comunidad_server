@@ -9,6 +9,7 @@ import com.didekinlib.model.incidencia.dominio.IncidImportancia;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
 import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
@@ -120,7 +121,10 @@ public abstract class IncidenciaManagerTest {
         final Incidencia incidencia = incidenciaManager.seeIncidenciaById(resolucion.getIncidencia().getIncidenciaId());
         assertThat(incidencia.getFechaCierre(), nullValue());
         // Nuevos datos.
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
+        Avance avance = new Avance.AvanceBuilder()
+                .avanceDesc("avance3")
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build();
         List<Avance> avances = new ArrayList<>(1);
         avances.add(avance);
         Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));
@@ -381,7 +385,10 @@ public abstract class IncidenciaManagerTest {
         assertThat(resolucion.getAvances().size(), is(2));
 
         // Nuevos datos, con nuevo avance.
-        Avance avance = new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build();
+        Avance avance = new Avance.AvanceBuilder()
+                .avanceDesc("avance3")
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build();
         List<Avance> avances = new ArrayList<>(1);
         avances.add(avance);
         Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));

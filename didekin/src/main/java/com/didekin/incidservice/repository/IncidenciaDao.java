@@ -551,7 +551,11 @@ public class IncidenciaDao {
             return new Avance.AvanceBuilder()
                     .avanceId(rs.getLong("avance_id"))
                     .avanceDesc(rs.getString("descripcion"))
-                    .userName(rs.getString("user_name"))
+                    .author(
+                            new Usuario.UsuarioBuilder()
+                                    .userName(rs.getString("user_name"))
+                                    .alias(rs.getString("alias"))
+                                    .build())
                     .fechaAlta(rs.getTimestamp("fecha_alta"))
                     .build();
         }

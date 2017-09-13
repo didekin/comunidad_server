@@ -14,8 +14,8 @@ import com.didekinlib.model.incidencia.dominio.IncidImportancia;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
 import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.usuario.Usuario;
 
-import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,6 @@ import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INC
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
@@ -186,7 +185,10 @@ abstract class IncidenciaControllerTest {
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
         // Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
-        avances.add(new Avance.AvanceBuilder().avanceDesc("avance3").userName(resolucion.getUserName()).build());
+        avances.add(new Avance.AvanceBuilder()
+                .avanceDesc("avance3")
+                .author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build());
         Timestamp fechaPrevNew = Timestamp.from(now().plus(5, ChronoUnit.MINUTES));
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
@@ -254,7 +256,9 @@ abstract class IncidenciaControllerTest {
 
         // Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
-        avances.add(new Avance.AvanceBuilder().avanceDesc("").userName(resolucion.getUserName()).build());
+        avances.add(new Avance.AvanceBuilder()
+                .avanceDesc("").author(new Usuario.UsuarioBuilder().userName(resolucion.getUserName()).build())
+                .build());
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
                 .avances(avances)

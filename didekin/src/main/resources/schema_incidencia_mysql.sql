@@ -113,6 +113,7 @@ CREATE TABLE incidencia_res_avance
   descripcion VARCHAR(250)     NOT NULL,
   fecha_alta  TIMESTAMP(2)     NOT NULL DEFAULT CURRENT_TIMESTAMP(2),
   PRIMARY KEY (avance_id),
+  INDEX user_name_author (user_name),
   INDEX id_parent_incidencia (incid_id),
   FOREIGN KEY (incid_id)
   REFERENCES incidencia (incid_id)

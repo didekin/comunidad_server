@@ -68,8 +68,11 @@ enum IncidenciaSql {
             " (incid_id, user_name, plan, coste_estimado, fecha_prevista) " +
             " VALUES (?,?,?,?,?)"),
 
-    SEE_AVANCES_BY_RESOLUCION("select * from " + INCID_RESOLUCION_AVANCE_TB +
-            " where incid_id = ? order by fecha_alta"),
+    SEE_AVANCES_BY_RESOLUCION("SELECT ra.*, u.alias " +
+            " FROM " + INCID_RESOLUCION_AVANCE_TB + " AS ra " +
+            " LEFT JOIN " + USUARIO_TB + " AS u " +
+            " USING (user_name) " +
+            " WHERE incid_id = ? ORDER BY fecha_alta"),
 
     SEE_COMMENTS_BY_INCID("select comment_id, descripcion, fecha_alta," +
             " incid_id, c_id, " +
