@@ -125,7 +125,6 @@ public class UserComuController extends AppControllerAbstract {
         // TODO: si la comunidad ya existe y el userComu no, hacer un regUserAndUserComu.
         // TODO: si el userComu existe y la comunidad no, hacer un regComuAndUserComu.
         // TODO: si existen ambos, pero el userComu no pertenece a la comunidad, hacer un RegUserComu.
-        // TODO: hay que validar que una comunidad no tiene más de un presidente o más de un administrador.
 
         // TODO: algo similar hay que hacer en el resto de acciones de registro.
     }
