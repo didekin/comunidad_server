@@ -1,1 +1,1 @@
-web: java -jar build/libs/didekin_web.jar
+web: java -jar build/libs/didekin-web.jar
