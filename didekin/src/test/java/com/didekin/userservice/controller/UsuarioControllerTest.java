@@ -54,6 +54,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getUserData;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.insertUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
@@ -195,8 +196,8 @@ public abstract class UsuarioControllerTest {
         Usuario usuarioDB = getUserData(USER_JUAN, USER_ENDPOINT, retrofitHandler);
 
         assertThat(usuarioDB.getuId() > 0, is(true));
-        assertThat(usuarioDB.getUserName(), is("juan@juan.us"));
-        assertThat(usuarioDB.getAlias(), is("juan"));
+        assertThat(usuarioDB.getUserName(), is(juan.getUserName()));
+        assertThat(usuarioDB.getAlias(), is(juan.getAlias()));
         assertThat(usuarioDB.getPassword(), nullValue());
     }
 

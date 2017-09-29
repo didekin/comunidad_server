@@ -172,9 +172,9 @@ public class ComunidadDao {
                 usuarioComunidad.getComunidad().getC_Id(),
                 usuarioComunidad.getUsuario().getuId(),
                 usuarioComunidad.getPortal(),
-                usuarioComunidad.getPuerta(),
                 usuarioComunidad.getEscalera(),
                 usuarioComunidad.getPlanta(),
+                usuarioComunidad.getPuerta(),
                 usuarioComunidad.getRoles(),
                 null,
                 null

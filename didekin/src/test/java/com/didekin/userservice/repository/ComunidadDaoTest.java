@@ -17,9 +17,11 @@ import java.util.List;
 
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_10;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
@@ -168,45 +170,15 @@ public abstract class ComunidadDaoTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testInsertUsuarioComunidad_1() throws SQLException, EntityException
-    {
-        Comunidad comunidad = comunidadDao.getComunidadById(3L);
-        Usuario usuario = usuarioDao.getUsuarioById(7L);
-
-        UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
-                .portal("portal")
-                .escalera("esc")
-                .planta("1")
-                .puerta("door")
-                .roles(INQUILINO.function)
-                .build();
-
-        Connection conn = null;
-        int rowsInsert;
-
-        try {
-            conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
-            rowsInsert = comunidadDao.insertUsuarioComunidad(usuarioCom, conn);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
-        assertThat(rowsInsert, is(1));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testInsertUsuarioComunidad_2() throws EntityException
+    public void testInsertUsuarioComunidad() throws EntityException
     {
         // Necesito userName, no sólo uId, como en el caso de la comunidad.
-        Usuario usuario = usuarioDao.getUsuarioById(11L);
-        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(3L).build();
-        UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
+
+        UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, paco)
                 .portal("portal")
                 .escalera("esc")
                 .planta("1")
@@ -216,12 +188,19 @@ public abstract class ComunidadDaoTest {
 
         int rowInserted = comunidadDao.insertUsuarioComunidad(usuarioCom);
         assertThat(rowInserted, is(1));
-        List<UsuarioComunidad> usuariosComunidad = usuarioDao.seeUserComusByUser(usuario.getUserName());
-        // Orden: comunidad 'Plazuela' < comunidad 'El Escorial' por sus municipios.
-        assertThat(usuariosComunidad.get(0).getRoles(), is("adm,pro"));
-        assertThat(usuariosComunidad.get(0).getComunidad().getNombreVia(), is("de la Plazuela"));
-        assertThat(usuariosComunidad.get(1).getRoles(), is("pre,inq"));
-        assertThat(usuariosComunidad.get(1).getComunidad().getNombreVia(), is("de El Escorial"));
+        List<UsuarioComunidad> usuariosComunidad = usuarioDao.seeUserComusByUser(paco.getUserName());
+        // Check.
+        assertThat(usuariosComunidad.get(2),
+                allOf(
+                        hasProperty("roles", is("pre,inq")),
+                        hasProperty("portal", is(usuarioCom.getPortal())),
+                        hasProperty("escalera", is(usuarioCom.getEscalera())),
+                        hasProperty("planta", is(usuarioCom.getPlanta())),
+                        hasProperty("puerta", is(usuarioCom.getPuerta())),
+                        hasProperty("comunidad", is(calle_el_escorial)),
+                        hasProperty("usuario", is(paco))
+                )
+        );
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -424,7 +403,7 @@ public abstract class ComunidadDaoTest {
         assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSearchComunidad_9() throws SQLException, EntityException
@@ -440,9 +419,9 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portal1", "esc2", "planta3", "puerta12",
+        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, juan, "portal1", "esc2", "planta3", "puerta12",
                 PROPIETARIO.function);
-        boolean rowInserted = sujetosService.regComuAndUserAndUserComu(userComu);
+        boolean rowInserted = sujetosService.regComuAndUserComu(userComu);
         assertThat(rowInserted, is(true));
 
         // Datos de comunidad de búsqueda.

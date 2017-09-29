@@ -310,7 +310,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     public int modifyComuData(Usuario user, Comunidad comunidad) throws EntityException
     {
         logger.info("modifyComuData()");
-        if (isOldestUserComu(user, comunidad.getC_Id())) {
+        if (checkComuDataModificationPower(user, comunidad)) {
             return comunidadDao.modifyComuData(comunidad);
         }
         throw new EntityException(UNAUTHORIZED_TX_TO_USER);
@@ -649,5 +649,20 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.info("seeUserComusByUser()");
         return usuarioDao.seeUserComusByUser(userName);
+    }
+
+    // =================================  CHECKERS ======================================
+
+    /**
+     * The method checks if a user is the oldest one in the comunidad or has the authority 'adm'.
+     *
+     * @param user      : user in session.
+     * @param comunidad : comunidad to be modified.
+     */
+    @Override
+    public boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws EntityException
+    {
+        logger.debug("checkIncidModificationPower()");
+        return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
     }
 }

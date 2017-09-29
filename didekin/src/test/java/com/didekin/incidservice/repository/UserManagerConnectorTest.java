@@ -13,10 +13,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.juan;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -94,7 +94,7 @@ public abstract class UserManagerConnectorTest {
         assertThat(connector.completeUserAndComuRoles(luis.getUserName(), 1L),
                 allOf(
                         hasProperty("usuario", hasProperty("userName", is("luis@luis.com"))),
-                        hasProperty("roles", is("adm,pre,pro"))
+                        hasProperty("roles", is("adm,pro"))
                 )
         );
     }

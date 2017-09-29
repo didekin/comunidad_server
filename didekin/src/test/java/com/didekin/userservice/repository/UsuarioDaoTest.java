@@ -2,7 +2,6 @@ package com.didekin.userservice.repository;
 
 
 import com.didekin.common.EntityException;
-import com.didekin.incidservice.testutils.IncidenciaTestUtils;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
@@ -18,10 +17,12 @@ import java.util.List;
 
 import static com.didekin.common.EntityException.DUPLICATE_ENTRY;
 import static com.didekin.common.EntityException.USER_NAME;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USER_COMU_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -51,9 +52,9 @@ public abstract class UsuarioDaoTest {
     @Test()
     public void testDeleteGcmToken()
     {
-        assertThat(usuarioDao.modifyUserGcmToken(IncidenciaTestUtils.paco), is(1));
-        assertThat(usuarioDao.getUsuarioWithGcmToken(11L).getGcmToken(), CoreMatchers.is(IncidenciaTestUtils.paco.getGcmToken()));
-        assertThat(usuarioDao.deleteGcmToken(IncidenciaTestUtils.paco.getGcmToken()), is(1));
+        assertThat(usuarioDao.modifyUserGcmToken(UsuarioTestUtils.paco), is(1));
+        assertThat(usuarioDao.getUsuarioWithGcmToken(11L).getGcmToken(), CoreMatchers.is(UsuarioTestUtils.paco.getGcmToken()));
+        assertThat(usuarioDao.deleteGcmToken(UsuarioTestUtils.paco.getGcmToken()), is(1));
         assertThat(usuarioDao.getUsuarioWithGcmToken(11L).getGcmToken(), nullValue());
     }
 
@@ -143,8 +144,8 @@ public abstract class UsuarioDaoTest {
         assertThat(roles, hasItems("adm", "inq"));
 
         roles = usuarioDao.getAllRolesFunctionalUser("luis@luis.com");
-        assertThat(roles.size(), equalTo(3));
-        assertThat(roles, hasItems("adm", "pro", "pre"));
+        assertThat(roles.size(), equalTo(2));
+        assertThat(roles, hasItems("adm", "pro"));
 
         roles = usuarioDao.getAllRolesFunctionalUser("juan@noauth.com");
         assertThat(roles.size(), equalTo(1));
@@ -239,7 +240,7 @@ public abstract class UsuarioDaoTest {
                                 )
                         ),
                         hasProperty("comunidad", hasProperty("c_Id", is(2L))),
-                        hasProperty("roles", is("adm"))
+                        hasProperty("roles", is("adm,inq"))
                 )
         );
 
@@ -295,7 +296,7 @@ public abstract class UsuarioDaoTest {
         assertThat(UsuarioTestUtils.USER_PACO.getuId() > maxPk, is(true));
 
         maxPk = usuarioDao.getMaxPk();
-        long pkUsuario = usuarioDao.insertUsuario(UsuarioTestUtils.USER_JUAN2, conn);
+        long pkUsuario = usuarioDao.insertUsuario(UsuarioTestUtils.USER_LUIS, conn);
         assertThat(pkUsuario == maxPk + 1, is(true));
         if (conn != null) {
             conn.close();
@@ -413,78 +414,71 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testSeeUserComusByComu_1()
     {
-        //Comunidad 1 con dos usuarios.
-        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(1L);
+        // Comunidad 4 con dos usuarios.
+        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(4L);
         assertThat(usuariosComu.size(), is(2));
-        assertThat(usuariosComu.get(0).getUsuario().getUserName(), is("luis@luis.com"));
-        assertThat(usuariosComu.get(1).getUsuario().getUserName(), is("pedro@pedro.com"));
-
-        // Comunidad 4 con un usuario.
-        usuariosComu = usuarioDao.seeUserComusByComu(4L);
-        assertThat(usuariosComu.size(), is(1));
         // Datos usuario:
-        assertThat(usuariosComu.get(0).getUsuario().getUserName(), is("paco@paco.com"));
-        assertThat(usuariosComu.get(0).getUsuario().getAlias(), is("paco"));
-        assertThat(usuariosComu.get(0).getUsuario().getuId(), is(11L));
+        assertThat(usuariosComu.get(1).getUsuario().getUserName(), is("paco@paco.com"));
+        assertThat(usuariosComu.get(1).getUsuario().getAlias(), is("paco"));
+        assertThat(usuariosComu.get(1).getUsuario().getuId(), is(11L));
         // Datos comunidad:
-        assertThat(usuariosComu.get(0).getComunidad().getC_Id(), is(4L));
+        assertThat(usuariosComu.get(1).getComunidad().getC_Id(), is(4L));
         // Datos usuarioComunidad:
-        assertThat(usuariosComu.get(0).getPortal(), is("BC"));
-        assertThat(usuariosComu.get(0).getEscalera(), is(nullValue()));
-        assertThat(usuariosComu.get(0).getPlanta(), is(nullValue()));
-        assertThat(usuariosComu.get(0).getPuerta(), is(nullValue()));
-        assertThat(usuariosComu.get(0).getRoles(), is("adm,pro"));
+        assertThat(usuariosComu.get(1).getPortal(), is("BC"));
+        assertThat(usuariosComu.get(1).getEscalera(), is(nullValue()));
+        assertThat(usuariosComu.get(1).getPlanta(), is(nullValue()));
+        assertThat(usuariosComu.get(1).getPuerta(), is(nullValue()));
+        assertThat(usuariosComu.get(1).getRoles(), is("adm,pro"));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSeeUserComusByUser_1()
+    public void testSeeUserComusByUser()
     {
-        List<UsuarioComunidad> comunidades = usuarioDao.seeUserComusByUser("luis@luis.com");
-        UsuarioComunidad usuarioComunidad = comunidades.get(0);
-        // Devuelve los roles en el orden definido en la tabla DB, no en el orden de inserción de los roles.
-        assertThat(usuarioComunidad.getRoles(), is("adm,pre,pro"));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testSeeUserComusByUser_2()
-    {
+        // Usuario con 2 comunidades.
+        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser(juan.getUserName());
+        assertThat(userComunidades.size(), is(2));
+        assertThat(userComunidades, hasItems(juan_plazuela23, juan_lafuente));
         // Verificación de datos de comunidad.
-        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser("juan@noauth.com");
-        UsuarioComunidad userComuJuan = userComunidades.get(0);
-        Comunidad comuLaFuente = userComuJuan.getComunidad();
-
-        assertThat(comuLaFuente.getNombreComunidad(), CoreMatchers.is(UsuarioTestUtils.COMU_LA_FUENTE.getNombreComunidad()));
-        assertThat(comuLaFuente.getMunicipio().getNombre(), is("Elda"));
-        assertThat(comuLaFuente.getMunicipio().getProvincia().getNombre(), is("Alicante/Alacant"));
-
+        assertThat(userComunidades.get(0).getComunidad(),
+                allOf(
+                        hasProperty("c_Id", is(calle_plazuela_23.getC_Id())),
+                        hasProperty("tipoVia", is(calle_plazuela_23.getTipoVia())),
+                        hasProperty("nombreVia", is(calle_plazuela_23.getNombreVia())),
+                        hasProperty("numero", is(calle_plazuela_23.getNumero())),
+                        hasProperty("sufijoNumero", is(calle_plazuela_23.getSufijoNumero())),
+                        hasProperty("municipio",
+                                allOf(
+                                        hasProperty("codInProvincia", is(calle_plazuela_23.getMunicipio().getCodInProvincia())),
+                                        hasProperty("nombre", is(calle_plazuela_23.getMunicipio().getNombre())),
+                                        hasProperty("provincia",
+                                                allOf(
+                                                        hasProperty("provinciaId", is(calle_plazuela_23.getMunicipio().getProvincia().getProvinciaId())),
+                                                        hasProperty("nombre", is(calle_plazuela_23.getMunicipio().getProvincia().getNombre()))
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+        // Verificación datos de Usuario.
+        assertThat(userComunidades.get(0).getUsuario(),
+                allOf(
+                        hasProperty("uId", is(juan.getuId())),
+                        hasProperty("userName", is(juan.getUserName())),
+                        hasProperty("alias", is(juan.getAlias()))
+                )
+        );
         // Verificación datos de UsuarioComunidad.
-        userComunidades = usuarioDao.seeUserComusByUser("pedro@pedro.com");
-
-        Usuario userCheck_2 = new Usuario.UsuarioBuilder()
-                .userName("pedro@pedro.com")
-                .build();
-
-        UsuarioComunidad userComuCheck_2 = new UsuarioComunidad.UserComuBuilder(UsuarioTestUtils.COMU_LA_PLAZUELA_10bis, userCheck_2)
-                .portal("Centro")
-                .planta("3")
-                .puerta("J")
-                .roles(ADMINISTRADOR.function)
-                .build();
-
-        UsuarioComunidad userComuCheck_3 = new UsuarioComunidad.UserComuBuilder(UsuarioTestUtils.COMU_LA_FUENTE, userCheck_2)
-                .portal("A")
-                .roles(ADMINISTRADOR.function)
-                .build();
-
-        UsuarioComunidad userComuCheck_4 = new UsuarioComunidad.UserComuBuilder(UsuarioTestUtils.COMU_EL_ESCORIAL, userCheck_2)
-                .portal("A")
-                .roles(ADMINISTRADOR.function.concat(",").concat(INQUILINO.function))
-                .build();
-
-        assertThat(userComunidades, hasItems(userComuCheck_2, userComuCheck_3, userComuCheck_4));
+        assertThat(userComunidades.get(0),
+                allOf(
+                        hasProperty("portal", is(juan_plazuela23.getPortal())),
+                        hasProperty("planta", is(juan_plazuela23.getPlanta())),
+                        hasProperty("escalera", is(juan_plazuela23.getEscalera())),
+                        hasProperty("puerta", is(juan_plazuela23.getPuerta())),
+                        hasProperty("roles", is(juan_plazuela23.getRoles()))
+                )
+        );
     }
 }

@@ -100,4 +100,6 @@ public interface UsuarioManagerIf {
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad);
 
     List<UsuarioComunidad> seeUserComusByUser(String userName);
+
+    boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws EntityException;
 }

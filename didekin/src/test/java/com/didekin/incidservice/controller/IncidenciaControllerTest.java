@@ -3,7 +3,9 @@ package com.didekin.incidservice.controller;
 import com.didekin.common.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
+import com.didekin.incidservice.repository.UserManagerConnector;
 import com.didekin.incidservice.testutils.IncidenciaTestUtils;
+import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.http.retrofit.IncidenciaServEndPoints;
 import com.didekinlib.http.retrofit.RetrofitHandler;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -29,17 +31,18 @@ import java.util.List;
 
 import retrofit2.Response;
 
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.calle_plazuela_23;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis_lafuente;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.luis_plazuelas_10bis;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.paco;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.pedro_lafuente;
-import static com.didekin.incidservice.testutils.IncidenciaTestUtils.ronda_plazuela_10bis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
@@ -76,6 +79,8 @@ abstract class IncidenciaControllerTest {
     private IncidenciaManagerIf incidenciaManager;
     @Autowired
     private RetrofitHandler retrofitHandler;
+    @Autowired
+    private UserManagerConnector connector;
 
     @Before
     public void setUp() throws Exception
@@ -205,9 +210,9 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testModifyResolucion_2() throws IOException
     {
-        // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
+        // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.     TODO: fail
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 4L).execute().body();
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis_lafuente.getUsuario().getUserName(), luis_lafuente.getComunidad().getC_Id()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan_plazuela23.getUsuario().getUserName(), juan_plazuela23.getComunidad().getC_Id()), is(false));
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
@@ -386,15 +391,17 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regResolucion(tokenPedro(), resolucion).execute().body(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void testRegResolucion_2() throws IOException
     {
         // Caso: usuario sin funciones administrador.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, IncidenciaTestUtils.luis_plazuela23.getComunidad().getC_Id(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
+        // Preconditions
+        assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), calle_plazuela_23.getC_Id()), is(false));
+        Incidencia incidencia = doIncidenciaWithId(juan.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
+        Resolucion resolucion = doResolucion(incidencia, juan.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
         Response<Integer> response = ENDPOINT.regResolucion(tokenLuis(), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
@@ -407,7 +414,7 @@ abstract class IncidenciaControllerTest {
     public void testRegResolucion_3() throws IOException
     {
         // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, IncidenciaTestUtils.luis_plazuela23.getComunidad().getC_Id(), (short) 22);
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
         Response<Integer> response = ENDPOINT.regResolucion(tokenPedro(), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
@@ -503,7 +510,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testSeeIncidsClosedByComu_1() throws EntityException, InterruptedException, IOException
     {
-        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), IncidenciaTestUtils.calle_olmo_55.getC_Id()).execute().body();
+        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), UsuarioTestUtils.calle_olmo_55.getC_Id()).execute().body();
         assertThat(incidencias.size(), is(1));
     }
 
@@ -600,7 +607,7 @@ abstract class IncidenciaControllerTest {
 
     private String tokenPaco() throws IOException
     {
-        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(IncidenciaTestUtils.paco.getUserName(), IncidenciaTestUtils.paco.getPassword());
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(UsuarioTestUtils.paco.getUserName(), UsuarioTestUtils.paco.getPassword());
     }
 
     private boolean isIncidenciaFound(Response<?> responseEndPoint) throws IOException
