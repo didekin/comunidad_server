@@ -830,28 +830,28 @@ public abstract class IncidenciaDaoTest {
         assertThat(resolBundle.hasResolucion(), is(false));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void test_SeeIncidsClosedByComu_1() throws EntityException
     {
-        // Premisas: comunidad con 2 incidencias cerradas; una con antigüedad superior a 2 años.
+        // Premisas: comunidad con 1 incidencia cerrada; con antigüedad inferior a 2 años.
 
         // Check: sólo aparece la incidencia con antigüedad < 2 años.
-        List<IncidenciaUser> incidencias = incidenciaDao.seeIncidsClosedByComu(calle_olmo_55.getC_Id());
+        List<IncidenciaUser> incidencias = incidenciaDao.seeIncidsClosedByComu(calle_plazuela_23.getC_Id());
         assertThat(incidencias.size(), is(1));
         Incidencia incidencia = incidencias.get(0).getIncidencia();
         assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) > 0, is(true));
         // Check fields.
         assertThat(incidencia,
                 allOf(
-                        hasProperty("incidenciaId", is(6L)),
-                        hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))),
+                        hasProperty("incidenciaId", is(5L)),
+                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getC_Id()))),
                         hasProperty("userName", is(paco.getUserName())),
-                        hasProperty("descripcion", is("incidencia_6_6")),
-                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 33))),
-                        hasProperty("importanciaAvg", is(0f)),
+                        hasProperty("descripcion", is("incidencia_5")),
+                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 3))),
+                        hasProperty("importanciaAvg", is(2f)),
                         hasProperty("fechaAlta", notNullValue()),
                         hasProperty("fechaCierre", notNullValue())
                 )
@@ -866,8 +866,8 @@ public abstract class IncidenciaDaoTest {
                 )
         );
 
-        // Verificamos la premisa de que existe otra incidencia en misma comunidad con antigüedad > 2 años.
-        incidencia = incidenciaDao.seeIncidenciaById(8L);
+        // Verificamos que no muestra incidencias con antigüedad > 2 años.
+        incidencia = incidenciaDao.seeIncidenciaById(7L);
         assertThat(incidencia, hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))));
         assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) < 0, is(true));
     }

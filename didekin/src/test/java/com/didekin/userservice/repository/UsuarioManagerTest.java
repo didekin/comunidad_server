@@ -78,7 +78,7 @@ import static org.junit.Assert.fail;
  * test_GetAccessToken(),
  * test_GetAccessTokenByUserName().
  */
-@SuppressWarnings("OptionalGetWithoutIsPresent")
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "Duplicates"})
 public abstract class UsuarioManagerTest {
 
     @Autowired
@@ -837,6 +837,7 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_CheckComuDataModificationPower() throws Exception
     {
+        // No oldest, but adm.
         assertThat(usuarioManager.checkComuDataModificationPower(
                 new Usuario.UsuarioBuilder().copyUsuario(luis).build(), new Comunidad.ComunidadBuilder().c_id(1L).build()
         ), is(true));

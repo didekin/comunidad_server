@@ -90,8 +90,8 @@ public class UserComuController extends AppControllerAbstract {
                                            @PathVariable long comunidadId) throws EntityException
     {
         logger.debug("isOldestOrAdmonUserComu()");
-        return usuarioManager.isOldestUserComu(getUserFromDb(usuarioManager), comunidadId)
-                || usuarioManager.completeWithUserComuRoles(getUserNameFromAuthentication(), comunidadId).hasAdministradorAuthority();
+        return usuarioManager.checkComuDataModificationPower(getUserFromDb(usuarioManager),
+                new Comunidad.ComunidadBuilder().c_id(comunidadId).build());
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)

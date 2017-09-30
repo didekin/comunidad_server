@@ -108,7 +108,7 @@ enum UsuarioSql {
 
     USERCOMUS_BY_USER("select * from usuarios_comunidades_view" +
             " where user_name = ? " +
-            " ORDER BY pr_id, m_cd, nombre_via"),
+            " ORDER BY pr_id, m_cd, nombre_via, tipo_via"),
 
     USER_WITH_GCMTOKEN("SELECT u_id, alias, user_name, gcm_token " +
             " FROM usuario WHERE u_id = ?"),;

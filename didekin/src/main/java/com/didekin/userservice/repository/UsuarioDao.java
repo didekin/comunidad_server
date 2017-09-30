@@ -30,6 +30,7 @@ import static com.didekin.userservice.repository.UsuarioSql.DELETE_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_GCM_TOKEN;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_USER_COMUNIDAD;
 import static com.didekin.userservice.repository.UsuarioSql.IS_USER_IN_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USUARIO_BY_EMAIL;
@@ -302,7 +303,7 @@ public class UsuarioDao {
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
         logger.info("seeUserComusByComu(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(UsuarioSql.USERCOMUS_BY_COMU.toString(), new
+        List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(), new
                 Object[]{idComunidad}, new UsuarioComunidadMapper());
         logger.debug("seeUserComusByComu(); usuariosComunidad.size = " + usuariosComunidad.size());
         return usuariosComunidad;

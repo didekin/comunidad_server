@@ -18,8 +18,6 @@ import com.didekinlib.http.retrofit.RetrofitHandler;
 import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
 import com.didekinlib.http.retrofit.UsuarioEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -51,13 +49,17 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_TRAV_PLAZUELA_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.insertUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenLuis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPepe;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
 import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
@@ -68,11 +70,8 @@ import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -209,21 +208,15 @@ public abstract class UserComuControllerTest {
     @Test
     public void testIsOldestAdmonUserComu_1() throws IOException, EntityException
     {
-        // Oldest.
-        String token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("pedro@pedro.com", "password3");
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 1L).execute().body(), is(true));
-
-        // ADM.
-        token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("luis@luis.com", "password5");
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 1L).execute().body(), is(true));
-
-        // luis: PRO, not oldest, in comunidad 2.
-        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(2L).build();
-        UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, null).portal("portal")
-                .planta("planta2").puerta("puertaB").roles(PROPIETARIO.function).build();
-        int isInserted = USERCOMU_ENDPOINT.regUserComu(token, usuarioComunidad).execute().body();
+        // luis: PRO, not oldest, in comunidad 3.
+        UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, luis)
+                .portal("portal")
+                .planta("planta2")
+                .puerta("puertaB")
+                .roles(PROPIETARIO.function).build();
+        int isInserted = USERCOMU_ENDPOINT.regUserComu(tokenLuis(retrofitHandler), usuarioComunidad).execute().body();
         assertThat(isInserted, is(1));
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 2L).execute().body(), is(false));
+        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(tokenLuis(retrofitHandler), calle_el_escorial.getC_Id()).execute().body(), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -242,22 +235,11 @@ public abstract class UserComuControllerTest {
     @Test
     public void testModifyComuData() throws IOException
     {
-        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(3L).tipoVia("tipoV1").nombreVia("nombreV1")
-                .municipio(new Municipio((short) 13, new Provincia((short) 3))).build();
         SpringOauthToken token = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                "luis@luis.com",
-                "password5",
+                pedro.getUserName(),
+                pedro.getPassword(),
                 PASSWORD_GRANT).execute().body();
-
-        Response<Integer> response = USERCOMU_ENDPOINT.modifyComuData(HELPER.doBearerAccessTkHeader(token), comunidad).execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
-
-        token = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                "pedro@pedro.com",
-                "password3",
-                PASSWORD_GRANT).execute().body();
-        assertThat(USERCOMU_ENDPOINT.modifyComuData(HELPER.doBearerAccessTkHeader(token), comunidad).execute().body(),
+        assertThat(USERCOMU_ENDPOINT.modifyComuData(HELPER.doBearerAccessTkHeader(token), calle_el_escorial).execute().body(),
                 is(1));
     }
 
@@ -314,6 +296,7 @@ public abstract class UserComuControllerTest {
         assertThat(isRegOk, is(true));
     }
 
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegComuAndUserAndUserComu() throws IOException
     {
@@ -374,14 +357,10 @@ public abstract class UserComuControllerTest {
     public void testSeeUserComuByComu() throws IOException
     {
         // This is a registered user not asssociated to the comunidad 1 used in the tesst.
-        List<UsuarioComunidad> usuarioComus = USERCOMU_ENDPOINT.seeUserComusByComu(tokenLuis(retrofitHandler), 2L).execute().body();
-        assertThat(usuarioComus.size(), is(1));
-        assertThat(usuarioComus.get(0).getUsuario().getUserName(), is("pedro@pedro.com"));
-
-        usuarioComus = USERCOMU_ENDPOINT.seeUserComusByComu(tokenLuis(retrofitHandler), 1L).execute().body();
+        List<UsuarioComunidad> usuarioComus = USERCOMU_ENDPOINT.seeUserComusByComu(tokenLuis(retrofitHandler), calle_la_fuente_11.getC_Id()).execute().body();
         assertThat(usuarioComus.size(), is(2));
-        assertThat(usuarioComus.get(0).getUsuario().getUserName(), is("luis@luis.com"));
-        assertThat(usuarioComus.get(1).getUsuario().getUserName(), is("pedro@pedro.com"));
+        assertThat(usuarioComus.get(1).getUsuario(), is(pedro));
+        assertThat(usuarioComus.get(0).getUsuario(), is(luis));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -391,20 +370,9 @@ public abstract class UserComuControllerTest {
     {
         // The password in data base is encrypted.
         List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT.seeUserComusByUser(tokenLuis(retrofitHandler)).execute().body();
-        assertThat(comunidades.size(), is(1));
-
-        UsuarioComunidad userComu = comunidades.get(0);
-        Comunidad comuPlazuela10bis = userComu.getComunidad();
-        assertThat(comuPlazuela10bis.getNombreComunidad(), is(COMU_LA_PLAZUELA_10bis.getNombreComunidad()));
-        assertThat(comuPlazuela10bis.getMunicipio().getNombre(), is("Motilleja"));
-        assertThat(comuPlazuela10bis.getMunicipio().getProvincia().getNombre(), is("Albacete"));
-
-        assertThat(userComu, allOf(
-                hasProperty("portal", is(isEmptyOrNullString())),
-                hasProperty("escalera", is(isEmptyOrNullString())),
-                hasProperty("planta", is(isEmptyOrNullString())),
-                hasProperty("puerta", is(isEmptyOrNullString()))
-        ));
+        assertThat(comunidades.size(), is(3));
+        assertThat(comunidades.get(0).getUsuario(), is(luis));
+        assertThat(comunidades.get(0).getComunidad(), is(calle_plazuela_23));
     }
 
 // ............................................... HELPER CLASSES AND METHODS .................................
