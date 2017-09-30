@@ -71,7 +71,7 @@ public abstract class IncidenciaDaoTest {
     @Autowired
     private UsuarioManager usuarioManager;
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -83,7 +83,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeIncidenciaById(1L).getFechaCierre(), notNullValue());
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -98,9 +98,9 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+            scripts = {"classpath:delete_sujetos.sql","classpath:delete_incidencia.sql"})
     @Test
     public void testDeleteIndcidencia_1() throws EntityException
     {
@@ -122,7 +122,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -140,7 +140,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -156,7 +156,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidencia.getFechaCierre(), nullValue());
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -166,7 +166,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.isImportanciaUser(pedro.getuId(), 3L), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -177,7 +177,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.isIncidenciaOpen(1L), is(false));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -199,7 +199,7 @@ public abstract class IncidenciaDaoTest {
         ));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -224,7 +224,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -244,7 +244,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 4L).getIncidImportancia().getImportancia(), is((short) 2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -291,7 +291,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.modifyIncidImportancia(incidImportancia), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -318,7 +318,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(resolucion.getAvances().size(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -341,7 +341,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -362,7 +362,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(avances, hasItem(hasProperty("avanceDesc", is("avance3"))));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -383,7 +383,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(avances, hasItem(hasProperty("avanceDesc", is("avance1"))));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -410,7 +410,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -425,7 +425,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.regIncidComment(comment), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -442,7 +442,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -459,7 +459,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -488,7 +488,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidImportancia.getImportancia(), is((short) 1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -509,7 +509,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -584,7 +584,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.regIncidencia(incidencia) > 0, is(true));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -596,7 +596,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.regResolucion(resolucion), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -615,7 +615,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -633,7 +633,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -652,7 +652,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(avances.get(0).getFechaAlta().getTime() > 0L, is(true));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -662,7 +662,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeAvancesByResolucion(2L).size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -692,7 +692,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(comments.size(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -704,7 +704,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(comments.size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -729,7 +729,7 @@ public abstract class IncidenciaDaoTest {
         ));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -778,7 +778,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(resolBundle.hasResolucion(), is(true));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -810,7 +810,7 @@ public abstract class IncidenciaDaoTest {
         }
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -879,7 +879,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeIncidsClosedByComu(999L).size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -929,7 +929,7 @@ public abstract class IncidenciaDaoTest {
         );
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -956,7 +956,7 @@ public abstract class IncidenciaDaoTest {
         );
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -966,7 +966,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeIncidsOpenByComu(999L).size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -1004,7 +1004,7 @@ public abstract class IncidenciaDaoTest {
         );
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -1024,7 +1024,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(resolucion.getAvances().size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -1034,7 +1034,7 @@ public abstract class IncidenciaDaoTest {
         assertThat(incidenciaDao.seeResolucion(4L), nullValue());
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test

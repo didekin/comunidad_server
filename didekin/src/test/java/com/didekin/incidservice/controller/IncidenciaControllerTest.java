@@ -34,9 +34,9 @@ import retrofit2.Response;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
@@ -71,7 +71,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * cannot autowire controllers in the tests.
  */
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "Duplicates"})
 abstract class IncidenciaControllerTest {
 
     private IncidenciaServEndPoints ENDPOINT;
@@ -90,7 +90,7 @@ abstract class IncidenciaControllerTest {
 
 //  ==============================================================================================
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -110,7 +110,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -131,7 +131,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -141,7 +141,7 @@ abstract class IncidenciaControllerTest {
         assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(tokenLuis(), 3L).execute()), is(false));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -164,7 +164,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.modifyIncidImportancia(tokenLuis(), incidImportancia0).execute().body(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -180,7 +180,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -204,15 +204,15 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.modifyResolucion(tokenLuis(), resolucion).execute().body(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void testModifyResolucion_2() throws IOException
     {
-        // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.     TODO: fail
+        // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
         Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 4L).execute().body();
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan_plazuela23.getUsuario().getUserName(), juan_plazuela23.getComunidad().getC_Id()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
@@ -224,7 +224,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -250,7 +250,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -271,7 +271,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.modifyResolucion(tokenLuis(), resolucion).execute().body(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -285,9 +285,8 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regIncidComment(tokenPedro(), comment).execute().body(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void testRegIncidComment_2() throws IOException
     {
@@ -301,7 +300,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -316,7 +315,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -331,7 +330,7 @@ abstract class IncidenciaControllerTest {
         assertThat(isIncidenciaFound(ENDPOINT.regIncidComment(tokenPedro(), comment).execute()), is(false));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -348,7 +347,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute().body(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -365,7 +364,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -379,7 +378,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute().body(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -391,7 +390,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regResolucion(tokenPedro(), resolucion).execute().body(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_a.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -399,15 +398,15 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuario sin funciones administrador.
         // Preconditions
-        assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), calle_plazuela_23.getC_Id()), is(false));
-        Incidencia incidencia = doIncidenciaWithId(juan.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia, juan.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
+        assertThat(connector.checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getC_Id()), is(false));
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
+        Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
         Response<Integer> response = ENDPOINT.regResolucion(tokenLuis(), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -421,7 +420,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -438,7 +437,7 @@ abstract class IncidenciaControllerTest {
         assertThat(comments.size(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -450,7 +449,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -462,7 +461,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -474,7 +473,7 @@ abstract class IncidenciaControllerTest {
         assertThat(comments.size(), is(0));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -487,7 +486,7 @@ abstract class IncidenciaControllerTest {
         assertThat(bundle.hasResolucion(), is(false));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -504,7 +503,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -514,7 +513,7 @@ abstract class IncidenciaControllerTest {
         assertThat(incidencias.size(), is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -537,7 +536,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -549,7 +548,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -559,7 +558,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.seeResolucion(tokenPedro(), 3L).execute().body().getAvances().size(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -571,7 +570,7 @@ abstract class IncidenciaControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -581,7 +580,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.seeUserComusImportancia(tokenPedro(), 4L).execute().body().size(), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_incidencia_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test

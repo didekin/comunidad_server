@@ -1,22 +1,3 @@
-INSERT INTO didekin.comunidad VALUES (1, 'Ronda', 'de la Plazuela', 10, 'bis', 103, NULL, NULL);
-INSERT INTO didekin.comunidad VALUES (2, 'Calle', 'de la Fuente', 11, '', 204, NULL, NULL);
-INSERT INTO didekin.comunidad VALUES (4, 'Calle', 'de la Plazuela', 23, '', 103, NULL, NULL);
-INSERT INTO didekin.comunidad VALUES (6, 'Calle', 'del Olmo', 55, '', 105, NULL, NULL);
-
-INSERT INTO didekin.usuario VALUES
-  (3, 'pedronevado', '$2a$10$9Gg4THybJVAAOY3yfzDY1uaTEhajatpX.WC056Ibd.fQJMG9QyZ3S', 'pedro@pedro.com', NULL);
-INSERT INTO didekin.usuario VALUES
-  (5, 'luis_gomez', '$2a$10$km0D4Uc5cFV1Gv6aAnoeeu03XNk1i686uqlB2A0BClNtB5A8LucLK', 'luis@luis.com', NULL);
-INSERT INTO didekin.usuario VALUES
-  (11, 'paco', '$2a$10$cdOjupfvgP/zpTOd5yyGROQVjjUhU18J/kg/04ZoUwLAUoeIo5xbK', 'paco@paco.com', NULL);
-
-INSERT INTO didekin.usuario_comunidad VALUES (1, 3, 'Centro', NULL, 3, 'J', 'pro,pre', NULL, NULL);
-INSERT INTO didekin.usuario_comunidad VALUES (1, 5, NULL, NULL, NULL, NULL, 'adm,pro', NULL, NULL);
-INSERT INTO didekin.usuario_comunidad VALUES (2, 3, 'A', NULL, NULL, NULL, 'adm,inq', NULL, NULL);
-INSERT INTO didekin.usuario_comunidad VALUES (2, 5, 'B', NULL, NULL, NULL, 'pro', NULL, NULL);
-INSERT INTO didekin.usuario_comunidad VALUES (4, 5, '2', 'escalera 1', 'C', NULL, 'inq', NULL, NULL);
-INSERT INTO didekin.usuario_comunidad VALUES (6, 11, 'B', NULL, 'Planta 0', '11', 'pro', NULL, NULL);
-
 INSERT INTO didekin.incidencia
 VALUES (1, 1, 'luis@luis.com', 'incidencia_1_1', 41, DATE_SUB(NOW(), INTERVAL 20 SECOND), NULL);
 INSERT INTO didekin.incidencia
