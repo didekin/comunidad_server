@@ -24,6 +24,7 @@ import static com.didekinlib.http.GenericExceptionMsg.NOT_FOUND;
 import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
 import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static java.lang.Math.abs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -81,8 +82,8 @@ public abstract class OauthConfigTest {
         // Refresh token.
         long refreshTkValiditySeconds =
                 (tokenResp.getRefreshToken().getExpiration().getTime() - new Date().getTime()) / 1000;
-        assertThat(refreshTkValiditySeconds < REFRESHTK_VALIDITY_SECONDS +5
-                && refreshTkValiditySeconds > 59 * 24 * 60 * 60, is(true));
+        long diff = abs(refreshTkValiditySeconds - REFRESHTK_VALIDITY_SECONDS);
+        assertThat(diff < 60, is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
