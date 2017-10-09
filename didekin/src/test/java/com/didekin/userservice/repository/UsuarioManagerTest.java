@@ -47,7 +47,6 @@ import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -598,7 +597,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithUser() throws EntityException
+    public void test_passwordChangeWithUser_1() throws EntityException
     {
         String newClearPswd = "new_luis_password";
         assertThat(usuarioManager.passwordChangeWithUser(luis, newClearPswd), is(1));
@@ -606,6 +605,21 @@ public abstract class UsuarioManagerTest {
                 is(true));
         // Check for deletion of oauth token.
         assertThat(usuarioManager.getAccessTokenByUserName(TO).isPresent(), is(false));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordChangeWithUser_2() throws EntityException
+    {
+        // Precondition: no existe usuario.
+        Usuario newPepe = new Usuario.UsuarioBuilder().copyUsuario(pepe).uId(999L).build();
+        try {
+            usuarioManager.passwordChangeWithUser(newPepe, "newpassword");
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -627,7 +641,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSendWithMail_1() throws Exception
+    public void test_passwordSendWithMail() throws Exception
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = doPreconditionsSendPswdOk();

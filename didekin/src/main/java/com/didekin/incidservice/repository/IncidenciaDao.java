@@ -268,7 +268,6 @@ public class IncidenciaDao {
             regIncidencia.setString(3, incidencia.getUserName());
             regIncidencia.setString(4, incidencia.getDescripcion());
             regIncidencia.setShort(5, incidencia.getAmbitoIncidencia().getAmbitoId());
-            regIncidencia.setNull(6, JDBCType.TIMESTAMP.getVendorTypeNumber());
             regIncidencia.executeUpdate();
 
             rs = regIncidencia.getGeneratedKeys();

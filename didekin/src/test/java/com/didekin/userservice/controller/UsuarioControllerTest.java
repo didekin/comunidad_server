@@ -64,7 +64,6 @@ import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
 import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
 import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -78,6 +77,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 02/04/15
  * Time: 12:12
  */
+@SuppressWarnings("Duplicates")
 public abstract class UsuarioControllerTest {
 
     private UsuarioEndPoints USER_ENDPOINT;
@@ -351,7 +351,7 @@ public abstract class UsuarioControllerTest {
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordSend_1() throws MessagingException, IOException, EntityException, InterruptedException
+    public void testPasswordSend() throws MessagingException, IOException, EntityException, InterruptedException
     {
         // Preconditions.
         Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();
@@ -362,18 +362,6 @@ public abstract class UsuarioControllerTest {
         assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
         TimeUnit.SECONDS.sleep(10);
         javaMailMonitor.expungeFolder();
-    }
-
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testPasswordSend_2() throws MessagingException, IOException, EntityException, InterruptedException
-    {
-        // Preconditions.
-        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN).execute().body(), is(true));
-        getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        // Invalid email.
-        Response<Boolean> isPswdSent = USER_ENDPOINT.passwordSend(USER_JUAN.getUserName()).execute();
-        assertThat(retrofitHandler.getErrorBean(isPswdSent).getMessage(), is(PASSWORD_NOT_SENT.getHttpMessage()));
     }
 
     // ......................... TESTS OF HELPER METHODS ..................................

@@ -63,7 +63,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 19/11/15
  * Time: 16:10
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "Duplicates"})
 public abstract class IncidenciaDaoTest {
 
     @Autowired

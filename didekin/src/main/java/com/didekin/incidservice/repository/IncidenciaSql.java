@@ -55,7 +55,7 @@ enum IncidenciaSql {
 
     REG_AVANCE("insert into " + INCID_RESOLUCION_AVANCE_TB + " (incid_id, descripcion, user_name) VALUES (?,?,?)"),
 
-    REG_INCID("insert into " + INCID_COMU_TB + " (incid_id, c_id, user_name, descripcion, ambito, fecha_alta) VALUES (?,?,?,?,?,?)"),
+    REG_INCID("insert into " + INCID_COMU_TB + " (incid_id, c_id, user_name, descripcion, ambito) VALUES (?,?,?,?,?)"),
 
     REG_INCID_COMMENT("INSERT INTO " + INCID_COMMENT_TB +
             " (incid_id, c_id, u_id, descripcion) " +
