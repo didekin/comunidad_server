@@ -234,6 +234,7 @@ public class UsuarioDao {
     /**
      * Returns the id of the inserted user.
      */
+    @SuppressWarnings("Duplicates")
     long insertUsuario(final Usuario usuario, Connection conn) throws SQLException
     {
         logger.info("insertUsuario(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());

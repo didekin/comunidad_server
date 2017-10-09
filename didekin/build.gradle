@@ -7,7 +7,7 @@ configurations {
 }
 
 jar {
-    baseName = 'didekin_web'
+    baseName = 'didekin-web'
     if(project.hasProperty('versionjar')) {
         version = versionjar
     }

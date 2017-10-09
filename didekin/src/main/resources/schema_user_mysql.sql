@@ -23,7 +23,7 @@ CREATE TABLE comunidad
   sufijo_numero CHAR(10)          NULL,
   m_id          INTEGER UNSIGNED  NOT NULL,
   fecha_alta    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_mod     TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod     TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (c_id),
   UNIQUE (tipo_via, nombre_via, numero, sufijo_numero, m_id),
   INDEX id_parent_municipio (m_id),
@@ -115,7 +115,7 @@ CREATE TABLE usuario_comunidad
   puerta     CHAR(10)                        NULL,
   roles      SET('adm', 'pre', 'pro', 'inq') NOT NULL,
   fecha_alta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_mod  TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (c_id, u_id),
   /*UNIQUE (c_id, portal, escalera, planta, puerta),*/
   INDEX id_parent_com (c_id),

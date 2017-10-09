@@ -455,6 +455,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         return passwordChangeWithUser(usuario, newPswd) == 1;
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws EntityException
     {

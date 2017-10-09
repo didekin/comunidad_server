@@ -126,8 +126,6 @@ public class ComunidadDao {
             insertComunidad.setShort(4, comunidad.getNumero());
             insertComunidad.setString(5, comunidad.getSufijoNumero());
             insertComunidad.setInt(6, getMunicipioId(comunidad.getMunicipio()));
-            insertComunidad.setNull(7, JDBCType.TIMESTAMP.getVendorTypeNumber());
-            insertComunidad.setNull(8, JDBCType.TIMESTAMP.getVendorTypeNumber());
             insertComunidad.executeUpdate();
 
             rs = insertComunidad.getGeneratedKeys();
@@ -154,8 +152,6 @@ public class ComunidadDao {
             insertUsuarioCom.setString(5, usuarioCom.getPlanta());
             insertUsuarioCom.setString(6, usuarioCom.getPuerta());
             insertUsuarioCom.setString(7, usuarioCom.getRoles());
-            insertUsuarioCom.setNull(8, JDBCType.TIMESTAMP.getVendorTypeNumber());
-            insertUsuarioCom.setNull(9, JDBCType.TIMESTAMP.getVendorTypeNumber());
             rowsInserted = insertUsuarioCom.executeUpdate();
         }
         logger.debug("rowsInserted = %d%n", rowsInserted);
@@ -175,9 +171,7 @@ public class ComunidadDao {
                 usuarioComunidad.getEscalera(),
                 usuarioComunidad.getPlanta(),
                 usuarioComunidad.getPuerta(),
-                usuarioComunidad.getRoles(),
-                null,
-                null
+                usuarioComunidad.getRoles()
         );
         return rowInserted;
     }

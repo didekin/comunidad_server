@@ -44,7 +44,7 @@ import static org.junit.Assert.fail;
  * Date: 19/04/15
  * Time: 11:18
  */
-@SuppressWarnings("ThrowFromFinallyBlock")
+@SuppressWarnings({"ThrowFromFinallyBlock", "Duplicates"})
 public abstract class ComunidadDaoTest {
 
     @Autowired

@@ -51,6 +51,7 @@ import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
@@ -570,7 +571,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithName() throws EntityException
+    public void test_passwordChangeWithName_1() throws EntityException
     {
         assertThat(usuarioManager.passwordChangeWithName(luis.getUserName(), "new_luis_password"), is(1));
         assertThat(new BCryptPasswordEncoder().matches("new_luis_password", usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
@@ -581,21 +582,23 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithUser_1()
+    public void test_passwordChangeWithName_2()
     {
         try {
-            usuarioManager.passwordChangeWithUser(new Usuario.UsuarioBuilder()
-                    .userName("noexisto@no.com").password("noexisto").build(), "newPassword");
+            usuarioManager.passwordChangeWithName(new Usuario.UsuarioBuilder()
+                    .copyUsuario(luis).password("noexisto").userName("nomail_error").build().getUserName(), "newPassword");
             fail();
         } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
+            assertThat(e.getExceptionMsg(), is(USER_WRONG_INIT));
         }
+        // Permanecen datos de login.
+        assertThat(usuarioManager.login(luis), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithUser_2() throws EntityException
+    public void test_passwordChangeWithUser() throws EntityException
     {
         String newClearPswd = "new_luis_password";
         assertThat(usuarioManager.passwordChangeWithUser(luis, newClearPswd), is(1));
@@ -640,23 +643,6 @@ public abstract class UsuarioManagerTest {
         javaMailMonitor.checkPasswordMessage(usuarioIn.getAlias(), newPswd);
         // Cleaning and closing.
         javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_passwordSendWithMail_2() throws Exception
-    {
-        // Preconditions.
-        assertThat(usuarioManager.login(luis), is(true));
-        // Exec: no valid email.
-        try {
-            usuarioManager.passwordSendWithMail(luis, "new_password");
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
-        }
-        // Permanecen datos de login.
-        assertThat(usuarioManager.login(luis), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
