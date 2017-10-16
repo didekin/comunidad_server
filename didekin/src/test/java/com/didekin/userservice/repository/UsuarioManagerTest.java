@@ -357,21 +357,12 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testGetUserComuByUserAndComu() throws EntityException
     {
+        // UsuarioComunidad en BD.
+        assertThat(usuarioManager.getUserComuByUserAndComu("pedro@pedro.com", 1L), is(pedro_plazuelas_10bis));
         // No existe la combinación (usario, comunidad); existe la comunidad.
-        try {
-            usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
-        }
-
+       assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
         // No existe la comunidad.
-        try {
-            usuarioManager.getUserComuByUserAndComu("paco@paco.com", 111L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
-        }
+       assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 111L), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

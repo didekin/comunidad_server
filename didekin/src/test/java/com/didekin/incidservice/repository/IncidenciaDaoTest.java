@@ -516,12 +516,7 @@ public abstract class IncidenciaDaoTest {
     public void testRegIncidImportancia_3() throws EntityException
     {
         // Premisa: usuarioComunidad incongruente con incidencia_comunidad.
-        try {
-            usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 4L);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
-        }
+        assertThat(usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 4L), nullValue());
         // Data.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(4L);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)

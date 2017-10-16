@@ -34,6 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -69,7 +70,6 @@ import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICA
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -192,9 +192,13 @@ public abstract class UserComuControllerTest {
     @Test
     public void testGetUserComuByUserAndComu() throws IOException
     {
-        Response<UsuarioComunidad> response = USERCOMU_ENDPOINT.getUserComuByUserAndComu(tokenPedro(retrofitHandler), 99L).execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
+        // No existe la comunidad.
+        try {
+            USERCOMU_ENDPOINT.getUserComuByUserAndComu(tokenPedro(retrofitHandler), 99L).execute();
+            fail();
+        } catch (Exception e) {
+            assertThat(e instanceof EOFException, is(true));
+        }
 
         // Comunidad asociada a usuario.
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(tokenPedro(retrofitHandler), 2L).execute().body();

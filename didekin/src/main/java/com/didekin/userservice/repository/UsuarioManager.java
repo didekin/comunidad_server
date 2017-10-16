@@ -233,17 +233,13 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     /**
-     * @return a EntityException USERCOMU_WRONG_INIT if the pair usuarioComunidad doesn't exist.
+     * @return null if the pair usuarioComunidad doesn't exist.
      */
     @Override
     public UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws EntityException
     {
         logger.debug("getUserComuFullByUserAndComu()");
-        UsuarioComunidad usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
-        if (usuarioComunidad == null) {
-            throw new EntityException(USERCOMU_WRONG_INIT);
-        }
-        return usuarioComunidad;
+        return usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
     }
 
     @Override

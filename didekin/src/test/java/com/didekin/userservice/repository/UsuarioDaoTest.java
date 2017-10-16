@@ -262,6 +262,7 @@ public abstract class UsuarioDaoTest {
         UsuarioComunidad usuarioComunidad;
         assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());
 
+        // UsuarioComunidad existe en BD.
         usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu("pedro@pedro.com", 1L);
         assertThat(usuarioComunidad, notNullValue());
         // Usuario
