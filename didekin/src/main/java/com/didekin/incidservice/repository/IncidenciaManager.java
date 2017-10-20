@@ -28,7 +28,6 @@ import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_WRONG_INIT;
 import static com.didekinlib.model.incidencia.dominio.Resolucion.doResolucionModifiedWithNewAvance;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
@@ -154,6 +153,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Postconditions:
      * 1. The incidencia is modified if user 'adm' or author.
      * 2. The incidImportancia record is updated, if it already exists, or it is created if not.
+     * 3. The incidImportancia record is updated if importancia > 0.
      *
      * @param incidImportancia : an IncidImportancia instance with incidencia and importancia fields fulfilled (importancia default initialization == 0).
      * @return number of rows modified in DB: 1 or 2 if incidImportancia.importancia is also updated.
@@ -188,8 +188,9 @@ class IncidenciaManager implements IncidenciaManagerIf {
                         .importancia(incidImpIn.getImportancia())
                         .build()
                 ).mapToInt(
-                        incidImpIn -> incidenciaDao.modifyIncidImportancia(incidImpIn) < 1 ? regIncidImportancia(userNameInSession, incidImpIn) : 1  //registramos si modificación devuelve entero < 1
-                ).findFirst().orElseThrow(() -> new EntityException(INCID_IMPORTANCIA_WRONG_INIT));  // Exception related to filter importancia MUST be > 0.
+                        // Registramos si modificación devuelve entero < 1
+                        incidImpIn -> incidenciaDao.modifyIncidImportancia(incidImpIn) < 1 ? regIncidImportancia(userNameInSession, incidImpIn) : 1
+                ).findFirst().orElse(0);
 
         return rowsIncidMod + rowsIncidImpMod;
     }

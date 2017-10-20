@@ -4,7 +4,6 @@
 administracion
 gradle
 logs
-releases
 didekin
 !didekin/build/libs/*.jar
 terminal

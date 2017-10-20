@@ -197,6 +197,9 @@ public abstract class IncidenciaDaoTest {
                 hasProperty("descripcion", is("modified_desc")),
                 hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 21)))
         ));
+
+        // Check that the method return 1, although the incidencia has not varied.
+        assertThat(incidenciaDao.modifyIncidencia(incidenciaNew), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
