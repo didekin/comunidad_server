@@ -359,14 +359,30 @@ public abstract class IncidenciaManagerTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
+    }
 
-        // Premisa: importancia <= 0.
-        incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(paco_olmo).importancia((short) 0).build();
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testModifyIncidImportancia_5() throws EntityException
+    {
+        // Premisa: importancia <= 0; usuario iniciador.
+        Incidencia incidencia = incidenciaManager.seeIncidenciaById(6L);
+        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(paco.getUserName(), incidencia), is(true));
+        IncidImportancia incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(paco_olmo).importancia((short) 0).build();
         // Exec and check: inserta incidencia e incidenciaImportancia. Devuelve 1, porque modifica incidencia aunque no haya variación.
         assertThat(incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidNew), is(1));
         // Verificamos que si importancia > 0, el método devolvería 2.
         incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(paco_olmo).importancia((short) 2).build();
         assertThat(incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidNew), is(2));
+
+        // Premisa: importancia <= 0; usuario NO iniciador NO adm.
+        incidencia = incidenciaManager.seeIncidenciaById(4L);
+        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
+        incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 0).usuarioComunidad(juan_plazuela23).build();
+        // Devuelve cero: no tiene poder para modificar incidencia y importancia = 0.
+        assertThat(incidenciaManager.modifyIncidImportancia(juan_plazuela23.getUsuario().getUserName(), incidNew), is(0));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
