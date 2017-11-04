@@ -15,6 +15,8 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.setMailSender;
+
 /**
  * User: pedro@didekin
  * Date: 13/10/15
@@ -39,7 +41,7 @@ public class UsuarioMailConfigurationPre {
     @Bean
     public JavaMailSender javaMailSender()
     {
-        return UsuarioMailConfiguration.setMailSender();
+        return setMailSender();
     }
 
     @Profile({Profiles.MAIL_PRE})

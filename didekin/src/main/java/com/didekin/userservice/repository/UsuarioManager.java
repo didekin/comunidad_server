@@ -292,7 +292,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public String makeNewPassword(Usuario user) throws EntityException
+    public String makeNewPassword() throws EntityException
     {
         logger.debug("makeNewPassword()");
         String newPasssword = GENERATOR_13.makePswd();
@@ -410,18 +410,17 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
 
         final Usuario usuarioOld = usuarioDao.getUserByUserName(userName);
-        return passwordChangeWithUser(usuarioOld, newPassword);
+        return passwordChangeWithUser(usuarioOld);
     }
 
     @Override
-    public int passwordChangeWithUser(Usuario usuarioOld, String newPassword) throws EntityException
+    public int passwordChangeWithUser(Usuario usuarioNewPswd) throws EntityException
     {
         logger.info("passwordChangeWithUser()");
 
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
-                .uId(usuarioOld.getuId())
-                .userName(usuarioOld.getUserName())
-                .password(new BCryptPasswordEncoder().encode(newPassword))
+                .copyUsuario(usuarioNewPswd)
+                .password(new BCryptPasswordEncoder().encode(usuarioNewPswd.getPassword()))
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
@@ -433,36 +432,42 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public boolean passwordSendIntegration(String userName) throws EntityException
+    public boolean passwordSend(String userName, String localeToStr) throws EntityException
     {
-        logger.debug("passwordSendIntegration()");
-        return passwordSendWithMail(getUserByUserName(userName), makeNewPassword(getUserByUserName(userName)));
+        logger.debug("passwordSend()");
+        Usuario usuarioNewPswd = new Usuario.UsuarioBuilder()
+                .copyUsuario(getUserByUserName(userName))
+                .password(makeNewPassword())
+                .build();
+        return passwordSendDoMail(usuarioNewPswd, localeToStr);
     }
 
     @Override
-    public boolean passwordSendWithMail(Usuario usuario, String newPswd) throws EntityException
+    public boolean passwordSendDoMail(Usuario usuario, String localeToStr) throws EntityException
     {
-        logger.debug("passwordSendWithMail()");
+        logger.debug("passwordSendDoMail()");
         try {
-            usuarioMailService.sendNewPswd(usuario, newPswd);  // TODO: hacer asíncrono con Observable.
+            usuarioMailService.sendNewPswd(usuario, localeToStr);  // TODO: hacer asíncrono.  // TODO: pasar resourceBundle.
         } catch (MailException e) {
             throw new EntityException(PASSWORD_NOT_SENT);
         }
-        return passwordChangeWithUser(usuario, newPswd) == 1;
+        return passwordChangeWithUser(usuario) == 1;
     }
 
     @SuppressWarnings("Duplicates")
     @Override
-    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws EntityException
+    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom, String localeToStr) throws EntityException
     {
         logger.info("regComuAndUserAndUserComu()");
 
-        // Password encryption.
-        Usuario usuarioBis = new Usuario.UsuarioBuilder()
+        // TODO: verificar que no tiene cubierto password.
+
+        // Password generation and encryption.
+        Usuario usuarioToDB = new Usuario.UsuarioBuilder()
                 .copyUsuario(usuarioCom.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(usuarioCom.getUsuario().getPassword()))
+                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))
                 .build();
-        UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuarioBis)
+        UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuarioToDB)
                 .userComuRest(usuarioCom).build();
 
         long pkUsuario = 0;
@@ -473,13 +478,13 @@ public class UsuarioManager implements UsuarioManagerIf {
         try {
             conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
             conn.setAutoCommit(false);
-            pkUsuario = usuarioDao.insertUsuario(usuarioComBis.getUsuario(), conn);
-            pkComunidad = comunidadDao.insertComunidad(usuarioComBis.getComunidad(), conn);
+            pkUsuario = usuarioDao.insertUsuario(usuarioComToDB.getUsuario(), conn);
+            pkComunidad = comunidadDao.insertComunidad(usuarioComToDB.getComunidad(), conn);
 
             Usuario userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
             UsuarioComunidad userComuWithPks = new UsuarioComunidad.UserComuBuilder(comuWithPk, userWithPk)
-                    .userComuRest(usuarioComBis).build();
+                    .userComuRest(usuarioComToDB).build();
 
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuWithPks, conn);
             conn.commit();
@@ -507,9 +512,8 @@ public class UsuarioManager implements UsuarioManagerIf {
                 logger.error("regComuAndUserAndUserComu(): " + e.getMessage());
             }
         }
+        passwordSendDoMail(usuarioToDB, localeToStr);    // TODO: test.
         return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
-
-        // TODO: notificación por email del alta correcta. Dejar el alta pendiente de confirmación al email.
     }
 
     @Override
@@ -557,16 +561,18 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public boolean regUserAndUserComu(final UsuarioComunidad userComu) throws EntityException
+    public boolean regUserAndUserComu(final UsuarioComunidad userComu, String localeToStr) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
 
-        // Password encryption.
-        final Usuario usuarioBis = new Usuario.UsuarioBuilder()
+        // TODO: verificar que no tiene cubierto password.
+
+        // Password generation and encryption.
+        final Usuario usuarioToDB = new Usuario.UsuarioBuilder()
                 .copyUsuario(userComu.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(userComu.getUsuario().getPassword()))
+                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))
                 .build();
-        final UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), usuarioBis)
+        final UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), usuarioToDB)
                 .userComuRest(userComu)
                 .build();
 
@@ -578,7 +584,7 @@ public class UsuarioManager implements UsuarioManagerIf {
             conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             conn.setAutoCommit(false);
-            pkUsuario = usuarioDao.insertUsuario(usuarioComBis.getUsuario(), conn);
+            pkUsuario = usuarioDao.insertUsuario(usuarioComToDB.getUsuario(), conn);
             final Usuario usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             final UsuarioComunidad userComuTris = new UsuarioComunidad.UserComuBuilder(
                     userComu.getComunidad(), usuarioPk)
@@ -607,6 +613,7 @@ public class UsuarioManager implements UsuarioManagerIf {
                 logger.error("regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): " + e.getMessage());
             }
         }
+        passwordSendDoMail(usuarioToDB, localeToStr); // TODO: test.
         return pkUsuario > 0L && userComuInserted == 1;
     }
 

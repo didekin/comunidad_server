@@ -47,6 +47,8 @@ import retrofit2.Response;
 import static com.didekin.common.Profiles.MAIL_PRE;
 import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
+import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
@@ -249,7 +251,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_1() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
 
@@ -269,7 +271,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_2() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 =
                 getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
@@ -298,7 +300,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUser_3() throws IOException, EntityException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
         SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         // Change userName with usuarioDao.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
@@ -332,7 +334,7 @@ public abstract class UsuarioControllerTest {
     public void testPasswordChange_1() throws IOException, InterruptedException, EntityException
     {
         // Preconditions: user is registered with an access token.
-        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body(), is(true));
+        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_REAL_JUAN).execute().body(), is(true));
         SpringOauthToken accessToken = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
         assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
 
@@ -357,9 +359,9 @@ public abstract class UsuarioControllerTest {
         Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();
         UsuarioComunidad usuarioComunidad =
                 new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
-        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(usuarioComunidad).execute().body(), is(true));
+        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, usuarioComunidad).execute().body(), is(true));
         // Call the controller.
-        assertThat(USER_ENDPOINT.passwordSend(usuario.getUserName()).execute().body(), is(true));
+        assertThat(USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName()).execute().body(), is(true));
         TimeUnit.SECONDS.sleep(10);
         javaMailMonitor.expungeFolder();
     }

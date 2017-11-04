@@ -65,7 +65,7 @@ public interface UsuarioManagerIf {
 
     boolean login(Usuario usuario) throws EntityException;
 
-    String makeNewPassword(Usuario user) throws EntityException;
+    String makeNewPassword() throws EntityException;
 
     int modifyComuData(Usuario user, Comunidad comunidad) throws EntityException;
 
@@ -81,17 +81,17 @@ public interface UsuarioManagerIf {
 
     int passwordChangeWithName(String userName, String newPassword) throws EntityException;
 
-    int passwordChangeWithUser(Usuario usuarioOld, String newPassword) throws EntityException;
+    int passwordChangeWithUser(Usuario usuarioNewPswd) throws EntityException;
 
-    boolean passwordSendIntegration(String userName) throws EntityException;
+    boolean passwordSend(String userName, String localeToStr) throws EntityException;
 
-    boolean passwordSendWithMail(Usuario usuario, String newPswd) throws EntityException;
+    boolean passwordSendDoMail(Usuario usuario, String localeToStr) throws EntityException;
 
-    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;
+    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr) throws EntityException;
 
     boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;
 
-    boolean regUserAndUserComu(UsuarioComunidad userComu) throws EntityException;
+    boolean regUserAndUserComu(UsuarioComunidad userComu, String localeToStr) throws EntityException;
 
     int regUserComu(UsuarioComunidad usuarioComunidad);
 

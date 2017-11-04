@@ -7,8 +7,6 @@ package com.didekin;
  */
 public class ThreadPoolConstants {
 
-
-
     // Threads parameters.
     private static final int CPU_NUMBER = Runtime.getRuntime().availableProcessors();
     private static final double TARGET_CPU_USE = 0.9;

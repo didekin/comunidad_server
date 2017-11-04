@@ -1,10 +1,9 @@
 package com.didekin.common.mail;
 
-import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
-
-import org.hamcrest.CoreMatchers;
+import com.didekinlib.model.usuario.Usuario;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -12,14 +11,17 @@ import javax.mail.MessagingException;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
 
-import static com.didekin.common.mail.MailConstants.TEXT_PLAIN_UTF_8;
-import static com.didekin.common.mail.MailConstants.mail_from;
+import static com.didekin.common.mail.BundleUtil.getLocale;
+import static com.didekin.common.mail.BundleUtil.mailBundleName;
+import static com.didekin.common.mail.BundleUtil.usuarioMailBundleName;
+import static com.didekin.common.mail.MailConstant.mail_from;
+import static com.didekin.common.mail.MailConstant.text_plain_UTF_8;
+import static com.didekin.common.mail.MailKey.SALUDO;
+import static com.didekin.common.mail.MailKey.SUBJECT;
+import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.strato_buzon_folder;
-import static com.didekin.userservice.mail.UsuarioMailConstants.SALUDO;
-import static com.didekin.userservice.mail.UsuarioMailConstants.SUBJECT_1;
-import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CHANGE_CONTRASEÑA_1;
-import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CHANGE_CONTRASEÑA_2;
-import static com.didekin.userservice.mail.UsuarioMailConstants.TXT_CONTRASEÑA;
+import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
+import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
 import static com.google.common.base.Preconditions.checkState;
 import static javax.mail.Flags.Flag.DELETED;
 import static javax.mail.Folder.READ_WRITE;
@@ -49,30 +51,6 @@ public class JavaMailMonitor {
         checkState(folder.isOpen());
     }
 
-    public void checkPasswordMessage(String userAlias, String newPassword) throws MessagingException, IOException
-    {
-        Message[] messages = folder.getMessages();
-
-        assertThat(messages.length, is(1));
-        assertThat(messages[0].getSubject(), is(SUBJECT_1));
-        assertThat(messages[0].getContentType(), is(TEXT_PLAIN_UTF_8));
-        assertThat(((String) messages[0].getContent()), allOf(
-                containsString(SALUDO),
-                containsString(userAlias),
-                containsString(TXT_CHANGE_CONTRASEÑA_1),
-                containsString(TXT_CHANGE_CONTRASEÑA_2),
-                containsString(TXT_CONTRASEÑA)
-        ));
-        if (newPassword != null) {
-            assertThat(((String) messages[0].getContent()), containsString(newPassword));
-        }
-        assertThat(((InternetAddress) messages[0].getFrom()[0]).getAddress(), is(mail_from));
-        assertThat(((InternetAddress) messages[0].getAllRecipients()[0]).getAddress(), CoreMatchers.is(UsuarioMailConfigurationPre.TO));
-
-        messages[0].setFlag(DELETED, true);
-        folder.expunge();
-    }
-
     public void closeStoreAndFolder() throws MessagingException
     {
         expungeFolder();
@@ -92,5 +70,35 @@ public class JavaMailMonitor {
             message.setFlag(DELETED, true);
         }
         folder.expunge();
+    }
+
+    public void checkPasswordMessage(Usuario usuario, String localeToStr) throws MessagingException, IOException
+    {
+        ResourceBundle mailBundle = ResourceBundle.getBundle(mailBundleName, getLocale(localeToStr));
+        ResourceBundle usuarioBundle = ResourceBundle.getBundle(usuarioMailBundleName, getLocale(localeToStr));
+        Message[] messages = folder.getMessages();
+
+        assertThat(messages.length, is(1));
+        assertThat(messages[0].getSubject(), is(usuarioBundle.getString(SUBJECT.name())));
+        assertThat(messages[0].getContentType(), is(text_plain_UTF_8));
+        assertThat(((String) messages[0].getContent()), allOf(
+                containsString(mailBundle.getString(SALUDO.name())),
+                containsString(usuario.getPassword()),
+                containsString(usuarioBundle.getString(TXT_CHANGE_Password.name())),
+                containsString(usuarioBundle.getString(TXT_Password.name()))
+        ));
+        if (usuario.getPassword() != null) {
+            assertThat(((String) messages[0].getContent()), containsString(usuario.getPassword()));
+        }
+        checkFromTo(messages[0]);
+
+        messages[0].setFlag(DELETED, true);
+        folder.expunge();
+    }
+
+    private void checkFromTo(Message message) throws MessagingException
+    {
+        assertThat(((InternetAddress) message.getFrom()[0]).getAddress(), is(mail_from));
+        assertThat(((InternetAddress) message.getAllRecipients()[0]).getAddress(), is(TO));
     }
 }

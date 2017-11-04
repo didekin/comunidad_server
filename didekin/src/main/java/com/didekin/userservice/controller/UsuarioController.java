@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.didekinlib.http.CommonServConstant.ACCEPT_LANGUAGE;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.UsuarioServConstant.ACCESS_TOKEN_DELETE;
@@ -129,10 +130,11 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)
-    public boolean passwordSend(@RequestParam(USER_PARAM) String userName) throws EntityException, MailException
+    public boolean passwordSend(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
+                                @RequestParam(USER_PARAM) String userName) throws EntityException, MailException
     {
         logger.debug("passwordSend()");
-        return usuarioManager.passwordSendIntegration(userName);
+        return usuarioManager.passwordSend(userName, localeToStr);     // TODO: test
     }
 
 //    ............................ HANDLING EXCEPTIONS ................................

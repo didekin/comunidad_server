@@ -2,6 +2,7 @@ package com.didekin.userservice.testutils;
 
 
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.common.testutils.Constant;
 import com.didekinlib.http.retrofit.RetrofitHandler;
 import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
 import com.didekinlib.http.retrofit.UsuarioEndPoints;
@@ -100,7 +101,7 @@ public final class UsuarioTestUtils {
             .nombreVia("de la Plazuela")
             .numero((short) 23)
             .sufijoNumero("")
-            .municipio(new Municipio((short) 52,"Motilleja", new Provincia((short) 2, "Albacete")))
+            .municipio(new Municipio((short) 52, "Motilleja", new Provincia((short) 2, "Albacete")))
             .build();
 
     public static final Comunidad calle_olmo_55 = new Comunidad.ComunidadBuilder()
@@ -240,7 +241,7 @@ public final class UsuarioTestUtils {
     public static Usuario insertUsuarioComunidad(UsuarioComunidad usuarioComunidad, UsuarioComunidadEndPoints userComuEndPoint,
                                                  UsuarioEndPoints usuarioEndPoint, RetrofitHandler retrofitHandler) throws IOException
     {
-        userComuEndPoint.regComuAndUserAndUserComu(usuarioComunidad).execute();
+        userComuEndPoint.regComuAndUserAndUserComu(Constant.oneComponent_local_ES, usuarioComunidad).execute();
         return getUserData(usuarioComunidad.getUsuario(), usuarioEndPoint, retrofitHandler);
     }
 

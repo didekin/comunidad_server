@@ -41,6 +41,8 @@ import java.util.List;
 
 import retrofit2.Response;
 
+import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
+import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_EL_ESCORIAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_FUENTE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_10bis;
@@ -70,8 +72,8 @@ import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICA
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -113,7 +115,7 @@ public abstract class UserComuControllerTest {
     public void testDeleteUserComu_1() throws IOException
     {
         // Usuario con una comunidad y comunidad con un usuario.
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_PEPE).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_PEPE).execute();
 
         List<UsuarioComunidad> uComus_1 = sujetosService.seeUserComusByUser(USER_PEPE.getUserName());
 
@@ -144,12 +146,12 @@ public abstract class UserComuControllerTest {
     {
         // Usuario con una comunidad y comunidad con dos usuarios.
 
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_PEPE).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_REAL_PEPE).execute();
         List<UsuarioComunidad> uComusPepe = sujetosService.seeUserComusByUser(USER_PEPE.getUserName());
 
         UsuarioComunidad uC_juan = makeUsuarioComunidad(uComusPepe.get(0).getComunidad(), USER_JUAN,
                 "portalA", null, null, "23", "pro");
-        USERCOMU_ENDPOINT.regUserAndUserComu(uC_juan).execute();
+        USERCOMU_ENDPOINT.regUserAndUserComu(oneComponent_local_ES, uC_juan).execute();
         SpringOauthToken tokenJuan = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
                 USER_JUAN.getUserName(),
                 USER_JUAN.getPassword(),
@@ -251,7 +253,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testModifyUserComu_1() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_PEPE).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_PEPE).execute();
         SpringOauthToken token_1 =
                 OAUTH_ENDPOINT.getPasswordUserToken(
                         new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
@@ -304,7 +306,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testRegComuAndUserAndUserComu() throws IOException
     {
-        boolean isInserted = USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
+        boolean isInserted = USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute().body();
         assertThat(isInserted, is(true));
     }
 
@@ -313,12 +315,12 @@ public abstract class UserComuControllerTest {
     public void testRegUserAndUserComu_1() throws IOException
     {
         // Preconditions: a comunidad is already associated to other users.
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(COMU_TRAV_PLAZUELA_PEPE).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).execute();
         Comunidad comunidad = sujetosService.getComusByUser(USER_PEPE.getUserName()).get(0);
 
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null,
                 PRESIDENTE.function);
-        boolean isInserted = USERCOMU_ENDPOINT.regUserAndUserComu(userComu).execute().body();
+        boolean isInserted = USERCOMU_ENDPOINT.regUserAndUserComu(oneComponent_local_ES, userComu).execute().body();
         assertThat(isInserted, is(true));
         assertThat(sujetosService.getComusByUser(USER_JUAN.getUserName()).size(), is(1));
         assertThat(sujetosService.getComusByUser(USER_JUAN.getUserName()).get(0), is(comunidad));
@@ -329,13 +331,13 @@ public abstract class UserComuControllerTest {
     public void testRegUserAndUserComu_2() throws SQLException, EntityException, IOException
     {
         // Duplicate user (and comunidad).
-        sujetosService.regComuAndUserAndUserComu(COMU_REAL_JUAN);
+        sujetosService.regComuAndUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);
         Usuario usuario = sujetosService.getUserByUserName(USER_JUAN.getUserName());
         Comunidad comunidad = sujetosService.getComusByUser(USER_JUAN.getUserName()).get(0);
 
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, usuario, "portal", "esc",
                 "plantaY", "door22", PRESIDENTE.function);
-        Response<Boolean> response = USERCOMU_ENDPOINT.regUserAndUserComu(userComu).execute();
+        Response<Boolean> response = USERCOMU_ENDPOINT.regUserAndUserComu(twoComponent_local_ES, userComu).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NAME_DUPLICATE.getHttpMessage()));
     }

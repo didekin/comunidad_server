@@ -2,7 +2,6 @@ package com.didekin.userservice.mail;
 
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekin.common.Profiles;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekinlib.model.usuario.Usuario;
 
@@ -20,6 +19,10 @@ import java.io.IOException;
 
 import javax.mail.MessagingException;
 
+import static com.didekin.common.Profiles.MAIL_PRE;
+import static com.didekin.common.testutils.Constant.oneComponent_local_EN;
+import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
+
 /**
  * User: pedro@didekin
  * Date: 14/10/15
@@ -27,7 +30,7 @@ import javax.mail.MessagingException;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioMailConfigurationPre.class})
-@ActiveProfiles({Profiles.MAIL_PRE})
+@ActiveProfiles({MAIL_PRE})
 @Category({LocalDev.class, DbPre.class})
 public class UsuarioMailServiceDevPreTest {
 
@@ -38,7 +41,6 @@ public class UsuarioMailServiceDevPreTest {
     private JavaMailMonitor javaMailMonitor;
 
     private Usuario usuario;
-    private static final String newPassword = "password_new";
 
     @Before
     public void setUp() throws MessagingException
@@ -47,6 +49,7 @@ public class UsuarioMailServiceDevPreTest {
         usuario = new Usuario.UsuarioBuilder()
                 .uId(3L)
                 .alias("pedronevado")
+                .password("password_new")
                 .userName(UsuarioMailConfigurationPre.TO)
                 .build();
     }
@@ -60,8 +63,16 @@ public class UsuarioMailServiceDevPreTest {
     @Test
     public void testPasswordMessage_1() throws MessagingException, InterruptedException, IOException
     {
-        mailService.sendNewPswd(usuario, newPassword);
+        mailService.sendNewPswd(usuario, oneComponent_local_ES);
         Thread.sleep(9000);
-        javaMailMonitor.checkPasswordMessage(usuario.getAlias(), newPassword);
+        javaMailMonitor.checkPasswordMessage(usuario, oneComponent_local_ES);
+    }
+
+    @Test
+    public void testPasswordMessage_2() throws MessagingException, InterruptedException, IOException
+    {
+        mailService.sendNewPswd(usuario, oneComponent_local_EN);
+        Thread.sleep(9000);
+        javaMailMonitor.checkPasswordMessage(usuario, oneComponent_local_EN);
     }
 }

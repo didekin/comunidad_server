@@ -7,15 +7,15 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
-import static com.didekin.common.mail.MailConstants.aws_cred_password;
-import static com.didekin.common.mail.MailConstants.aws_cred_username;
-import static com.didekin.common.mail.MailConstants.aws_smtp_host;
-import static com.didekin.common.mail.MailConstants.aws_smtp_port;
-import static com.didekin.common.mail.MailConstants.default_encoding;
-import static com.didekin.common.mail.MailConstants.mail_smtp_auth_prop;
-import static com.didekin.common.mail.MailConstants.mail_smtp_starttls_enable_prop;
-import static com.didekin.common.mail.MailConstants.mail_smtp_starttls_required;
-import static com.didekin.common.mail.MailConstants.mail_transport_protocol;
+import static com.didekin.common.mail.MailConstant.aws_cred_password;
+import static com.didekin.common.mail.MailConstant.aws_cred_username;
+import static com.didekin.common.mail.MailConstant.aws_smtp_host;
+import static com.didekin.common.mail.MailConstant.aws_smtp_port;
+import static com.didekin.common.mail.MailConstant.default_encoding;
+import static com.didekin.common.mail.MailConstant.mail_smtp_auth_prop;
+import static com.didekin.common.mail.MailConstant.mail_smtp_starttls_enable_prop;
+import static com.didekin.common.mail.MailConstant.mail_smtp_starttls_required;
+import static com.didekin.common.mail.MailConstant.mail_transport_protocol;
 
 /**
  * User: pedro@didekin

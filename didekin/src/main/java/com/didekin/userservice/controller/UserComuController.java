@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.didekinlib.http.CommonServConstant.ACCEPT_LANGUAGE;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.UsuarioComunidadServConstant.COMUNIDAD_OLDEST_USER;
 import static com.didekinlib.http.UsuarioComunidadServConstant.COMUNIDAD_WRITE;
@@ -116,11 +117,12 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = REG_COMU_AND_USER_AND_USERCOMU, method = POST, consumes = MIME_JSON)
-    public boolean regComuAndUserAndUserComu(@RequestBody UsuarioComunidad usuarioCom)
+    public boolean regComuAndUserAndUserComu(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
+                                             @RequestBody UsuarioComunidad usuarioCom)
             throws EntityException
     {
         logger.debug("regComuAndUserAndUserComu()");
-        return usuarioManager.regComuAndUserAndUserComu(usuarioCom);
+        return usuarioManager.regComuAndUserAndUserComu(usuarioCom, localeToStr);
         // TODO: hay que controlar que no se dan de alta dos administradores o dos presidentes.
         // TODO: si la comunidad ya existe y el userComu no, hacer un regUserAndUserComu.
         // TODO: si el userComu existe y la comunidad no, hacer un regComuAndUserComu.
@@ -142,10 +144,11 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = REG_USER_USERCOMU, method = POST, consumes = MIME_JSON)
-    public boolean regUserAndUserComu(@RequestBody UsuarioComunidad userComu) throws EntityException
+    public boolean regUserAndUserComu(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
+                                      @RequestBody UsuarioComunidad userComu) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
-        return usuarioManager.regUserAndUserComu(userComu);
+        return usuarioManager.regUserAndUserComu(userComu, localeToStr);
 //         TODO: notificación de alta de usuario al resto de la comunidad.
     }
 
