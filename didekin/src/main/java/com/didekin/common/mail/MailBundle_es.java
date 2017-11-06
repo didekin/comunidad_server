@@ -17,6 +17,10 @@ public class MailBundle_es extends ListResourceBundle {
             {BYE.name(), "Saludos del equipo de Dídekin"}
     };
 
+    static Object[][] getContentStatic(){
+        return contents;
+    }
+
     @Override
     protected Object[][] getContents()
     {

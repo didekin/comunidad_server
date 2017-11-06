@@ -447,7 +447,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.debug("passwordSendDoMail()");
         try {
-            usuarioMailService.sendNewPswd(usuario, localeToStr);  // TODO: hacer asíncrono.  // TODO: pasar resourceBundle.
+            usuarioMailService.sendNewPswd(usuario, localeToStr);  // TODO: hacer asíncrono.
         } catch (MailException e) {
             throw new EntityException(PASSWORD_NOT_SENT);
         }

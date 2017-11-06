@@ -58,6 +58,7 @@ import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -620,7 +621,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSendIntegration() throws Exception
+    public void test_passwordSend() throws Exception
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = doPreconditionsSendPswdOk();
@@ -629,27 +630,27 @@ public abstract class UsuarioManagerTest {
         // Login changed.
         assertThat(usuarioManager.login(usuarioIn), is(false));
         // Cleaning and closing.
-        Thread.sleep(9000);
+        sleep(9000);
         javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSendWithMail() throws Exception
+    public void test_passwordSendDoMail() throws Exception
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = doPreconditionsSendPswdOk();
-        // Exec.
-        assertThat(usuarioManager.passwordSendDoMail(usuarioIn, oneComponent_local_ES), is(true));
+        // Exec con new password.
+        Usuario newUsuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password("new_password").build();
+        assertThat(usuarioManager.passwordSendDoMail(newUsuarioIn, oneComponent_local_ES), is(true));
         // Invalid oldPassword.
         assertThat(usuarioManager.login(usuarioIn), is(false));
         // Valid new password.
-        usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password("new_password").build();  // TODO: cómo sabemos el password que se ha enviado.
-        assertThat(usuarioManager.login(usuarioIn), is(true));
+        assertThat(usuarioManager.login(newUsuarioIn), is(true));
         // Check mail.
         SECONDS.sleep(10);
-        javaMailMonitor.checkPasswordMessage(usuarioIn, oneComponent_local_ES);
+        javaMailMonitor.checkPasswordMessage(newUsuarioIn, oneComponent_local_ES);
         // Cleaning and closing.
         javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
     }
