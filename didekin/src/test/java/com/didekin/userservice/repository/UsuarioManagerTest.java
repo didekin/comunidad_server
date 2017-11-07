@@ -381,7 +381,7 @@ public abstract class UsuarioManagerTest {
         assertThat(usuario.getUserName(), is(pedro.getUserName()));
         assertThat(usuario.getuId() > 0L, is(true));
         assertThat(usuario.getAlias(), is(pedro.getAlias()));
-        assertThat(new BCryptPasswordEncoder().matches(pedro.getPassword(), usuario.getPassword()), is(true));
+        assertThat(usuario.getPassword().isEmpty(), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -598,7 +598,8 @@ public abstract class UsuarioManagerTest {
     public void test_passwordChangeWithUser_1() throws EntityException
     {
         String newClearPswd = "new_luis_password";
-        assertThat(usuarioManager.passwordChangeWithUser(luis), is(1));
+        Usuario userNewPswd = new Usuario.UsuarioBuilder().copyUsuario(luis).password(newClearPswd).build();
+        assertThat(usuarioManager.passwordChangeWithUser(userNewPswd), is(1));
         assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
                 is(true));
         // Check for deletion of oauth token.

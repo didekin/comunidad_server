@@ -408,8 +408,11 @@ public class UsuarioManager implements UsuarioManagerIf {
             throw new EntityException(USER_WRONG_INIT);
         }
 
-        final Usuario usuarioOld = usuarioDao.getUserByUserName(userName);
-        return passwordChangeWithUser(usuarioOld);
+        final Usuario usuarioNewPswd = new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioDao.getUserByUserName(userName))
+                .password(newPassword)
+                .build();
+        return passwordChangeWithUser(usuarioNewPswd);
     }
 
     @Override
@@ -511,7 +514,7 @@ public class UsuarioManager implements UsuarioManagerIf {
                 logger.error("regComuAndUserAndUserComu(): " + e.getMessage());
             }
         }
-        passwordSendDoMail(usuarioToDB, localeToStr);    // TODO: test.
+//        passwordSendDoMail(usuarioToDB, localeToStr);    // TODO: test.
         return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
     }
 
@@ -612,7 +615,7 @@ public class UsuarioManager implements UsuarioManagerIf {
                 logger.error("regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): " + e.getMessage());
             }
         }
-        passwordSendDoMail(usuarioToDB, localeToStr); // TODO: test.
+//        passwordSendDoMail(usuarioToDB, localeToStr); // TODO: test.
         return pkUsuario > 0L && userComuInserted == 1;
     }
 

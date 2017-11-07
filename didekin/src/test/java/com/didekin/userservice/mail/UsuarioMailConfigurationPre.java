@@ -1,6 +1,5 @@
 package com.didekin.userservice.mail;
 
-import com.didekin.common.Profiles;
 import com.didekin.common.mail.JavaMailMonitor;
 
 import org.springframework.context.annotation.Bean;
@@ -15,14 +14,15 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import static com.didekin.common.Profiles.MAIL_PRE;
 import static com.didekin.userservice.mail.UsuarioMailConfiguration.setMailSender;
 
 /**
  * User: pedro@didekin
  * Date: 13/10/15
  * Time: 14:41
- *  We use in pre-production tests the production configuration for sending messages.
- *  We add a monitor for the mail box in Strato for didekindroid@didekin.es.
+ * We use in pre-production tests the production configuration for sending messages.
+ * We add a monitor for the mail box in Strato for didekindroid@didekin.es.
  */
 
 @Configuration
@@ -37,14 +37,14 @@ public class UsuarioMailConfigurationPre {
     public static final String TO = "didekindroid@didekin.es";
 
 
-    @Profile({Profiles.MAIL_PRE})
+    @Profile({MAIL_PRE})
     @Bean
     public JavaMailSender javaMailSender()
     {
         return setMailSender();
     }
 
-    @Profile({Profiles.MAIL_PRE})
+    @Profile({MAIL_PRE})
     @Bean
     public JavaMailMonitor javaMailMonitor() throws MessagingException
     {
