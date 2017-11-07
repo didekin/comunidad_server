@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.didekin.userservice.repository.PswdGenerator.GENERATOR_13;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
@@ -295,7 +294,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     public String makeNewPassword() throws EntityException
     {
         logger.debug("makeNewPassword()");
-        String newPasssword = GENERATOR_13.makePswd();
+        String newPasssword = new PswdGenerator().makePassword();
         if (newPasssword.isEmpty()) {
             throw new EntityException(PASSWORD_NOT_SENT);
         }

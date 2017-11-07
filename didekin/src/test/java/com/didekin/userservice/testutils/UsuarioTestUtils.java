@@ -3,6 +3,7 @@ package com.didekin.userservice.testutils;
 
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.common.testutils.Constant;
+import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekinlib.http.retrofit.RetrofitHandler;
 import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
 import com.didekinlib.http.retrofit.UsuarioEndPoints;
@@ -13,7 +14,9 @@ import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
+import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
@@ -266,11 +269,22 @@ public final class UsuarioTestUtils {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());
     }
 
-    public static void checkGeneratedPassword(String password)
+    public static void checkGeneratedPassword(String password, int passwordLength) throws UnsupportedEncodingException
     {
-        assertThat(password.length() <= 13, is(true));
-        assertThat(password.length() >= 10, is(true));
-        assertThat(password.contains("O"), is(false));
+        assertThat(password.length() == passwordLength, is(true));
+        byte[] pswdBytes = password.getBytes("US-ASCII");
+        int pswdInt;
+        for (Byte pswdByte : pswdBytes) {
+            pswdInt = pswdByte;
+            boolean isInside = false;
+            for (AsciiInterval interval : values()) {
+                if (interval.isInside(pswdInt)) {
+                    isInside = true;
+                    break;
+                }
+            }
+            assertThat(isInside, is(true));
+        }
         assertThat(PASSWORD.isPatternOk(password), is(true));
     }
 }
