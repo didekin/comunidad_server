@@ -23,10 +23,7 @@ import static com.didekin.common.Profiles.MAIL_PRE;
 import static com.didekin.common.testutils.Constant.oneComponent_local_EN;
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
-import static com.google.common.base.Preconditions.checkState;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.mail.Folder.READ_WRITE;
-import static org.awaitility.Awaitility.waitAtMost;
 
 /**
  * User: pedro@didekin

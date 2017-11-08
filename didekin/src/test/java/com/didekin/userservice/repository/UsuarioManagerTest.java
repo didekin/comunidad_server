@@ -60,8 +60,6 @@ import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
-import static java.lang.Thread.sleep;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -654,8 +652,7 @@ public abstract class UsuarioManagerTest {
         // Login changed.
         assertThat(usuarioManager.login(usuarioIn), is(false));
         // Cleaning and closing.
-        sleep(9000);
-        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
+        javaMailMonitor.extTimedCleanUp();
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -673,10 +670,10 @@ public abstract class UsuarioManagerTest {
         // Valid new password.
         assertThat(usuarioManager.login(newUsuarioIn), is(true));
         // Check mail.
-        SECONDS.sleep(10);
+        javaMailMonitor.extSetUp();
         javaMailMonitor.checkPasswordMessage(newUsuarioIn, oneComponent_local_ES);
         // Cleaning and closing.
-        javaMailMonitor.expungeFolder(); // Limpiamos y cerramos buzón.
+        javaMailMonitor.closeStoreAndFolder();
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -875,7 +872,7 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
         Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(userName)).password(luis.getPassword()).build();
         assertThat(usuarioManager.login(usuarioIn), is(true));
-        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
+//        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
         return usuarioIn;
     }
 

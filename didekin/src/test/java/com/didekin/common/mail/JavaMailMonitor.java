@@ -24,6 +24,7 @@ import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.mail.Flags.Flag.DELETED;
+import static javax.mail.Folder.READ_WRITE;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,10 +50,7 @@ public class JavaMailMonitor {
         folder = store.getFolder(strato_buzon_folder);
     }
 
-    public Folder getFolder()
-    {
-        return folder;
-    }
+    // ............... Internal helpers ...................
 
     public void closeStoreAndFolder() throws MessagingException
     {
@@ -74,6 +72,29 @@ public class JavaMailMonitor {
         }
         folder.expunge();
     }
+
+    // ............... External helpers ...................
+
+    public Folder getFolder()
+    {
+        return folder;
+    }
+
+    public void extSetUp() throws MessagingException
+    {
+        folder.open(READ_WRITE);
+        expungeFolder();
+    }
+
+    public void extTimedCleanUp() throws MessagingException
+    {
+        // Cleanup mail folder.
+        folder.open(READ_WRITE);
+        waitAtMost(12, SECONDS).until(() -> folder.getMessageCount() != 0);
+        closeStoreAndFolder();
+    }
+
+    // ............... Check helpers ...................
 
     public void checkPasswordMessage(Usuario usuario, String localeToStr) throws MessagingException, IOException
     {

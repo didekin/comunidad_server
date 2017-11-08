@@ -62,8 +62,6 @@ import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
 import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.mail.Folder.READ_WRITE;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -320,10 +318,7 @@ public abstract class UsuarioControllerTest {
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName()).execute().body(), is(true));
         // Cleanup mail folder.
-        javaMailMonitor.getFolder().open(READ_WRITE);
-        waitAtMost(12, SECONDS).until(() -> javaMailMonitor.getFolder().getMessageCount() != 0);
-        javaMailMonitor.expungeFolder();
-        javaMailMonitor.closeStoreAndFolder();
+        javaMailMonitor.extTimedCleanUp();
     }
 
     // ......................... TESTS OF HELPER METHODS ..................................
