@@ -462,8 +462,6 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.info("regComuAndUserAndUserComu()");
 
-        // TODO: verificar que no tiene cubierto password.
-
         // Password generation and encryption.
         Usuario usuarioToDB = new Usuario.UsuarioBuilder()
                 .copyUsuario(usuarioCom.getUsuario())
