@@ -101,7 +101,7 @@ public class JavaMailMonitor {
         ResourceBundle mailBundle = ResourceBundle.getBundle(mailBundleName, getLocale(localeToStr));
         ResourceBundle usuarioBundle = ResourceBundle.getBundle(usuarioMailBundleName, getLocale(localeToStr));
 
-        waitAtMost(12, SECONDS).until(() -> folder.getMessageCount() != 0);
+        waitAtMost(15, SECONDS).until(() -> folder.getMessageCount() != 0);
 
         Message[] messages = folder.getMessages();
         assertThat(messages.length, is(1));
