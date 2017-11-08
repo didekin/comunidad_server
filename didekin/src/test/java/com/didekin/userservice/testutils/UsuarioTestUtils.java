@@ -2,10 +2,8 @@ package com.didekin.userservice.testutils;
 
 
 import com.didekin.common.controller.SecurityTestUtils;
-import com.didekin.common.testutils.Constant;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
 import com.didekinlib.http.retrofit.UsuarioEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -241,13 +239,6 @@ public final class UsuarioTestUtils {
                 .roles(roles).build();
     }
 
-    public static Usuario insertUsuarioComunidad(UsuarioComunidad usuarioComunidad, UsuarioComunidadEndPoints userComuEndPoint,
-                                                 UsuarioEndPoints usuarioEndPoint, RetrofitHandler retrofitHandler) throws IOException
-    {
-        userComuEndPoint.regComuAndUserAndUserComu(Constant.oneComponent_local_ES, usuarioComunidad).execute();
-        return getUserData(usuarioComunidad.getUsuario(), usuarioEndPoint, retrofitHandler);
-    }
-
     public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, RetrofitHandler retrofitHandler) throws IOException
     {
         return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
@@ -262,6 +253,11 @@ public final class UsuarioTestUtils {
     public static String tokenLuis(RetrofitHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
+    }
+
+    public static String tokenPaco(RetrofitHandler retrofitHandler) throws IOException
+    {
+        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());
     }
 
     public static String tokenPepe(RetrofitHandler retrofitHandler) throws IOException

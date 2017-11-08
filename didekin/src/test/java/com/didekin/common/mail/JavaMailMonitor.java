@@ -22,9 +22,9 @@ import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.strato_buzon_folder;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
-import static com.google.common.base.Preconditions.checkState;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.mail.Flags.Flag.DELETED;
-import static javax.mail.Folder.READ_WRITE;
+import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsString;
@@ -45,10 +45,13 @@ public class JavaMailMonitor {
     public JavaMailMonitor(Store store) throws MessagingException
     {
         this.store = store;
-        checkState(store.getFolder(strato_buzon_folder).exists());
+        assertThat(store.getFolder(strato_buzon_folder).exists(), is(true));
         folder = store.getFolder(strato_buzon_folder);
-        folder.open(READ_WRITE);
-        checkState(folder.isOpen());
+    }
+
+    public Folder getFolder()
+    {
+        return folder;
     }
 
     public void closeStoreAndFolder() throws MessagingException
@@ -76,8 +79,10 @@ public class JavaMailMonitor {
     {
         ResourceBundle mailBundle = ResourceBundle.getBundle(mailBundleName, getLocale(localeToStr));
         ResourceBundle usuarioBundle = ResourceBundle.getBundle(usuarioMailBundleName, getLocale(localeToStr));
-        Message[] messages = folder.getMessages();
 
+        waitAtMost(12, SECONDS).until(() -> folder.getMessageCount() != 0);
+
+        Message[] messages = folder.getMessages();
         assertThat(messages.length, is(1));
         assertThat(messages[0].getSubject(), is(usuarioBundle.getString(SUBJECT.name())));
         assertThat(messages[0].getContentType(), is(text_plain_UTF_8));

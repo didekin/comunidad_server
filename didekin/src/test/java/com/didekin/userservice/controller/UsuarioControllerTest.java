@@ -20,7 +20,6 @@ import com.didekinlib.http.retrofit.UsuarioEndPoints;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,7 +37,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 
@@ -48,17 +46,14 @@ import static com.didekin.common.Profiles.MAIL_PRE;
 import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
-import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getUserData;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.insertUsuarioComunidad;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPaco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
@@ -67,9 +62,11 @@ import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
 import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.mail.Folder.READ_WRITE;
+import static org.awaitility.Awaitility.waitAtMost;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -154,7 +151,7 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testDeleteAccessToken_2() throws IOException
+    public void testDeleteAccessToken() throws IOException
     {
         SpringOauthToken token_1 = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
                 "pedro@pedro.com",
@@ -190,17 +187,17 @@ public abstract class UsuarioControllerTest {
         assertThat(isDeleted, is(true));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetUserData_1() throws IOException
     {
-        insertUsuarioComunidad(COMU_REAL_JUAN, USERCOMU_ENDPOINT, USER_ENDPOINT, retrofitHandler);
-        Usuario usuarioDB = getUserData(USER_JUAN, USER_ENDPOINT, retrofitHandler);
+        Usuario usuarioDB = getUserData(luis, USER_ENDPOINT, retrofitHandler);
 
-        assertThat(usuarioDB.getuId() > 0, is(true));
-        assertThat(usuarioDB.getUserName(), is(juan.getUserName()));
-        assertThat(usuarioDB.getAlias(), is(juan.getAlias()));
-        assertThat(usuarioDB.getPassword(), nullValue());
+        assertThat(usuarioDB.getuId(), is(luis.getuId()));
+        assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
+        assertThat(usuarioDB.getAlias(), is(luis.getAlias()));
+        assertThat(usuarioDB.getPassword(), is(nullValue()));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -247,74 +244,37 @@ public abstract class UsuarioControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NAME_NOT_FOUND.getHttpMessage()));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUser_1() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
-        SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
-
         // Change userName.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
-                .userName("new_juan@new.com")
-                .uId(usuarioDb_1.getuId())
+                .userName("new_paco@new.com")
+                .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(HELPER.doBearerAccessTkHeader(token_1), usuarioIn_1).execute().body(), is(1));
-        // Check wiht usuarioManager that access token has been deleted. We try with both userNames.
-        assertThat(usuarioManager.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(false));
-        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(false));
+        assertThat(USER_ENDPOINT.modifyUser(tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
+        // Check that access token has been deleted. We try with both userNames.
+        assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(false));
+        assertThat(usuarioManager.getAccessTokenByUserName("new_paco@new.com").isPresent(), is(false));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUser_2() throws IOException
     {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_REAL_JUAN).execute();
-        SpringOauthToken token_1 =
-                getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        Usuario usuarioDb_1 = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute().body();
-
         // Change alias.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
-                .alias(usuarioDb_1.getAlias())
-                .uId(usuarioDb_1.getuId())
+                .alias("newAlias")
+                .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(HELPER.doBearerAccessTkHeader(token_1), usuarioIn_1).execute().body(), is(1));
+        assertThat(USER_ENDPOINT.modifyUser(tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
         // Check wiht usuarioManager that access token has not been deleted.
-        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
-        // Authentication by refreshToken continues to work.
-        assertThat(
-                OAUTH_ENDPOINT.getRefreshUserToken(new SecurityTestUtils(retrofitHandler)
-                        .doAuthBasicHeader(CL_USER), token_1.getRefreshToken().getValue(), REFRESH_TOKEN_GRANT)
-                        .execute().body(), notNullValue()
-        );
-    }
-
-    /**
-     * We test how change of userName invalidates accessToken.
-     */
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testModifyUser_3() throws IOException, EntityException
-    {
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
-        SpringOauthToken token_1 = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        // Change userName with usuarioDao.
-        Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioManager.getUserByUserName(USER_JUAN.getUserName()))
-                .userName("new_juan@new.com")
-                .build();
-        assertThat(usuarioManager.getUsuarioDao().modifyUser(usuarioIn_1), is(1));
-
-        // Check accessToken has not been deleted.
-        assertThat(usuarioManager.getAccessTokenByUserName("new_juan@new.com").isPresent(), is(true));
-        // But authentication by refreshToken throws an exception.
-        Response<SpringOauthToken> response = OAUTH_ENDPOINT.getRefreshUserToken(
-                new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER), token_1.getRefreshToken().getValue(), REFRESH_TOKEN_GRANT).execute();
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));  // USER_NAME_NOT_FOUND.
+        assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(true));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -322,33 +282,30 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUserGcmToken() throws IOException
     {
-        Usuario usuario = new Usuario.UsuarioBuilder().uId(5L).userName("luis@luis.com").password("password5").build();
-        String tokenLuis = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(), usuario.getPassword());
+        String tokenLuis = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
         assertThat(USER_ENDPOINT.modifyUserGcmToken(tokenLuis, "GCMtoKen1234X").execute().body(),
                 is(1));
         assertThat(USER_ENDPOINT.getGcmToken(tokenLuis).execute().body().getToken(), is("GCMtoKen1234X"));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testPasswordChange_1() throws IOException, InterruptedException, EntityException
     {
         // Preconditions: user is registered with an access token.
-        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_REAL_JUAN).execute().body(), is(true));
-        SpringOauthToken accessToken = getTokenAndCheckDb(USER_JUAN.getUserName(), USER_JUAN.getPassword());
-        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), is(true));
-
+        SpringOauthToken accessToken = getTokenAndCheckDb(paco.getUserName(), paco.getPassword());
+        assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(true));
         // Call the controller.
-        String newClearPswd = "new_luis_password";
+        String newClearPswd = "newPacoPassword";
         assertThat(USER_ENDPOINT.passwordChange(HELPER.doBearerAccessTkHeader(accessToken), newClearPswd).execute().body(),
                 is(1));
-
         // Check.
         assertThat(new BCryptPasswordEncoder()
-                        .matches(newClearPswd, usuarioManager.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
+                        .matches(newClearPswd, usuarioManager.getUserByUserName(paco.getUserName()).getPassword()),
                 is(true));
         // Check for deletion of oauth token.
-        assertThat(usuarioManager.getAccessTokenByUserName(USER_JUAN.getUserName()).isPresent(), CoreMatchers.is(false));
+        assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(false));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -362,8 +319,11 @@ public abstract class UsuarioControllerTest {
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, usuarioComunidad).execute().body(), is(true));
         // Call the controller.
         assertThat(USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName()).execute().body(), is(true));
-        TimeUnit.SECONDS.sleep(10);
+        // Cleanup mail folder.
+        javaMailMonitor.getFolder().open(READ_WRITE);
+        waitAtMost(12, SECONDS).until(() -> javaMailMonitor.getFolder().getMessageCount() != 0);
         javaMailMonitor.expungeFolder();
+        javaMailMonitor.closeStoreAndFolder();
     }
 
     // ......................... TESTS OF HELPER METHODS ..................................
@@ -376,21 +336,6 @@ public abstract class UsuarioControllerTest {
         assertThat(new BCryptPasswordEncoder().matches(password, encodePsw), is(true));
         String encodePswBis = new BCryptPasswordEncoder().encode(password);
         assertThat(encodePsw.equals(encodePswBis), is(false));
-    }
-
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testSignUp() throws IOException, EntityException
-    {
-        Usuario usuarioDB = insertUsuarioComunidad(COMU_REAL_JUAN, USERCOMU_ENDPOINT, USER_ENDPOINT, retrofitHandler);
-
-        assertThat(usuarioDB.getuId() > 0, is(true));
-        assertThat(usuarioDB.getUserName(), is(USER_JUAN.getUserName()));
-        assertThat(usuarioDB.getAlias(), is(USER_JUAN.getAlias()));
-        assertThat(new BCryptPasswordEncoder().matches(
-                USER_JUAN.getPassword(),
-                usuarioManager.getUserByUserName(USER_JUAN.getUserName()).getPassword()),
-                is(true));
     }
 
     // ......................... HELPER CLASSES AND METHODS ...............................

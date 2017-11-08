@@ -80,7 +80,7 @@ import static org.junit.Assert.fail;
  * <p>
  * See in UsuarioControllerTest:
  * testDeleteAccessToken_1(),
- * test_deleteAccessTokenByUserName_1(),
+ * test_deleteAccessTokenByUserName(),
  * test_GetAccessToken(),
  * test_GetAccessTokenByUserName().
  */
@@ -134,9 +134,10 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_deleteAccessTokenByUserName_1() throws Exception
+    public void test_deleteAccessTokenByUserName() throws Exception
     {
         // No token in database: no delete.
+        assertThat(usuarioManager.getAccessTokenByUserName(luis.getUserName()).isPresent(), is(false));
         assertThat(usuarioManager.deleteAccessTokenByUserName(luis.getUserName()), is(false));
     }
 
@@ -261,6 +262,26 @@ public abstract class UsuarioManagerTest {
             assertThat(usuarioManager.getUserByUserName("pedro@pedro.com"), notNullValue());
         } catch (EntityException e) {
             fail();
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test()
+    public void testDeleteUserComunidad_3() throws EntityException
+    {
+        // Usuario con una comunidad y comunidad con dos usuarios.
+        assertThat(usuarioManager.getComusByUser(luis.getUserName()).size(), is(1));
+        assertThat(usuarioManager.seeUserComusByComu(ronda_plazuela_10bis.getC_Id()).size(), is(2));
+        // Exec.
+        assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
+        // Check.
+        assertThat(usuarioManager.getComunidadById(ronda_plazuela_10bis.getC_Id()), is(ronda_plazuela_10bis));
+        try {
+            usuarioManager.getUserByUserName(luis.getUserName());
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
 

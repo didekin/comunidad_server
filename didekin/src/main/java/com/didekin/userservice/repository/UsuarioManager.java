@@ -358,6 +358,13 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
+    public int modifyUserComu(UsuarioComunidad userComu)
+    {
+        logger.info("modifyUserComu()");
+        return usuarioDao.modifyUserComu(userComu);
+    }
+
+    @Override
     public int modifyUserGcmToken(Usuario usuario)
     {
         logger.info("modifyUserGcmToken(Usuario usuario)");
@@ -380,13 +387,6 @@ public class UsuarioManager implements UsuarioManagerIf {
                 .filter(holder -> holder.getOriginalGcmTk() != null)
                 .map(holder -> holder.getNewGcmTk() == null ? usuarioDao.deleteGcmToken(holder.getOriginalGcmTk()) : usuarioDao.modifyUserGcmToken(holder))
                 .count();
-    }
-
-    @Override
-    public int modifyUserComu(UsuarioComunidad userComu)
-    {
-        logger.info("modifyUserComu()");
-        return usuarioDao.modifyUserComu(userComu);
     }
 
     /**
@@ -467,7 +467,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         // Password generation and encryption.
         Usuario usuarioToDB = new Usuario.UsuarioBuilder()
                 .copyUsuario(usuarioCom.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))
+                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))    // TODO: test.
                 .build();
         UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuarioToDB)
                 .userComuRest(usuarioCom).build();
@@ -572,7 +572,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         // Password generation and encryption.
         final Usuario usuarioToDB = new Usuario.UsuarioBuilder()
                 .copyUsuario(userComu.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))
+                .password(new BCryptPasswordEncoder().encode(makeNewPassword())) // TODO: test.
                 .build();
         final UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), usuarioToDB)
                 .userComuRest(userComu)

@@ -16,6 +16,7 @@ jar {
 
 test {
     filter {
+        includeTestsMatching "com.didekin.common.mail.*Test"
         includeTestsMatching "com.didekin.userservice.*Test"
         includeTestsMatching "com.didekin.incidservice.*Test"
     }
@@ -48,6 +49,7 @@ dependencies {
 
     testCompile rootProject.ext.mock_server
     testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile rootProject.ext.awaitility
 }
 
 
