@@ -1,10 +1,11 @@
 package com.didekin.userservice.repository;
+
 import com.didekin.common.EntityException;
+import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
-
 
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
@@ -81,13 +82,13 @@ public interface UsuarioManagerIf {
 
     int passwordChangeWithName(String userName, String newPassword) throws EntityException;
 
-    boolean passwordSend(String userName, String localeToStr) throws EntityException;
+    boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... usuarioMailService) throws EntityException;
 
-    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr) throws EntityException;
+    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException;
 
     boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;
 
-    boolean regUserAndUserComu(UsuarioComunidad userComu, String localeToStr) throws EntityException;
+    boolean regUserAndUserComu(UsuarioComunidad userComu, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException;
 
     int regUserComu(UsuarioComunidad usuarioComunidad);
 

@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
-import com.didekin.userservice.mail.UsuarioMailService;
+import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.common.dominio.ValidDataPatterns;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -54,13 +54,12 @@ public class UsuarioManager implements UsuarioManagerIf {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioManager.class.getCanonicalName());
 
-
     private final ComunidadDao comunidadDao;
     private final UsuarioDao usuarioDao;
     @Autowired
-    private JdbcTokenStore tokenStore;
+    protected UsuarioMailServiceIf usuarioMailService;
     @Autowired
-    private UsuarioMailService usuarioMailService;
+    private JdbcTokenStore tokenStore;
 
     @Autowired
     UsuarioManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
@@ -425,7 +424,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public boolean passwordSend(String userName, String localeToStr) throws EntityException
+    public boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException
     {
         logger.debug("passwordSend()");
 
@@ -444,21 +443,21 @@ public class UsuarioManager implements UsuarioManagerIf {
         try {
             if (usuarioDao.passwordChange(usuarioPswdEncr) == 1) {
                 deleteAccessTokenByUserName(usuarioPswdEncr.getUserName());
-                usuarioMailService.sendNewPswd(usuarioPswdRaw, localeToStr);
+                chooseMailService(mailServTest).sendMessage(usuarioPswdRaw, localeToStr);
                 return true;
             } else {
                 throw new EntityException(USER_DATA_NOT_MODIFIED);
             }
         } catch (MailException e) {
             // If password not sent, we restore old encrypted password in BD. She could login with old userName/password.
-            usuarioDao.passwordChange(oldUsuario); // TODO: testar reposición antiguos valores y login.
+            usuarioDao.passwordChange(oldUsuario);
             throw new EntityException(PASSWORD_NOT_SENT);
         }
     }
 
-    @SuppressWarnings("Duplicates")
     @Override
-    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom, String localeToStr) throws EntityException
+    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom, String localeToStr,
+                                             UsuarioMailServiceIf... mailServTest) throws EntityException
     {
         logger.info("regComuAndUserAndUserComu()");
 
@@ -484,12 +483,12 @@ public class UsuarioManager implements UsuarioManagerIf {
                     .userComuRest(userComEncryptPswd).build();
 
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuWithPks, conn);
-            usuarioMailService.sendNewPswd(usuarioPswdRaw, localeToStr);  
+            chooseMailService(mailServTest).sendMessage(usuarioPswdRaw, localeToStr);
             conn.commit();
         } catch (SQLException se) {
             doCatchSqlException(conn, se);
         } catch (MailException e) {
-            throw new EntityException(PASSWORD_NOT_SENT); // TODO: revisar cómo tratamos esta exception in didekindroid.
+            doCatchMailException(conn, e);
         } finally {
             doFinallyJdbc(conn, "regComuAndUserAndUserComu(): ");
         }
@@ -526,7 +525,8 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public boolean regUserAndUserComu(final UsuarioComunidad userComu, String localeToStr) throws EntityException
+    public boolean regUserAndUserComu(final UsuarioComunidad userComu, String localeToStr,
+                                      UsuarioMailServiceIf... mailServTest) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
 
@@ -550,13 +550,15 @@ public class UsuarioManager implements UsuarioManagerIf {
                     .userComuRest(userComu)
                     .build();
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuTris, conn);
+            chooseMailService(mailServTest).sendMessage(usuarioPswdRaw, localeToStr);
             conn.commit();
         } catch (SQLException se) {
             doCatchSqlException(conn, se);
+        } catch (MailException e) {
+            doCatchMailException(conn, e);
         } finally {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
-//        passwordSendNewUser(usuarioPswdRaw, localeToStr); // TODO: test.
         return pkUsuario > 0L && userComuInserted == 1;
     }
 
@@ -617,6 +619,11 @@ public class UsuarioManager implements UsuarioManagerIf {
                 .build();
     }
 
+    private UsuarioMailServiceIf chooseMailService(UsuarioMailServiceIf[] mailServiceTest)
+    {
+        return (mailServiceTest != null && mailServiceTest.length == 1) ? mailServiceTest[0] : usuarioMailService;
+    }
+
     private static void doFinallyJdbc(Connection conn, String msg)
     {
         try {
@@ -629,7 +636,8 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
     }
 
-    private void doCatchSqlException(Connection conn, SQLException se){
+    private void doCatchSqlException(Connection conn, SQLException se)
+    {
         try {
             if (conn != null) {
                 conn.rollback();
@@ -643,6 +651,18 @@ public class UsuarioManager implements UsuarioManagerIf {
         } catch (SQLException e) {
             throw new RuntimeException(se.getMessage(), se);
         }
+    }
+
+    private void doCatchMailException(Connection conn, MailException me)
+    {
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error(me.getMessage());
+            }
+        }
+        throw new EntityException(PASSWORD_NOT_SENT);
     }
 
     // =================================  CHECKERS ======================================

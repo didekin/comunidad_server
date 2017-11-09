@@ -2,6 +2,7 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
 import com.didekin.common.mail.JavaMailMonitor;
+import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -24,6 +25,7 @@ import javax.mail.MessagingException;
 
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
 import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
+import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
@@ -31,10 +33,9 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_TRAV_PLAZUELA_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_LUIS;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
@@ -51,6 +52,7 @@ import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -81,7 +83,6 @@ import static org.junit.Assert.fail;
  * test_GetAccessToken(),
  * test_GetAccessTokenByUserName().
  */
-@SuppressWarnings({"OptionalGetWithoutIsPresent", "Duplicates"})
 public abstract class UsuarioManagerTest {
 
     @Autowired
@@ -92,6 +93,8 @@ public abstract class UsuarioManagerTest {
     private UsuarioDao usuarioDao;
     @Autowired
     private ComunidadDao comunidadDao;
+    @Autowired
+    UsuarioMailServiceForTest mailServiceForTest;
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -234,13 +237,7 @@ public abstract class UsuarioManagerTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
-
-        try {
-            usuarioManager.getUserByUserName(luis.getUserName());
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
-        }
+        checkUserNotFound(luis.getUserName());
 
         // El usuario tiene tres comunidades. La comunidad tiene 1 usuario.
         // Preconditions.
@@ -615,7 +612,7 @@ public abstract class UsuarioManagerTest {
     public void test_passwordSend() throws Exception
     {
         // Preconditions: dirección email válida.
-        Usuario usuarioIn = doPreconditionsSendPswdOk();
+        Usuario usuarioIn = doLuisMail();
         // Exec
         assertThat(usuarioManager.passwordSend(usuarioIn.getUserName(), oneComponent_local_ES), is(true));
         // Check password generated and sent.
@@ -630,11 +627,28 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.login(userNewPswd), is(true));
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_passwordSend_mailFail() throws Exception
+    {
+        // Preconditions: dirección email válida.
+        // Exec
+        try {
+            usuarioManager.passwordSend(doLuisMail().getUserName(), oneComponent_local_ES, mailServiceForTest);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
+        }
+        // Login not changed.
+        assertThat(usuarioManager.login(doLuisMail()), is(true));
+    }
+
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegComuAndUserAndUserComu_1() throws SQLException, EntityException, IOException, MessagingException
     {
-        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName("didekindroid@didekin.es").password(null).build();
+        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
         // Exec.
@@ -656,7 +670,25 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_2() throws SQLException, EntityException
+    public void testRegComuAndUserAndUserComu_2() throws SQLException, EntityException, IOException, MessagingException
+    {
+        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
+        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
+                "door", ADMINISTRADOR.function);
+        // Exec.
+        try {
+            usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES, mailServiceForTest);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
+        }
+        // No new data in database.
+        checkUserNotFound(userIn.getUserName());
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testRegComuAndUserAndUserComu_3() throws SQLException, EntityException
     {
         boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN, oneComponent_local_ES);
         assertThat(isInserted_1, is(true));
@@ -669,7 +701,7 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_3() throws SQLException, EntityException
+    public void testRegComuAndUserAndUserComu_4() throws SQLException, EntityException
     {
         boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);
         assertThat(isInserted_1, is(true));
@@ -680,26 +712,23 @@ public abstract class UsuarioManagerTest {
         }
     }
 
-    /* En este test no hay codificación del password porque sortea el método del controller que lo hace. */
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegComuAndUserComu_1() throws SQLException, EntityException
     {
-        // Preconditions: there is DB a user registered in a comunidad.
-        UsuarioComunidad usuarioComunidad1 = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1", "door",
-                INQUILINO.function);
-        usuarioManager.regComuAndUserAndUserComu(usuarioComunidad1, oneComponent_local_ES);
-        Usuario usuarioWithPk = usuarioManager.getUserByUserName(USER_JUAN.getUserName());
+        // Preconditions: there is DB a user registered in a comunidad: juan en comunidades 2 y 4.
+        assertThat(usuarioManager.getComusByUser(juan.getUserName()).size(), is(2));
 
-        UsuarioComunidad usuarioComunidad2 = makeUsuarioComunidad(COMU_OTRA, usuarioWithPk, "AB", "ESC", "11", "puert",
+        UsuarioComunidad usuarioComunidad2 = makeUsuarioComunidad(COMU_OTRA, juan, "AB", "ESC", "11", "puert",
                 ADMINISTRADOR.function);
 
         boolean isRegOk = usuarioManager.regComuAndUserComu(usuarioComunidad2);
         assertThat(isRegOk, is(true));
 
-        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(USER_JUAN.getUserName());
-        assertThat(comunidades.size(), is(2));
-        assertThat(comunidades, hasItems(usuarioComunidad1, usuarioComunidad2));
+        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(juan.getUserName());
+        assertThat(comunidades.size(), is(3));
+        assertThat(comunidades, hasItem(usuarioComunidad2));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -707,8 +736,7 @@ public abstract class UsuarioManagerTest {
     public void testRegComuAndUserComu_2() throws EntityException
     {
         // Preconditions: there is DB a user registered in a comunidad.
-        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN, twoComponent_local_ES);
-        assertThat(isInserted_1, is(true));
+        assertThat(usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN, twoComponent_local_ES), is(true));
         try {
             usuarioManager.regComuAndUserComu(COMU_REAL_PEPE);
         } catch (EntityException e) {
@@ -716,34 +744,53 @@ public abstract class UsuarioManagerTest {
         }
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegUserAndUserComu_1() throws SQLException, EntityException
     {
         // Preconditions: there is a comunidad associated to other users.
-        usuarioManager.regComuAndUserAndUserComu(COMU_TRAV_PLAZUELA_PEPE, twoComponent_local_ES);
-        // We get the id of the comunidad.
-        long comunidadId = usuarioManager.getComusByUser(pepe.getUserName()).get(0).getC_Id();
+        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
 
         // Nuevo usuarioComunidad.
-        UsuarioComunidad userComu = makeUsuarioComunidad(
-                new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                USER_LUIS,
+        UsuarioComunidad newPepe = makeUsuarioComunidad(
+                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
+                new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName(TO).build(),
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
-        boolean isRegistered = usuarioManager.regUserAndUserComu(userComu, oneComponent_local_ES);
 
-        assertThat(isRegistered, is(true));
-        long comunidadId_2 = usuarioManager.getComusByUser(USER_LUIS.getUserName()).get(0).getC_Id();
-        assertThat(comunidadId_2, is(comunidadId));
+        assertThat(usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES), is(true));
+        assertThat(usuarioManager.getComusByUser(TO).get(0), is(calle_el_escorial));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testRegUserAndUserComu_2() throws SQLException, EntityException
+    {
+        // Preconditions: there is a comunidad associated to other users.
+        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
+        // Nuevo usuarioComunidad.
+        UsuarioComunidad newPepe = makeUsuarioComunidad(
+                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
+                new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName(TO).build(),
+                "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
+
+        try {
+            usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES, mailServiceForTest);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
+        }
+        // No new data in database.
+        checkUserNotFound(TO);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_2() throws EntityException
+    public void testRegUserAndUserComu_3() throws EntityException
     {
         // Preconditions: there is a comunidad associated to other users.
-        boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN, twoComponent_local_ES);
-        assertThat(isInserted_1, is(true));
+        assertThat(usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN, twoComponent_local_ES), is(true));
         try {
             usuarioManager.regUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);
         } catch (EntityException e) {
@@ -829,19 +876,28 @@ public abstract class UsuarioManagerTest {
 
     // ======================================== HELPERS ========================================
 
-    private Usuario doPreconditionsSendPswdOk() throws EntityException, MessagingException
-    {
-        final String userName = "didekindroid@didekin.es";
-        assertThat(usuarioManager.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
-        Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(userName)).password(luis.getPassword()).build();
-        assertThat(usuarioManager.login(usuarioIn), is(true));
-        return usuarioIn;
-    }
-
     private Usuario doUsuario(String userName, String gcmToken) throws EntityException
     {
         return new Usuario.UsuarioBuilder().uId(usuarioManager.completeUser(userName).getuId()).gcmToken
                 (gcmToken).build();
+    }
+
+    private Usuario doLuisMail() throws EntityException, MessagingException
+    {
+        Usuario luisMail = new Usuario.UsuarioBuilder().copyUsuario(luis).userName(TO).build();
+        assertThat(usuarioManager.modifyUser(luisMail, luis.getUserName()), is(1));
+        assertThat(usuarioManager.login(luisMail), is(true));
+        return luisMail;
+    }
+
+    private void checkUserNotFound(String userName)
+    {
+        try {
+            usuarioManager.getUserByUserName(userName);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
     }
 }
 

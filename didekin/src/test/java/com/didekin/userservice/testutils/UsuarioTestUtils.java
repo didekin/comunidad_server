@@ -260,6 +260,7 @@ public final class UsuarioTestUtils {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());
     }
 
+    @SuppressWarnings("unused")
     public static String tokenPepe(RetrofitHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());

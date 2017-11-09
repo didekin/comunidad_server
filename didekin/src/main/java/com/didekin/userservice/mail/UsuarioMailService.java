@@ -29,10 +29,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Time: 14:58
  */
 @Service
-public class UsuarioMailService {
+public class UsuarioMailService implements UsuarioMailServiceIf {
 
     private static final Logger logger = getLogger(UsuarioMailService.class.getCanonicalName());
-    public static final String doubleLineSeparator = lineSeparator() + lineSeparator();
+    private static final String doubleLineSeparator = lineSeparator() + lineSeparator();
 
     private JavaMailSender mailSender;
 
@@ -44,9 +44,16 @@ public class UsuarioMailService {
 
 //  ...................................................................
 
-    public void sendNewPswd(Usuario user, String localeToStr)
+    @Override
+    public void sendMessage(Usuario user, String localeToStr)
     {
-        logger.debug("sendNewPswd()");
+        logger.debug("sendMessage()");
+        mailSender.send(doPswdMsgFromBundles(user, localeToStr));
+    }
+
+    static SimpleMailMessage doPswdMsgFromBundles(Usuario user, String localeToStr)
+    {
+        logger.debug("doPswdMsgFromBundles()");
 
         ResourceBundle mailBundle = getBundle(mailBundleName, getLocale(localeToStr));
         ResourceBundle usuarioBundle = getBundle(usuarioMailBundleName, getLocale(localeToStr));
@@ -63,9 +70,8 @@ public class UsuarioMailService {
                 + doubleLineSeparator
                 + mailBundle.getString(BYE.name()) + lineSeparator());
 
-        logger.debug("sendNewPswd(): message from = " + mailMsg.getFrom());
-        logger.debug("sendNewPswd(): message = \n" + mailMsg.getText());
-
-        mailSender.send(mailMsg);
+        logger.debug("sendMessage(): message from = " + mailMsg.getFrom());
+        logger.debug("sendMessage(): message = \n" + mailMsg.getText());
+        return mailMsg;
     }
 }

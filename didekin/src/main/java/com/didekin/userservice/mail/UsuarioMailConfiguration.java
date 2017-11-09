@@ -45,7 +45,7 @@ public class UsuarioMailConfiguration {
     }
 
     @Bean
-    public UsuarioMailService usuarioMailService()
+    public UsuarioMailServiceIf usuarioMailService()
     {
         return new UsuarioMailService(javaMailSender());
     }

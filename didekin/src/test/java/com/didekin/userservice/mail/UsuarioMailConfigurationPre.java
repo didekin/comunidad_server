@@ -1,19 +1,20 @@
 package com.didekin.userservice.mail;
 
+import com.didekin.common.Profiles;
 import com.didekin.common.mail.JavaMailMonitor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Properties;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
-
-import static com.didekin.common.Profiles.MAIL_PRE;
 
 /**
  * User: pedro@didekin
@@ -34,7 +35,10 @@ public class UsuarioMailConfigurationPre {
     public static final String strato_buzon_folder = "Inbox";
     public static final String TO = "didekindroid@didekin.es";
 
-    @Profile({MAIL_PRE})
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Profile({Profiles.MAIL_PRE})
     @Bean
     public JavaMailMonitor javaMailMonitor() throws MessagingException
     {
@@ -44,5 +48,12 @@ public class UsuarioMailConfigurationPre {
         Store store = session.getStore(strato_imap_protocol);
         store.connect(strato_imap_host, strato_buzon_user, strato_buzon_password);
         return new JavaMailMonitor(store);
+    }
+
+    @Profile({Profiles.MAIL_PRE})
+    @Bean
+    public UsuarioMailServiceIf usuarioMailServiceForTest()
+    {
+        return new UsuarioMailServiceForTest(mailSender);
     }
 }

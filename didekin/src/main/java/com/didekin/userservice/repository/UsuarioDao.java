@@ -270,7 +270,7 @@ public class UsuarioDao {
     /**
      * 'Public' to allows for a userController test.
      */
-    public int modifyUser(Usuario usuario)
+    int modifyUser(Usuario usuario)
     {
         logger.debug("modifyUser(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
