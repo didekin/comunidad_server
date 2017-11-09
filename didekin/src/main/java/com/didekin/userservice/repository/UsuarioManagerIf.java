@@ -81,11 +81,7 @@ public interface UsuarioManagerIf {
 
     int passwordChangeWithName(String userName, String newPassword) throws EntityException;
 
-    int passwordChangeWithUser(Usuario usuarioNewPswd) throws EntityException;
-
     boolean passwordSend(String userName, String localeToStr) throws EntityException;
-
-    boolean passwordSendDoMail(Usuario usuario, String localeToStr) throws EntityException;
 
     boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr) throws EntityException;
 

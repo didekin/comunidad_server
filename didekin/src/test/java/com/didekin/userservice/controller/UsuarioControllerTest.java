@@ -289,7 +289,7 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChange_1() throws IOException, InterruptedException, EntityException
+    public void testPasswordChange() throws IOException, InterruptedException, EntityException
     {
         // Preconditions: user is registered with an access token.
         SpringOauthToken accessToken = getTokenAndCheckDb(paco.getUserName(), paco.getPassword());

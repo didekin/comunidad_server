@@ -29,11 +29,6 @@ public class UsuarioMailConfiguration {
     @Bean
     public JavaMailSender javaMailSender()
     {
-        return setMailSender();
-    }
-
-    static JavaMailSender setMailSender()
-    {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
         mailProperties.setProperty(mail_smtp_auth_prop, String.valueOf(true));

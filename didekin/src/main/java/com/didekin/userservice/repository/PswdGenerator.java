@@ -13,7 +13,7 @@ import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.asc
  */
 public class PswdGenerator {
 
-    static final int default_password_length = 14;
+    public static final int default_password_length = 14;
     private final int pswdLength;
 
     PswdGenerator()

@@ -3,6 +3,7 @@ package com.didekin.common.mail;
 import com.didekinlib.model.usuario.Usuario;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 
 import javax.mail.Folder;
@@ -107,24 +108,51 @@ public class JavaMailMonitor {
         assertThat(messages.length, is(1));
         assertThat(messages[0].getSubject(), is(usuarioBundle.getString(SUBJECT.name())));
         assertThat(messages[0].getContentType(), is(text_plain_UTF_8));
-        assertThat(((String) messages[0].getContent()), allOf(
+
+        final String msgContent = (String) messages[0].getContent();
+        assertThat(msgContent, allOf(
                 containsString(mailBundle.getString(SALUDO.name())),
                 containsString(usuario.getPassword()),
                 containsString(usuarioBundle.getString(TXT_CHANGE_Password.name())),
                 containsString(usuarioBundle.getString(TXT_Password.name()))
         ));
-        if (usuario.getPassword() != null) {
-            assertThat(((String) messages[0].getContent()), containsString(usuario.getPassword()));
-        }
+
         checkFromTo(messages[0]);
+        checkPswd(msgContent, usuario);
 
         messages[0].setFlag(DELETED, true);
         folder.expunge();
+    }
+
+    public String getPswdFromMsg() throws MessagingException, IOException
+    {
+        waitAtMost(15, SECONDS).until(() -> folder.getMessageCount() != 0);
+        String msgContent = (String) folder.getMessages()[0].getContent();
+        return msgContent.split(getDoubleLineSeparatorFromMsg(msgContent))[1].split(":")[1].trim();
+    }
+
+    private void checkPswd(String msgContent, Usuario usuario) throws UnsupportedEncodingException
+    {
+        assertThat(msgContent, containsString(usuario.getPassword()));
+        String separator = getDoubleLineSeparatorFromMsg(msgContent);
+        String password = msgContent.split(separator)[1].split(":")[1].trim();
+        assertThat(password, is(usuario.getPassword()));
     }
 
     private void checkFromTo(Message message) throws MessagingException
     {
         assertThat(((InternetAddress) message.getFrom()[0]).getAddress(), is(mail_from));
         assertThat(((InternetAddress) message.getAllRecipients()[0]).getAddress(), is(TO));
+    }
+
+    private String getDoubleLineSeparatorFromMsg(String msgContent)
+    {
+        if (msgContent.contains("\r\n\r\n")) {
+            return "\r\n\r\n";
+        } else if (msgContent.contains("\r\r")) {
+            return "\r\r";
+        } else {
+            return "\n\n";
+        }
     }
 }

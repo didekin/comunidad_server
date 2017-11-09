@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.didekin.common.EntityException.COMUNIDAD_UNIQUE_KEY;
+import static com.didekin.common.EntityException.DUPLICATE_ENTRY;
+import static com.didekin.common.EntityException.USER_NAME;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
@@ -408,21 +411,9 @@ public class UsuarioManager implements UsuarioManagerIf {
             throw new EntityException(USER_WRONG_INIT);
         }
 
-        final Usuario usuarioNewPswd = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioDao.getUserByUserName(userName))
-                .password(newPassword)
-                .build();
-        return passwordChangeWithUser(usuarioNewPswd);
-    }
-
-    @Override
-    public int passwordChangeWithUser(Usuario usuarioNewPswd) throws EntityException
-    {
-        logger.info("passwordChangeWithUser()");
-
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioNewPswd)
-                .password(new BCryptPasswordEncoder().encode(usuarioNewPswd.getPassword()))
+                .copyUsuario(usuarioDao.getUserByUserName(userName))
+                .password(new BCryptPasswordEncoder().encode(newPassword))
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
@@ -437,23 +428,32 @@ public class UsuarioManager implements UsuarioManagerIf {
     public boolean passwordSend(String userName, String localeToStr) throws EntityException
     {
         logger.debug("passwordSend()");
-        Usuario usuarioNewPswd = new Usuario.UsuarioBuilder()
-                .copyUsuario(getUserByUserName(userName))
+
+        final Usuario oldUsuario = getUserByUserName(userName);
+
+        final Usuario usuarioPswdRaw = new Usuario.UsuarioBuilder()
+                .copyUsuario(oldUsuario)
                 .password(makeNewPassword())
                 .build();
-        return passwordSendDoMail(usuarioNewPswd, localeToStr);
-    }
 
-    @Override
-    public boolean passwordSendDoMail(Usuario usuario, String localeToStr) throws EntityException
-    {
-        logger.debug("passwordSendDoMail()");
+        final Usuario usuarioPswdEncr = new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioPswdRaw)
+                .password(new BCryptPasswordEncoder().encode(usuarioPswdRaw.getPassword()))
+                .build();
+
         try {
-            usuarioMailService.sendNewPswd(usuario, localeToStr);  // TODO: hacer asíncrono.
+            if (usuarioDao.passwordChange(usuarioPswdEncr) == 1) {
+                deleteAccessTokenByUserName(usuarioPswdEncr.getUserName());
+                usuarioMailService.sendNewPswd(usuarioPswdRaw, localeToStr);
+                return true;
+            } else {
+                throw new EntityException(USER_DATA_NOT_MODIFIED);
+            }
         } catch (MailException e) {
+            // If password not sent, we restore old encrypted password in BD. She could login with old userName/password.
+            usuarioDao.passwordChange(oldUsuario); // TODO: testar reposición antiguos valores y login.
             throw new EntityException(PASSWORD_NOT_SENT);
         }
-        return passwordChangeWithUser(usuario) == 1;
     }
 
     @SuppressWarnings("Duplicates")
@@ -462,13 +462,10 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.info("regComuAndUserAndUserComu()");
 
-        // Password generation and encryption.
-        Usuario usuarioToDB = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioCom.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(makeNewPassword()))    // TODO: test.
-                .build();
-        UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuarioToDB)
-                .userComuRest(usuarioCom).build();
+        final Usuario usuarioPswdRaw = doUserRawPswd(usuarioCom);
+        final UsuarioComunidad userComEncryptPswd =
+                new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
+                        .userComuRest(usuarioCom).build();
 
         long pkUsuario = 0;
         long pkComunidad = 0;
@@ -478,41 +475,25 @@ public class UsuarioManager implements UsuarioManagerIf {
         try {
             conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
             conn.setAutoCommit(false);
-            pkUsuario = usuarioDao.insertUsuario(usuarioComToDB.getUsuario(), conn);
-            pkComunidad = comunidadDao.insertComunidad(usuarioComToDB.getComunidad(), conn);
+            pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
+            pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
 
             Usuario userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
             UsuarioComunidad userComuWithPks = new UsuarioComunidad.UserComuBuilder(comuWithPk, userWithPk)
-                    .userComuRest(usuarioComToDB).build();
+                    .userComuRest(userComEncryptPswd).build();
 
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuWithPks, conn);
+            usuarioMailService.sendNewPswd(usuarioPswdRaw, localeToStr);  
             conn.commit();
         } catch (SQLException se) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-                if (se.getMessage().contains(EntityException.DUPLICATE_ENTRY) && se.getMessage().contains(EntityException.USER_NAME)) {
-                    throw new EntityException(USER_NAME_DUPLICATE);
-                }
-                if (se.getMessage().contains(EntityException.DUPLICATE_ENTRY) && se.getMessage().contains(EntityException.COMUNIDAD_UNIQUE_KEY)) {
-                    throw new EntityException(COMUNIDAD_DUPLICATE);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(se.getMessage(), se);
-            }
+            doCatchSqlException(conn, se);
+        } catch (MailException e) {
+            throw new EntityException(PASSWORD_NOT_SENT); // TODO: revisar cómo tratamos esta exception in didekindroid.
         } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                logger.error("regComuAndUserAndUserComu(): " + e.getMessage());
-            }
+            doFinallyJdbc(conn, "regComuAndUserAndUserComu(): ");
         }
-//        passwordSendDoMail(usuarioToDB, localeToStr);    // TODO: test.
+
         return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
     }
 
@@ -537,25 +518,9 @@ public class UsuarioManager implements UsuarioManagerIf {
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuWithPks, conn);
             conn.commit();
         } catch (SQLException se) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-                if (se.getMessage().contains(EntityException.DUPLICATE_ENTRY) && se.getMessage().contains(EntityException.COMUNIDAD_UNIQUE_KEY)) {
-                    throw new EntityException(COMUNIDAD_DUPLICATE);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(se.getMessage(), se);
-            }
+            doCatchSqlException(conn, se);
         } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                logger.error("regComuAndUserComu(): conn.setAutoCommit(true), conn.close(): " + e.getMessage());
-            }
+            doFinallyJdbc(conn, "regComuAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
         return pkComunidad > 0L && userComuInserted == 1;
     }
@@ -565,16 +530,10 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.debug("regUserAndUserComu()");
 
-        // TODO: verificar que no tiene cubierto password.
-
-        // Password generation and encryption.
-        final Usuario usuarioToDB = new Usuario.UsuarioBuilder()
-                .copyUsuario(userComu.getUsuario())
-                .password(new BCryptPasswordEncoder().encode(makeNewPassword())) // TODO: test.
-                .build();
-        final UsuarioComunidad usuarioComToDB = new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), usuarioToDB)
-                .userComuRest(userComu)
-                .build();
+        final Usuario usuarioPswdRaw = doUserRawPswd(userComu);
+        final UsuarioComunidad userComEncryptPswd =
+                new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
+                        .userComuRest(userComu).build();
 
         long pkUsuario = 0;
         int userComuInserted = 0;
@@ -584,7 +543,7 @@ public class UsuarioManager implements UsuarioManagerIf {
             conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             conn.setAutoCommit(false);
-            pkUsuario = usuarioDao.insertUsuario(usuarioComToDB.getUsuario(), conn);
+            pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             final Usuario usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             final UsuarioComunidad userComuTris = new UsuarioComunidad.UserComuBuilder(
                     userComu.getComunidad(), usuarioPk)
@@ -593,27 +552,11 @@ public class UsuarioManager implements UsuarioManagerIf {
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuTris, conn);
             conn.commit();
         } catch (SQLException se) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-                if (se.getMessage().contains(EntityException.DUPLICATE_ENTRY) && se.getMessage().contains(EntityException.USER_NAME)) {
-                    throw new EntityException(USER_NAME_DUPLICATE);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(se.getMessage(), se);
-            }
+            doCatchSqlException(conn, se);
         } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                logger.error("regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): " + e.getMessage());
-            }
+            doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
-//        passwordSendDoMail(usuarioToDB, localeToStr); // TODO: test.
+//        passwordSendNewUser(usuarioPswdRaw, localeToStr); // TODO: test.
         return pkUsuario > 0L && userComuInserted == 1;
     }
 
@@ -653,6 +596,53 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.info("seeUserComusByUser()");
         return usuarioDao.seeUserComusByUser(userName);
+    }
+
+    // =================================  HELPERS ======================================
+
+    private Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
+    {
+        // Password encryption.
+        return new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioPswdRaw)
+                .password(new BCryptPasswordEncoder().encode(usuarioPswdRaw.getPassword()))
+                .build();
+    }
+
+    private Usuario doUserRawPswd(UsuarioComunidad usuarioCom)
+    {
+        return new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioCom.getUsuario())
+                .password(makeNewPassword())
+                .build();
+    }
+
+    private static void doFinallyJdbc(Connection conn, String msg)
+    {
+        try {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        } catch (SQLException e) {
+            logger.error(msg + e.getMessage());
+        }
+    }
+
+    private void doCatchSqlException(Connection conn, SQLException se){
+        try {
+            if (conn != null) {
+                conn.rollback();
+            }
+            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(USER_NAME)) {
+                throw new EntityException(USER_NAME_DUPLICATE);
+            }
+            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(COMUNIDAD_UNIQUE_KEY)) {
+                throw new EntityException(COMUNIDAD_DUPLICATE);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(se.getMessage(), se);
+        }
     }
 
     // =================================  CHECKERS ======================================

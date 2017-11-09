@@ -6,6 +6,7 @@ import com.didekin.common.mail.JavaMailMonitor;
 import com.didekinlib.model.usuario.Usuario;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -22,8 +23,10 @@ import javax.mail.MessagingException;
 import static com.didekin.common.Profiles.MAIL_PRE;
 import static com.didekin.common.testutils.Constant.oneComponent_local_EN;
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
+import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static javax.mail.Folder.READ_WRITE;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  * User: pedro@didekin
@@ -75,5 +78,12 @@ public class UsuarioMailServiceDevPreTest {
     {
         mailService.sendNewPswd(usuario, oneComponent_local_EN);
         javaMailMonitor.checkPasswordMessage(usuario, oneComponent_local_EN);
+    }
+
+    @Test
+    public void testGetPassword() throws IOException, MessagingException
+    {
+        mailService.sendNewPswd(usuario, twoComponent_local_ES);
+        Assert.assertThat(javaMailMonitor.getPswdFromMsg(), is(usuario.getPassword()));
     }
 }

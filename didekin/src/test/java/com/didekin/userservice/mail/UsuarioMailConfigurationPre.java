@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Properties;
 
@@ -15,7 +14,6 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import static com.didekin.common.Profiles.MAIL_PRE;
-import static com.didekin.userservice.mail.UsuarioMailConfiguration.setMailSender;
 
 /**
  * User: pedro@didekin
@@ -35,14 +33,6 @@ public class UsuarioMailConfigurationPre {
     private static final String strato_buzon_user = "didekindroid@didekin.es";
     public static final String strato_buzon_folder = "Inbox";
     public static final String TO = "didekindroid@didekin.es";
-
-
-    @Profile({MAIL_PRE})
-    @Bean
-    public JavaMailSender javaMailSender()
-    {
-        return setMailSender();
-    }
 
     @Profile({MAIL_PRE})
     @Bean

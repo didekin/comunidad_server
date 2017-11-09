@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import javax.mail.MessagingException;
 
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
 import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
-import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
@@ -54,7 +54,6 @@ import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
@@ -598,45 +597,15 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithName_2()
-    {
-        try {
-            usuarioManager.passwordChangeWithName(new Usuario.UsuarioBuilder()
-                    .copyUsuario(luis).password("noexisto").userName("nomail_error").build().getUserName(), "newPassword");
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_WRONG_INIT));
-        }
-        // Permanecen datos de login.
-        assertThat(usuarioManager.login(luis), is(true));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_passwordChangeWithUser_1() throws EntityException
-    {
-        String newClearPswd = "new_luis_password";
-        Usuario userNewPswd = new Usuario.UsuarioBuilder().copyUsuario(luis).password(newClearPswd).build();
-        assertThat(usuarioManager.passwordChangeWithUser(userNewPswd), is(1));
-        assertThat(new BCryptPasswordEncoder().matches(newClearPswd, usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
-                is(true));
-        // Check for deletion of oauth token.
-        assertThat(usuarioManager.getAccessTokenByUserName(TO).isPresent(), is(false));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_passwordChangeWithUser_2() throws EntityException
+    public void test_passwordChangeWithName_2() throws EntityException
     {
         // Precondition: no existe usuario.
         Usuario newPepe = new Usuario.UsuarioBuilder().copyUsuario(pepe).uId(999L).build();
         try {
-            usuarioManager.passwordChangeWithUser(newPepe);
+            usuarioManager.passwordChangeWithName(newPepe.getUserName(), "newPassword");
             fail();
         } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
 
@@ -649,46 +618,40 @@ public abstract class UsuarioManagerTest {
         Usuario usuarioIn = doPreconditionsSendPswdOk();
         // Exec
         assertThat(usuarioManager.passwordSend(usuarioIn.getUserName(), oneComponent_local_ES), is(true));
-        // Login changed.
-        assertThat(usuarioManager.login(usuarioIn), is(false));
-        // Cleaning and closing.
-        javaMailMonitor.extTimedCleanUp();
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_passwordSendDoMail() throws Exception
-    {
-        // Preconditions: dirección email válida.
-        Usuario usuarioIn = doPreconditionsSendPswdOk();
-        // Exec con new password.
-        Usuario newUsuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password("new_password").build();
-        assertThat(usuarioManager.passwordSendDoMail(newUsuarioIn, oneComponent_local_ES), is(true));
-        // Invalid oldPassword.
-        assertThat(usuarioManager.login(usuarioIn), is(false));
-        // Valid new password.
-        assertThat(usuarioManager.login(newUsuarioIn), is(true));
-        // Check mail.
+        // Check password generated and sent.
         javaMailMonitor.extSetUp();
-        javaMailMonitor.checkPasswordMessage(newUsuarioIn, oneComponent_local_ES);
+        String password = javaMailMonitor.getPswdFromMsg();
+        checkGeneratedPassword(password, default_password_length);
         // Cleaning and closing.
         javaMailMonitor.closeStoreAndFolder();
+        // Login changed.
+        assertThat(usuarioManager.login(usuarioIn), is(false));
+        Usuario userNewPswd = new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(password).build();
+        assertThat(usuarioManager.login(userNewPswd), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_1() throws SQLException, EntityException
+    public void testRegComuAndUserAndUserComu_1() throws SQLException, EntityException, IOException, MessagingException
     {
-        UsuarioComunidad usuarioCom = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1",
+        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName("didekindroid@didekin.es").password(null).build();
+        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
-
-        boolean insertedOk = usuarioManager.regComuAndUserAndUserComu(usuarioCom, oneComponent_local_ES);
-        assertThat(insertedOk, is(true));
-
-        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(USER_JUAN.getUserName());
+        // Exec.
+        assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES), is(true));
+        // Check password generated and sent.
+        javaMailMonitor.extSetUp();
+        String password = javaMailMonitor.getPswdFromMsg();
+        checkGeneratedPassword(password, default_password_length);
+        // Cleaning and closing.
+        javaMailMonitor.closeStoreAndFolder();
+        // Check alta nueva comunidad.
+        List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(userIn.getUserName());
         assertThat(comunidades.size(), is(1));
-        assertThat(comunidades, hasItem(usuarioCom));
+        assertThat(comunidades, hasItem(userComu));
+        // Check login.
+        userIn = new Usuario.UsuarioBuilder().copyUsuario(userIn).password(password).build();
+        assertThat(usuarioManager.login(userIn), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -872,7 +835,6 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.modifyUser(new Usuario.UsuarioBuilder().copyUsuario(luis).userName(userName).build(), luis.getUserName()), is(1));
         Usuario usuarioIn = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(userName)).password(luis.getPassword()).build();
         assertThat(usuarioManager.login(usuarioIn), is(true));
-//        javaMailMonitor.expungeFolder(); // Limpiamos buzón.
         return usuarioIn;
     }
 
