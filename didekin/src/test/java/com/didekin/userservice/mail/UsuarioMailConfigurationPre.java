@@ -9,12 +9,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+
+import static com.didekin.common.mail.MailConstant.aws_smtp_host;
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.doProperties;
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.doSenderSettings;
 
 /**
  * User: pedro@didekin
@@ -35,9 +40,6 @@ public class UsuarioMailConfigurationPre {
     public static final String strato_buzon_folder = "Inbox";
     public static final String TO = "didekindroid@didekin.es";
 
-    @Autowired
-    private JavaMailSender mailSender;
-
     @Profile({Profiles.MAIL_PRE})
     @Bean
     public JavaMailMonitor javaMailMonitor() throws MessagingException
@@ -52,8 +54,13 @@ public class UsuarioMailConfigurationPre {
 
     @Profile({Profiles.MAIL_PRE})
     @Bean
-    public UsuarioMailServiceIf usuarioMailServiceForTest()
+    public UsuarioMailServiceForTest usuarioMailServiceForTest()
     {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setJavaMailProperties(doProperties());
+        doSenderSettings(mailSender);
+        // Cambiamos host:
+        mailSender.setHost("email-smtp.eu-west-1.amazonaws.wrong");
         return new UsuarioMailServiceForTest(mailSender);
     }
 }

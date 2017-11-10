@@ -2,7 +2,6 @@ package com.didekin.userservice.mail;
 
 import com.didekinlib.model.usuario.Usuario;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ public class UsuarioMailServiceForTest implements UsuarioMailServiceIf {
 
     private JavaMailSender mailSender;
 
-    @Autowired
     public UsuarioMailServiceForTest(JavaMailSender javaMailSender)
     {
         mailSender = javaMailSender;

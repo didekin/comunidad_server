@@ -126,7 +126,7 @@ public class JavaMailMonitor {
 
     public String getPswdFromMsg() throws MessagingException, IOException
     {
-        waitAtMost(15, SECONDS).until(() -> folder.getMessageCount() != 0);
+        waitAtMost(20, SECONDS).until(() -> folder.getMessageCount() != 0);
         String msgContent = (String) folder.getMessages()[0].getContent();
         return msgContent.split(getDoubleLineSeparatorFromMsg(msgContent))[1].split(":")[1].trim();
     }

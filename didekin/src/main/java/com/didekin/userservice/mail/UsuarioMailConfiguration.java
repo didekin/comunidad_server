@@ -30,23 +30,33 @@ public class UsuarioMailConfiguration {
     public JavaMailSender javaMailSender()
     {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        Properties mailProperties = new Properties();
-        mailProperties.setProperty(mail_smtp_auth_prop, String.valueOf(true));
-        mailProperties.setProperty(mail_smtp_starttls_enable_prop, String.valueOf(true));
-        mailProperties.setProperty(mail_smtp_starttls_required, String.valueOf(true));
-        mailSender.setJavaMailProperties(mailProperties);
+        mailSender.setJavaMailProperties(doProperties());
+        doSenderSettings(mailSender);
+        return mailSender;
+    }
+
+    @Bean
+    public UsuarioMailService usuarioMailService()
+    {
+        return new UsuarioMailService(javaMailSender());
+    }
+
+    static void doSenderSettings(JavaMailSenderImpl mailSender)
+    {
         mailSender.setProtocol(mail_transport_protocol);
         mailSender.setHost(aws_smtp_host);
         mailSender.setPort(aws_smtp_port);
         mailSender.setUsername(aws_cred_username);
         mailSender.setPassword(aws_cred_password);
         mailSender.setDefaultEncoding(default_encoding);
-        return mailSender;
     }
 
-    @Bean
-    public UsuarioMailServiceIf usuarioMailService()
+    static Properties doProperties()
     {
-        return new UsuarioMailService(javaMailSender());
+        Properties mailProperties = new Properties();
+        mailProperties.setProperty(mail_smtp_auth_prop, String.valueOf(true));
+        mailProperties.setProperty(mail_smtp_starttls_enable_prop, String.valueOf(true));
+        mailProperties.setProperty(mail_smtp_starttls_required, String.valueOf(true));
+        return mailProperties;
     }
 }

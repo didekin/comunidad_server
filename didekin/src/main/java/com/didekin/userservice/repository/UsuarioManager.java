@@ -1,6 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.EntityException;
+import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.common.dominio.ValidDataPatterns;
@@ -57,7 +58,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     private final ComunidadDao comunidadDao;
     private final UsuarioDao usuarioDao;
     @Autowired
-    protected UsuarioMailServiceIf usuarioMailService;
+    UsuarioMailService usuarioMailService;
     @Autowired
     private JdbcTokenStore tokenStore;
 
