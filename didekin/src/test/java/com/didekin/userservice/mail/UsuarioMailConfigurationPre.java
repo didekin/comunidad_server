@@ -56,11 +56,6 @@ public class UsuarioMailConfigurationPre {
     @Bean
     public UsuarioMailServiceForTest usuarioMailServiceForTest()
     {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setJavaMailProperties(doProperties());
-        doSenderSettings(mailSender);
-        // Cambiamos host:
-        mailSender.setHost("email-smtp.eu-west-1.amazonaws.wrong");
-        return new UsuarioMailServiceForTest(mailSender);
+        return new UsuarioMailServiceForTest();
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.doProperties;
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.doSenderSettings;
 import static com.didekin.userservice.mail.UsuarioMailService.doPswdMsgFromBundles;
 
 /**
@@ -16,17 +18,21 @@ import static com.didekin.userservice.mail.UsuarioMailService.doPswdMsgFromBundl
 @Service
 public class UsuarioMailServiceForTest implements UsuarioMailServiceIf {
 
-    private JavaMailSender mailSender;
+    private JavaMailSenderImpl mailSender;
 
-    public UsuarioMailServiceForTest(JavaMailSender javaMailSender)
+    public UsuarioMailServiceForTest()
     {
-        mailSender = javaMailSender;
+        mailSender = new JavaMailSenderImpl();
+        mailSender.setJavaMailProperties(doProperties());
+        doSenderSettings(mailSender);
+        // Cambiamos host:
+        mailSender.setHost("email-smtp.eu-west-1.amazonaws.wrong");
     }
 
     @Override
     public void sendMessage(Usuario user, String localeToStr)
     {
-        JavaMailSenderImpl mailSenderTest = (JavaMailSenderImpl) mailSender;
+        JavaMailSenderImpl mailSenderTest = mailSender;
         mailSenderTest.setHost("email-smtp.eu-west-1.amazonaws.wrong");
         mailSenderTest.send(doPswdMsgFromBundles(user, localeToStr));
     }
