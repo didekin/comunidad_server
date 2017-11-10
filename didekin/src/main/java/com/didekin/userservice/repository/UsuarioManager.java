@@ -603,7 +603,7 @@ public class UsuarioManager implements UsuarioManagerIf {
 
     // =================================  HELPERS ======================================
 
-    private Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
+    static Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
     {
         // Password encryption.
         return new Usuario.UsuarioBuilder()
@@ -625,7 +625,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         return (mailServiceTest != null && mailServiceTest.length == 1) ? mailServiceTest[0] : usuarioMailService;
     }
 
-    private static void doFinallyJdbc(Connection conn, String msg)
+    static void doFinallyJdbc(Connection conn, String msg)
     {
         try {
             if (conn != null) {
@@ -637,7 +637,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
     }
 
-    private void doCatchSqlException(Connection conn, SQLException se)
+    static void doCatchSqlException(Connection conn, SQLException se)
     {
         try {
             if (conn != null) {

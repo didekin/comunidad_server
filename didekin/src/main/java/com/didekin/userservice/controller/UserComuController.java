@@ -123,12 +123,6 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("regComuAndUserAndUserComu()");
         return usuarioManager.regComuAndUserAndUserComu(usuarioCom, localeToStr);
-        // TODO: hay que controlar que no se dan de alta dos administradores o dos presidentes.
-        // TODO: si la comunidad ya existe y el userComu no, hacer un regUserAndUserComu.
-        // TODO: si el userComu existe y la comunidad no, hacer un regComuAndUserComu.
-        // TODO: si existen ambos, pero el userComu no pertenece a la comunidad, hacer un RegUserComu.
-
-        // TODO: algo similar hay que hacer en el resto de acciones de registro.
     }
 
     @RequestMapping(value = REG_COMU_USERCOMU, method = POST, consumes = MIME_JSON)
@@ -149,7 +143,6 @@ public class UserComuController extends AppControllerAbstract {
     {
         logger.debug("regUserAndUserComu()");
         return usuarioManager.regUserAndUserComu(userComu, localeToStr);
-//         TODO: notificación de alta de usuario al resto de la comunidad.
     }
 
     @RequestMapping(value = REG_USERCOMU, method = POST, consumes = MIME_JSON)
@@ -161,7 +154,6 @@ public class UserComuController extends AppControllerAbstract {
         UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioComunidad.getComunidad(), usuario)
                 .userComuRest(usuarioComunidad).build();
         return usuarioManager.regUserComu(usuarioComBis);
-//         TODO: notificación de alta de usuario al resto de la comunidad.
     }
 
     @RequestMapping(value = USERCOMUS_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
