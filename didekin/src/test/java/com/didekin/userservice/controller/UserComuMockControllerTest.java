@@ -31,7 +31,9 @@ import java.io.IOException;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.checkUserNotFound;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -59,6 +61,16 @@ public abstract class UserComuMockControllerTest {
     }
 
 //  ===========================================================================================================
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test()
+    public void testDeleteUser() throws IOException
+    {
+        // Borra al usuario y las comunidades previamente encontradas en la consulta.
+        assertThat(userComuMockEndPoint.deleteUser(pedro.getUserName()).execute().body(), is(true));
+        checkUserNotFound(pedro.getUserName(), usuarioManager);
+    }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test

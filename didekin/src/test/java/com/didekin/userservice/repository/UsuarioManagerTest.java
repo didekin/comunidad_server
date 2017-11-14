@@ -3,6 +3,7 @@ package com.didekin.userservice.repository;
 import com.didekin.common.EntityException;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
+import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -237,7 +238,7 @@ public abstract class UsuarioManagerTest {
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
-        checkUserNotFound(luis.getUserName());
+        UsuarioTestUtils.checkUserNotFound(luis.getUserName(), usuarioManager);
 
         // El usuario tiene tres comunidades. La comunidad tiene 1 usuario.
         // Preconditions.
@@ -683,7 +684,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
         }
         // No new data in database.
-        checkUserNotFound(userIn.getUserName());
+        UsuarioTestUtils.checkUserNotFound(userIn.getUserName(), usuarioManager);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -782,7 +783,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
         }
         // No new data in database.
-        checkUserNotFound(TO);
+        UsuarioTestUtils.checkUserNotFound(TO, usuarioManager);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -888,16 +889,6 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.modifyUser(luisMail, luis.getUserName()), is(1));
         assertThat(usuarioManager.login(luisMail), is(true));
         return luisMail;
-    }
-
-    private void checkUserNotFound(String userName)
-    {
-        try {
-            usuarioManager.getUserByUserName(userName);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
-        }
     }
 }
 

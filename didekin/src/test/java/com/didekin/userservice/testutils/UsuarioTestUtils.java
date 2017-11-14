@@ -1,8 +1,10 @@
 package com.didekin.userservice.testutils;
 
 
+import com.didekin.common.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
+import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.retrofit.RetrofitHandler;
 import com.didekinlib.http.retrofit.UsuarioEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -16,11 +18,13 @@ import java.io.UnsupportedEncodingException;
 
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
+import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * User: pedro@didekin
@@ -283,5 +287,15 @@ public final class UsuarioTestUtils {
             assertThat(isInside, is(true));
         }
         assertThat(PASSWORD.isPatternOk(password), is(true));
+    }
+
+    public static void checkUserNotFound(String userName, UsuarioManagerIf usuarioManager)
+    {
+        try {
+            usuarioManager.getUserByUserName(userName);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
     }
 }

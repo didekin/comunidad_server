@@ -174,7 +174,7 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
-    public void testDeleteUser_1() throws IOException
+    public void testDeleteUser() throws IOException
     {
         List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT.seeUserComusByUser(tokenPedro(retrofitHandler)).execute().body();
         assertThat(comunidades.size(), is(3));
