@@ -16,8 +16,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -99,7 +97,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_CheckIncidImportanciaByUserInDb() throws Exception
+    public void test_CheckIncidImportanciaByUserInDb()
     {
         assertThat(incidenciaManager.checkIncidImportanciaInDb(juan.getUserName(), 5L), is(false));
         assertThat(incidenciaManager.checkIncidImportanciaInDb(paco.getUserName(), 5L), is(true));
@@ -111,7 +109,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_1() throws EntityException, IOException
+    public void testCloseIncidencia_1() throws EntityException
     {
         // Caso OK: añadimos un avance a una resolución con avances, y cerramos la incidencia.
         // Premisas.
@@ -143,7 +141,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_2() throws EntityException, IOException
+    public void testCloseIncidencia_2() throws EntityException
     {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
@@ -187,7 +185,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIncidencia_1() throws EntityException, IOException
+    public void testDeleteIncidencia_1() throws EntityException
     {
         // Premises: usuario iniciador incidencia; no ADM.
         assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(2L).getUserName()), is(true));
@@ -200,7 +198,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIncidencia_2() throws EntityException, IOException
+    public void testDeleteIncidencia_2() throws EntityException
     {
         // Premises: no usuario iniciador; no ADM.
         assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(4L).getUserName()), is(false));
@@ -428,13 +426,7 @@ public abstract class IncidenciaManagerTest {
         IncidComment comment = doComment("comment_userComu_NoDb", incidencia, pedro);
         incidenciaDao.closeIncidencia(incidencia.getIncidenciaId());
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
-
-        try {
-            incidenciaManager.regIncidComment(pedro.getUserName(), comment);
-            fail();
-        } catch (EntityException e) {
-            assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
-        }
+        assertThat(incidenciaManager.regIncidComment(pedro.getUserName(), comment), is(1));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -447,7 +439,6 @@ public abstract class IncidenciaManagerTest {
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
         IncidComment comment = doComment("comment_userComu_NoDb", incidencia, pedro);
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), nullValue());
-
         assertThat(incidenciaManager.regIncidComment(pedro.getUserName(), comment), is(1));
     }
 
@@ -455,7 +446,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidencia_1() throws Exception
+    public void testRegIncidencia_1()
     {
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 1L, (short) 24);
         assertThat(((IncidenciaManager) incidenciaManager).regIncidencia(incidencia).getIncidenciaId() > 0, is(true));
@@ -465,7 +456,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidencia_2() throws Exception
+    public void testRegIncidencia_2()
     {
         // Caso: comunidad no existe.  doIncidenciaWithId(String userName, long incidenciaId, long comunidadId, short ambitoId)
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 999L, (short) 24);
@@ -508,7 +499,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_1() throws Exception
+    public void testRegIncidImportancia_1()
     {
         // Caso: incidencia cerrada.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
@@ -544,7 +535,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_2() throws Exception
+    public void testRegIncidImportancia_2()
     {
         // Premisas: no existe incidencia;  iniciador no es usuario ADM.
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
@@ -559,7 +550,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_3() throws Exception
+    public void testRegIncidImportancia_3()
     {
         // Premisas: existe incidencia;  no existe incidenciaImportancia para usuario ADM.
         final Incidencia incidencia = incidenciaManager.seeIncidenciaById(3L);
@@ -630,7 +621,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_1() throws EntityException, InterruptedException, SQLException
+    public void testSeeIncidImportanciaByUser_1() throws EntityException
     {
         // Premise: existe registro de incidImportancia en BD para el usuario; incidencia sin resolución iniciada.
         assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
@@ -718,7 +709,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_4() throws EntityException, InterruptedException, SQLException
+    public void testSeeIncidImportanciaByUser_4() throws EntityException
     {
         // Caso: no hay registro incidImportancia para el usuario; existen usuario-comunidad e incidencia-comunidad; SÍ resolución asociada.
         try {
@@ -744,7 +735,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_SeeIncidsClosedByComu_1() throws Exception
+    public void test_SeeIncidsClosedByComu_1()
     {
         // Premisa: comunidad sin incidencias cerradas.
         assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L).size(), is(0));
@@ -754,7 +745,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_SeeIncidsClosedByComu_2() throws Exception
+    public void test_SeeIncidsClosedByComu_2()
     {
         // Premisa: comunidad sin incidencias cerradas.
         assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L).size(), is(0));
@@ -764,7 +755,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_SeeIncidsClosedByComu_3() throws Exception
+    public void test_SeeIncidsClosedByComu_3()
     {
         // Premisa: no existe la comunidad.
         try {

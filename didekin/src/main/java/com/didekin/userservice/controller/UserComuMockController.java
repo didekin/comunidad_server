@@ -21,7 +21,6 @@ import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.UsuarioServConstant.OPEN;
 import static com.didekinlib.http.UsuarioServConstant.USER_PARAM;
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 /**

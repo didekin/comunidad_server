@@ -36,7 +36,6 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenci
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
@@ -83,7 +82,7 @@ abstract class IncidenciaControllerTest {
     private UserManagerConnector connector;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         ENDPOINT = retrofitHandler.getService(IncidenciaServEndPoints.class);
     }
@@ -323,11 +322,8 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: incidencia está cerrada.
         Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), 6L).execute().body().get(0).getIncidencia();
-        assertThat(isIncidenciaFound(ENDPOINT.seeIncidImportancia(tokenPedro(), incidencia.getIncidenciaId()).
-                execute()), is(false));
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidencia, pedro);
-        /* Incidencia no encontrada en consulta: está cerrada.*/
-        assertThat(isIncidenciaFound(ENDPOINT.regIncidComment(tokenPedro(), comment).execute()), is(false));
+        assertThat(ENDPOINT.regIncidComment(tokenPaco(), comment).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -507,7 +503,7 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsClosedByComu_1() throws EntityException, InterruptedException, IOException
+    public void testSeeIncidsClosedByComu_1() throws EntityException, IOException
     {
         List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), UsuarioTestUtils.calle_olmo_55.getC_Id()).execute().body();
         assertThat(incidencias.size(), is(1));
@@ -517,7 +513,7 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsOpenByComu_1() throws EntityException, InterruptedException, IOException
+    public void testSeeIncidsOpenByComu_1() throws EntityException, IOException
     {
         // Caso OK: comunidad con 2 incidencias abiertas.
         List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), ronda_plazuela_10bis.getC_Id()).execute().body();

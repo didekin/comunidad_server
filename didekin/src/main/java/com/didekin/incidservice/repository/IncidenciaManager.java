@@ -223,20 +223,20 @@ class IncidenciaManager implements IncidenciaManagerIf {
 
     /**
      * Preconditions:
-     * 1. There exists an incidencia OPEN to which the comment is to be associated.
+     * 1. There exists an incidencia OPEN or CLOSED to which the comment is to be associated.
      * 2. The user is associated to the comunidad to which belongs the incidencia.
      * Postconditions:
      * 1. The comment is inserted in the DB.
      *
      * @throws EntityException USER_NAME_NOT_FOUND,
-     *                         INCIDENCIA_NOT_FOUND, if the incidencia is closed (fechaCierre != null).
+     *                         INCIDENCIA_NOT_FOUND.
      */
     @Override
     public int regIncidComment(String userName, final IncidComment comment) throws EntityException
     {
         logger.debug("regIncidComment()");
         return of(comment)
-                .filter(commentIn -> checkIncidenciaOpen(comment.getIncidencia().getIncidenciaId()))
+//                .filter(commentIn -> checkIncidenciaOpen(comment.getIncidencia().getIncidenciaId()))
                 .mapToInt(commentIn -> incidenciaDao.regIncidComment(
                         new IncidComment.IncidCommentBuilder()
                                 .copyComment(commentIn)
