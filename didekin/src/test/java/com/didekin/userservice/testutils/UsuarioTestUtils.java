@@ -44,7 +44,7 @@ public final class UsuarioTestUtils {
             .alias("pedronevado")
             .password("password3")
             .gcmToken("pedro_gcm_token")
-            .userName("pedro@pedro.com").build();
+            .userName("pedro@didekin.es").build();
 
     public static final Usuario luis = new Usuario.UsuarioBuilder()
             .uId(5L)

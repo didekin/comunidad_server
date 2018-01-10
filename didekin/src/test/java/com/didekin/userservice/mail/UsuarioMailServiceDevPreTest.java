@@ -67,14 +67,14 @@ public class UsuarioMailServiceDevPreTest {
     }
 
     @Test
-    public void testPasswordMessage_1() throws MessagingException, InterruptedException, IOException
+    public void testPasswordMessage_1() throws MessagingException, IOException
     {
         mailService.sendMessage(usuario, oneComponent_local_ES);
         javaMailMonitor.checkPasswordMessage(usuario, oneComponent_local_ES);
     }
 
     @Test
-    public void testPasswordMessage_2() throws MessagingException, InterruptedException, IOException
+    public void testPasswordMessage_2() throws MessagingException, IOException
     {
         mailService.sendMessage(usuario, oneComponent_local_EN);
         javaMailMonitor.checkPasswordMessage(usuario, oneComponent_local_EN);

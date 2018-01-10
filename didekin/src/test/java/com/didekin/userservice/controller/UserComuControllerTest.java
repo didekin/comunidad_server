@@ -35,7 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import retrofit2.Response;
@@ -97,7 +96,7 @@ public abstract class UserComuControllerTest {
     private UsuarioManagerIf sujetosService;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
         USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
@@ -201,7 +200,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testIsOldestAdmonUserComu_2() throws IOException, EntityException
     {
-        String token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken("pedro@pedro.com", "password3");
+        String token = new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), "password3");
         Response<Boolean> response = USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(token, 999L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
@@ -269,7 +268,7 @@ public abstract class UserComuControllerTest {
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_2() throws SQLException, EntityException, IOException
+    public void testRegUserAndUserComu_2() throws EntityException, IOException
     {
         // Duplicate user (and comunidad).
         sujetosService.regComuAndUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);

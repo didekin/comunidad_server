@@ -4,7 +4,7 @@ INSERT INTO didekin.comunidad VALUES (3,'Calle','de El Escorial',2,'',305,NOW(),
 INSERT INTO didekin.comunidad VALUES (4,'Calle','de la Plazuela',23,'',103,NOW(),NULL);
 INSERT INTO didekin.comunidad VALUES (6, 'Calle', 'del Olmo', 55, '', 105, NOW(), NULL);
 
-INSERT INTO didekin.usuario VALUES (3,'pedronevado','password3','pedro@pedro.com',NULL);
+INSERT INTO didekin.usuario VALUES (3,'pedronevado','password3','pedro@didekin.es',NULL);
 INSERT INTO didekin.usuario VALUES (5,'luis_gomez','password5','luis@luis.com', NULL );
 INSERT INTO didekin.usuario VALUES (7,'juan_no_auth','password7','juan@noauth.com',NULL );
 INSERT INTO didekin.usuario VALUES (9,'pepe_no_auth','password9','pepe@noauth.com', NULL );

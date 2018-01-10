@@ -38,7 +38,7 @@ public class UsuarioMailConfigurationPre {
     private static final String strato_buzon_password = "aDh-9ZQ-Qzw-AJt";
     private static final String strato_buzon_user = "didekindroid@didekin.es";
     public static final String strato_buzon_folder = "Inbox";
-    public static final String TO = "didekindroid@didekin.es";
+    public static final String TO = strato_buzon_user;
 
     @Profile({Profiles.MAIL_PRE})
     @Bean

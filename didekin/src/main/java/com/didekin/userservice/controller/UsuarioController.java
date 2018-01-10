@@ -113,11 +113,13 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USER_WRITE, method = PUT, consumes = MIME_JSON)
-    public int modifyUser(@RequestHeader("Authorization") String accessToken, @RequestBody final Usuario newUsuario)
+    public int modifyUser(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
+                          @RequestHeader("Authorization") String accessToken,
+                          @RequestBody final Usuario newUsuario)
             throws EntityException
     {
         logger.debug("modifyUser()");
-        return usuarioManager.modifyUser(newUsuario, getUserNameFromAuthentication());
+        return usuarioManager.modifyUser(newUsuario, getUserNameFromAuthentication(), localeToStr);
     }
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
@@ -126,7 +128,6 @@ public class UsuarioController extends AppControllerAbstract {
     {
         logger.debug("passwordChangeWithName()");
         return usuarioManager.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
-        // TODO: notificar por mail que el password ha sido cambiado.
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)
@@ -134,7 +135,7 @@ public class UsuarioController extends AppControllerAbstract {
                                 @RequestParam(USER_PARAM) String userName) throws EntityException, MailException
     {
         logger.debug("passwordSend()");
-        return usuarioManager.passwordSend(userName, localeToStr);     // TODO: test
+        return usuarioManager.passwordSend(userName, localeToStr);
     }
 
 //    ............................ HANDLING EXCEPTIONS ................................

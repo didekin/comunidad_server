@@ -10,6 +10,7 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Connection;
@@ -63,12 +64,12 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testDeleteUserByName() throws EntityException
     {
-        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser("pedro@pedro.com");
+        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName());
         assertThat(usuarioComunidades.size(), is(3));
-        boolean isDeleted = usuarioDao.deleteUser("pedro@pedro.com");
+        boolean isDeleted = usuarioDao.deleteUser(pedro.getUserName());
         assertThat(isDeleted, is(true));
         try {
-            usuarioDao.getUserByUserName("pedro@pedro.com");
+            usuarioDao.getUserByUserName(pedro.getUserName());
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -139,7 +140,7 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testGetAllRolesFunctionalUser()
     {
-        List<String> roles = usuarioDao.getAllRolesFunctionalUser("pedro@pedro.com");
+        List<String> roles = usuarioDao.getAllRolesFunctionalUser(pedro.getUserName());
         assertThat(roles.size(), equalTo(2));
         assertThat(roles, hasItems("adm", "inq"));
 
@@ -160,7 +161,7 @@ public abstract class UsuarioDaoTest {
         List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");
         assertThat(comunidades, CoreMatchers.hasItem(UsuarioTestUtils.COMU_LA_FUENTE));
 
-        comunidades = usuarioDao.getComusByUser("pedro@pedro.com");
+        comunidades = usuarioDao.getComusByUser(pedro.getUserName());
         assertThat(comunidades, CoreMatchers.hasItems(UsuarioTestUtils.COMU_LA_PLAZUELA_10bis, UsuarioTestUtils.COMU_LA_FUENTE, UsuarioTestUtils.COMU_EL_ESCORIAL));
     }
 
@@ -228,7 +229,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_GetUserComuRolesByUserName() throws Exception
+    public void test_GetUserComuRolesByUserName()
     {
         assertThat(usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 2L),
                 allOf(
@@ -263,11 +264,11 @@ public abstract class UsuarioDaoTest {
         assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());
 
         // UsuarioComunidad existe en BD.
-        usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu("pedro@pedro.com", 1L);
+        usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(pedro.getUserName(), 1L);
         assertThat(usuarioComunidad, notNullValue());
         // Usuario
         Usuario usuario = usuarioComunidad.getUsuario();
-        assertThat(usuario.getUserName(), is("pedro@pedro.com"));
+        assertThat(usuario.getUserName(), is(pedro.getUserName()));
         assertThat(usuario.getAlias(), is("pedronevado"));
         // Comunidad.
         Comunidad comunidad = usuarioComunidad.getComunidad();
@@ -331,7 +332,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_IsUserInComunidad() throws Exception
+    public void test_IsUserInComunidad()
     {
         assertThat(usuarioDao.isUserInComunidad(pedro.getUserName(), 1L)
                         && usuarioDao.isUserInComunidad(pedro.getUserName(), 2L)
@@ -343,19 +344,22 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUserName() throws EntityException
+    public void testModifyUser() throws EntityException
     {
         // We change username.
         Usuario usuarioDB = usuarioDao.getUserByUserName("juan@noauth.com");
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .alias(usuarioDB.getAlias())
                 .userName("new_juan@juan.com")
+                .password(new BCryptPasswordEncoder().encode("new_password"))
                 .uId(usuarioDB.getuId())
                 .build();
 
         int updatedRow = usuarioDao.modifyUser(usuarioIn);
         assertThat(updatedRow, is(1));
-        assertThat(usuarioDao.getUsuarioById(usuarioIn.getuId()).getUserName(), is("new_juan@juan.com"));
+        Usuario usuarioDBOut = usuarioDao.getUsuarioById(usuarioIn.getuId());
+        assertThat(usuarioDBOut.getUserName(), is(usuarioIn.getUserName()));
+        assertThat(new BCryptPasswordEncoder().matches("new_password", usuarioDBOut.getPassword()), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

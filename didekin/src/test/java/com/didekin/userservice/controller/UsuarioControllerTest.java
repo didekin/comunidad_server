@@ -88,7 +88,7 @@ public abstract class UsuarioControllerTest {
     private JavaMailMonitor javaMailMonitor;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
         USER_ENDPOINT = retrofitHandler.getService(UsuarioEndPoints.class);
@@ -151,7 +151,7 @@ public abstract class UsuarioControllerTest {
     public void testDeleteAccessToken() throws IOException
     {
         SpringOauthToken token_1 = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                "pedro@pedro.com",
+                pedro.getUserName(),
                 "password3",
                 PASSWORD_GRANT).execute().body();
         boolean isDeleted = USER_ENDPOINT.deleteAccessToken(HELPER.doBearerAccessTkHeader(token_1), token_1.getValue
@@ -216,7 +216,7 @@ public abstract class UsuarioControllerTest {
     public void testLogin_1() throws IOException
     {
 
-        String userNameOk = "pedro@pedro.com";
+        String userNameOk = pedro.getUserName();
         String userNameWrong = "pedro@wrong.com";
         String passwordOk = "password3";
         String passwordWrong = "passwordWrong";
@@ -252,7 +252,7 @@ public abstract class UsuarioControllerTest {
                 .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
+        assertThat(USER_ENDPOINT.modifyUser(oneComponent_local_ES, tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
         // Check that access token has been deleted. We try with both userNames.
         assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(false));
         assertThat(usuarioManager.getAccessTokenByUserName("new_paco@new.com").isPresent(), is(false));
@@ -269,7 +269,7 @@ public abstract class UsuarioControllerTest {
                 .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
+        assertThat(USER_ENDPOINT.modifyUser(oneComponent_local_ES, tokenPaco(retrofitHandler), usuarioIn_1).execute().body(), is(1));
         // Check wiht usuarioManager that access token has not been deleted.
         assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(true));
     }
@@ -288,7 +288,7 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChange() throws IOException, InterruptedException, EntityException
+    public void testPasswordChange() throws IOException, EntityException
     {
         // Preconditions: user is registered with an access token.
         SpringOauthToken accessToken = getTokenAndCheckDb(paco.getUserName(), paco.getPassword());
@@ -307,7 +307,7 @@ public abstract class UsuarioControllerTest {
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordSend() throws MessagingException, IOException, EntityException, InterruptedException
+    public void testPasswordSend() throws MessagingException, IOException, EntityException
     {
         // Preconditions.
         Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();

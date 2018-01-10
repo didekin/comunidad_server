@@ -76,7 +76,7 @@ public interface UsuarioManagerIf {
 
     int modifyUserGcmTokens(List<GcmTokensHolder> holdersList);
 
-    int modifyUser(Usuario usuario, String oldUserName) throws EntityException;
+    int modifyUser(Usuario usuario, String oldUserName, String localeToStr) throws EntityException;
 
     int modifyUserComu(UsuarioComunidad userComu);
 

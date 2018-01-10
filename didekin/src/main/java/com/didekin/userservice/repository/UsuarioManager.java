@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.MailException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
@@ -38,7 +37,6 @@ import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
@@ -248,11 +246,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     public Usuario getUserByUserName(String email) throws EntityException
     {
         logger.info("getUserByUserName()");
-        try {
-            return usuarioDao.getUserByUserName(email);
-        } catch (UsernameNotFoundException e) {
-            throw new EntityException(USER_NAME_NOT_FOUND);
-        }
+        return usuarioDao.getUserByUserName(email);
     }
 
     @Override
@@ -283,13 +277,7 @@ public class UsuarioManager implements UsuarioManagerIf {
             throw new EntityException(USER_WRONG_INIT);
         }
 
-        Usuario usuarioDb;
-        try {
-            usuarioDb = getUserByUserName(usuario.getUserName());
-        } catch (UsernameNotFoundException e) {
-            throw new EntityException(USER_NAME_NOT_FOUND);
-        }
-
+        Usuario usuarioDb = getUserByUserName(usuario.getUserName());
         return new BCryptPasswordEncoder().matches(usuario.getPassword(), usuarioDb.getPassword());
     }
 
@@ -320,44 +308,36 @@ public class UsuarioManager implements UsuarioManagerIf {
      * 2. UsuarioId cannot be null.
      * Postconditions:
      * 1. the userName and/or alias have been modified.
-     * 2. if userName has been modified, user's accessToken has been deleted.
+     * 2. if userName has been modified, user's accessToken has been deleted and a new password sent to the user.
      *
      * @return number of rows afected in user table (it should be 1).
      * @throws EntityException if both newUserName and newAlias are both null.
      */
     @Override
-    public int modifyUser(final Usuario usuario, String oldUserName) throws EntityException
+    public int modifyUser(final Usuario userNew, String oldUserName, String localeToStr) throws EntityException
     {
         logger.info("modifyUser()");
+        Usuario userInDB =  usuarioDao.getUsuarioById(userNew.getuId());
+        boolean isAliasNew = userNew.getAlias() != null && !userNew.getAlias().isEmpty();
+        boolean isUserNameNew = userNew.getUserName() != null && !userNew.getUserName().isEmpty();
 
-        int userModified = 0;
-        boolean isAliasToModified = false;
-        String newUserName = usuario.getUserName();
-        Usuario newUsuario;
-        Usuario.UsuarioBuilder newUsuarioBuilder =
-                new Usuario.UsuarioBuilder().copyUsuario(usuarioDao.getUsuarioById(usuario.getuId()));
-
-        if (usuario.getAlias() != null && !usuario.getAlias().isEmpty()) {
-            newUsuarioBuilder.alias(usuario.getAlias());
-            isAliasToModified = true;
-        }
-
-        if (newUserName != null && !newUserName.isEmpty()) {
-            newUsuario = newUsuarioBuilder.userName(newUserName).build();
-            userModified = usuarioDao.modifyUser(newUsuario);
+        if (isUserNameNew) {
+            Usuario.UsuarioBuilder userToDbBuilder = new Usuario.UsuarioBuilder()
+                    .copyUsuario(userInDB)
+                    .userName(userNew.getUserName())
+                    .password(makeNewPassword());
+            Usuario userToDB = isAliasNew ? userToDbBuilder.alias(userNew.getAlias()).build() : userToDbBuilder.build();
+            int userModified = usuarioDao.modifyUser(doUserEncryptPswd(userToDB));
             if (userModified > 0) {
-                // Change of userName has been propagated to oauth_token table.
-                deleteAccessTokenByUserName(newUserName);
+                deleteAccessTokenByUserName(userNew.getUserName());
+                chooseMailService(null).sendMessage(userToDB, localeToStr);
             }
-        } else if (isAliasToModified) {
-            newUsuario = newUsuarioBuilder.build();
-            userModified = usuarioDao.modifyUserAlias(newUsuario);
-        }
-
-        if (userModified <= 0) {
+            return userModified;
+        } else if (isAliasNew) {
+            return usuarioDao.modifyUserAlias(new Usuario.UsuarioBuilder().copyUsuario(userInDB).alias(userNew.getAlias()).build());
+        } else {
             throw new EntityException(USER_DATA_NOT_MODIFIED);
         }
-        return userModified;
     }
 
     @Override
@@ -425,26 +405,18 @@ public class UsuarioManager implements UsuarioManagerIf {
     }
 
     @Override
-    public boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException
+    public boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... mailService) throws EntityException
     {
         logger.debug("passwordSend()");
 
         final Usuario oldUsuario = getUserByUserName(userName);
-
-        final Usuario usuarioPswdRaw = new Usuario.UsuarioBuilder()
-                .copyUsuario(oldUsuario)
-                .password(makeNewPassword())
-                .build();
-
-        final Usuario usuarioPswdEncr = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioPswdRaw)
-                .password(new BCryptPasswordEncoder().encode(usuarioPswdRaw.getPassword()))
-                .build();
+        final Usuario usuarioPswdRaw = doUserRawPswd(oldUsuario);
+        final Usuario usuarioPswdEncr = doUserEncryptPswd(usuarioPswdRaw);
 
         try {
             if (usuarioDao.passwordChange(usuarioPswdEncr) == 1) {
                 deleteAccessTokenByUserName(usuarioPswdEncr.getUserName());
-                chooseMailService(mailServTest).sendMessage(usuarioPswdRaw, localeToStr);
+                chooseMailService(mailService).sendMessage(usuarioPswdRaw, localeToStr);
                 return true;
             } else {
                 throw new EntityException(USER_DATA_NOT_MODIFIED);
@@ -462,7 +434,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.info("regComuAndUserAndUserComu()");
 
-        final Usuario usuarioPswdRaw = doUserRawPswd(usuarioCom);
+        final Usuario usuarioPswdRaw = doUserRawPswd(usuarioCom.getUsuario());
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
                         .userComuRest(usuarioCom).build();
@@ -531,7 +503,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     {
         logger.debug("regUserAndUserComu()");
 
-        final Usuario usuarioPswdRaw = doUserRawPswd(userComu);
+        final Usuario usuarioPswdRaw = doUserRawPswd(userComu.getUsuario());
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
                         .userComuRest(userComu).build();
@@ -612,10 +584,10 @@ public class UsuarioManager implements UsuarioManagerIf {
                 .build();
     }
 
-    private Usuario doUserRawPswd(UsuarioComunidad usuarioCom)
+    private Usuario doUserRawPswd(Usuario usuario)
     {
         return new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioCom.getUsuario())
+                .copyUsuario(usuario)
                 .password(makeNewPassword())
                 .build();
     }

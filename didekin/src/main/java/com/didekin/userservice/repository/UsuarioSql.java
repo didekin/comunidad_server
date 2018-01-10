@@ -50,7 +50,8 @@ enum UsuarioSql {
 
     MODIFY_USER("UPDATE usuario SET " +
             " alias = ?," +
-            " user_name = ? " +
+            " user_name = ?, " +
+            " password = ? " +
             " WHERE u_id = ?"),
 
     MODIFY_USER_ALIAS("UPDATE usuario SET " +

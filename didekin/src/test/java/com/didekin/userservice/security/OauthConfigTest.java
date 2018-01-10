@@ -19,6 +19,7 @@ import java.util.Date;
 import retrofit2.Response;
 
 import static com.didekin.Application.REFRESHTK_VALIDITY_SECONDS;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.GenericExceptionMsg.NOT_FOUND;
 import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
@@ -45,7 +46,7 @@ public abstract class OauthConfigTest {
     private RetrofitHandler retrofitHandler;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
         USER_ENDPOINT = retrofitHandler.getService(UsuarioEndPoints.class);
@@ -75,7 +76,7 @@ public abstract class OauthConfigTest {
     @Test
     public void testGetToken_1() throws IOException
     {
-        SpringOauthToken tokenResp = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken tokenResp = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(tokenResp, notNullValue());
         assertThat(tokenResp.getTokenType(), is("bearer"));
 
@@ -93,17 +94,17 @@ public abstract class OauthConfigTest {
     {
         // This is a reiterative test of keeping the same token while userName and password don't change.
 
-        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         String accessToken_1 = token_1.getValue();
         String refreshToken_1 = token_1.getRefreshToken().getValue();
 
-        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         String accessToken_2 = token_2.getValue();
         String refreshToken_2 = token_2.getRefreshToken().getValue();
         assertThat(accessToken_2, is(accessToken_1));
         assertThat(refreshToken_2, is(refreshToken_1));
 
-        SpringOauthToken token_3 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_3 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         String accessToken_3 = token_3.getValue();
         String refreshToken_3 = token_3.getRefreshToken().getValue();
         assertThat(accessToken_3, is(accessToken_1));
@@ -143,7 +144,7 @@ public abstract class OauthConfigTest {
     @Test
     public void testRefreshTokenGrant_1() throws IOException
     {
-        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         String accessToken1 = token.getValue();
         String refreshToken1 = token.getRefreshToken().getValue();
 
@@ -163,7 +164,7 @@ public abstract class OauthConfigTest {
     @Test
     public void testRefreshTokenGrant_2() throws IOException
     {
-        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         String refreshToken1 = token.getRefreshToken().getValue();
 
         // We manipulate the refreshToken.
@@ -174,18 +175,18 @@ public abstract class OauthConfigTest {
     }
 
     /**
-     *   If we try two times to get an access token on password credentials, the refresh token in table becomes null, and the
-     *   retrieval of an access token based on refresh token credential fails.
+     * If we try two times to get an access token on password credentials, the refresh token in table becomes null, and the
+     * retrieval of an access token based on refresh token credential fails.
      */
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRefreshTokenGrant_3() throws IOException
     {
-        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(token_1.getRefreshToken().getValue(), notNullValue());
 
-        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(token_2.getRefreshToken().getValue(), notNullValue());
 
         Response<SpringOauthToken> response = OAUTH_ENDPOINT.getRefreshUserToken(new SecurityTestUtils(retrofitHandler)
@@ -196,20 +197,20 @@ public abstract class OauthConfigTest {
 
 
     /**
-     *  We test the obvious: if we delete first of all the token in the database, the error pattern of the previous test doesn't apply.
+     * We test the obvious: if we delete first of all the token in the database, the error pattern of the previous test doesn't apply.
      */
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRefreshTokenGrant_4() throws IOException
     {
-        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(token_1.getRefreshToken().getValue(), notNullValue());
 
         assertThat(USER_ENDPOINT.deleteAccessToken(HELPER.doBearerAccessTkHeader(token_1), token_1.getValue
                 ()).execute().body(), is(true));
 
-        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken("pedro@pedro.com", "password3").body();
+        SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(token_2.getRefreshToken().getValue(), notNullValue());
 
         SpringOauthToken token_3 = OAUTH_ENDPOINT.getRefreshUserToken(new SecurityTestUtils(retrofitHandler)

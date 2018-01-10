@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,17 +25,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static com.didekin.userservice.repository.UsuarioSql.BY_ID;
+import static com.didekin.userservice.repository.UsuarioSql.COMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_GCM_TOKEN;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_USER_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.GCM_TOKENS_BY_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.INSERT;
 import static com.didekin.userservice.repository.UsuarioSql.IS_USER_IN_COMUNIDAD;
+import static com.didekin.userservice.repository.UsuarioSql.MODIFY_GCM_TOKEN_BY_TOKEN;
+import static com.didekin.userservice.repository.UsuarioSql.MODIFY_GCM_TOKEN_BY_USER;
+import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER;
+import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USERCOMU;
+import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER_ALIAS;
+import static com.didekin.userservice.repository.UsuarioSql.NEW_PASSWORD;
+import static com.didekin.userservice.repository.UsuarioSql.OLDEST_USER_COMU;
+import static com.didekin.userservice.repository.UsuarioSql.PK;
+import static com.didekin.userservice.repository.UsuarioSql.ROLES_ALL_FUNC;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
+import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
+import static com.didekin.userservice.repository.UsuarioSql.USER_WITH_GCMTOKEN;
 import static com.didekin.userservice.repository.UsuarioSql.USUARIO_BY_EMAIL;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USER_COMU_NOT_FOUND;
+import static java.sql.JDBCType.INTEGER;
 
 /**
  * User: pedro
@@ -103,7 +118,7 @@ public class UsuarioDao {
         logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
         List<String> roles = jdbcTemplate.queryForList(
-                UsuarioSql.ROLES_ALL_FUNC.toString(), String.class, userName);
+                ROLES_ALL_FUNC.toString(), String.class, userName);
 
         List<String> functionalRoles = new ArrayList<>();
 
@@ -123,14 +138,14 @@ public class UsuarioDao {
     List<Comunidad> getComusByUser(String userName)
     {
         logger.info("getComusByUser() ,jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        return jdbcTemplate.query(UsuarioSql.COMUS_BY_USER.toString(), new Object[]{userName},
+        return jdbcTemplate.query(COMUS_BY_USER.toString(), new Object[]{userName},
                 new ComunidadDao.ComunidadMapper());
     }
 
     List<String> getGcmTokensByComunidad(long comunidadId)
     {
         logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        return jdbcTemplate.queryForList(UsuarioSql.GCM_TOKENS_BY_COMUNIDAD.toString(), String.class, comunidadId);
+        return jdbcTemplate.queryForList(GCM_TOKENS_BY_COMUNIDAD.toString(), String.class, comunidadId);
     }
 
     long getMaxPk()
@@ -144,7 +159,7 @@ public class UsuarioDao {
         logger.debug("getOldestUserComuId(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
         return jdbcTemplate.queryForObject(
-                UsuarioSql.OLDEST_USER_COMU.toString(),
+                OLDEST_USER_COMU.toString(),
                 new Long[]{comunidadId},
                 (resultSet, rowNum) -> resultSet.getLong("u_id")
         );
@@ -158,7 +173,7 @@ public class UsuarioDao {
         try {
             usuario = jdbcTemplate.queryForObject(
                     USUARIO_BY_EMAIL.toString(), new UsuarioMapper(), userName);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException | UsernameNotFoundException e) {
             throw new EntityException(USER_NAME_NOT_FOUND);
         }
         return usuario;
@@ -170,7 +185,7 @@ public class UsuarioDao {
 
         Usuario usuario;
         try {
-            usuario = jdbcTemplate.queryForObject(UsuarioSql.BY_ID.toString(),
+            usuario = jdbcTemplate.queryForObject(BY_ID.toString(),
                     new UsuarioMapper(), idUsuario);
         } catch (EmptyResultDataAccessException e) {
             logger.error(e.getMessage());
@@ -214,14 +229,14 @@ public class UsuarioDao {
     Usuario getUsuarioWithGcmToken(long usuarioId)
     {
         logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        return jdbcTemplate.queryForObject(UsuarioSql.USER_WITH_GCMTOKEN.toString(), new UsuarioMapperForGcm(), usuarioId);
+        return jdbcTemplate.queryForObject(USER_WITH_GCMTOKEN.toString(), new UsuarioMapperForGcm(), usuarioId);
     }
 
     int modifyUserComu(UsuarioComunidad userComu)
     {
         logger.info("modifyUserComu()");
 
-        return jdbcTemplate.update(UsuarioSql.MODIFY_USERCOMU.toString(),
+        return jdbcTemplate.update(MODIFY_USERCOMU.toString(),
                 userComu.getPortal(),
                 userComu.getEscalera(),
                 userComu.getPlanta(),
@@ -241,8 +256,8 @@ public class UsuarioDao {
         ResultSet rs;
         long usuarioId;
 
-        try (PreparedStatement ps = conn.prepareStatement(UsuarioSql.INSERT.toString(), new String[]{UsuarioSql.PK.toString()})) {
-            ps.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
+        try (PreparedStatement ps = conn.prepareStatement(INSERT.toString(), new String[]{PK.toString()})) {
+            ps.setNull(1, INTEGER.getVendorTypeNumber());
             ps.setString(2, usuario.getAlias());
             ps.setString(3, usuario.getPassword());
             ps.setString(4, usuario.getUserName());
@@ -268,15 +283,16 @@ public class UsuarioDao {
     }
 
     /**
-     * 'Public' to allows for a userController test.
+     * 'Public' to allow for a userController test.
      */
     int modifyUser(Usuario usuario)
     {
         logger.debug("modifyUser(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
-        return jdbcTemplate.update(UsuarioSql.MODIFY_USER.toString(),
+        return jdbcTemplate.update(MODIFY_USER.toString(),
                 usuario.getAlias(),
                 usuario.getUserName(),
+                usuario.getPassword(),
                 usuario.getuId());
     }
 
@@ -284,7 +300,7 @@ public class UsuarioDao {
     {
         logger.debug("modifyUserAlias()");
 
-        return jdbcTemplate.update(UsuarioSql.MODIFY_USER_ALIAS.toString(),
+        return jdbcTemplate.update(MODIFY_USER_ALIAS.toString(),
                 user.getAlias(),
                 user.getuId());
     }
@@ -292,13 +308,13 @@ public class UsuarioDao {
     int modifyUserGcmToken(Usuario usuario)
     {
         logger.debug("modifyUserGcmToken(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
-        return jdbcTemplate.update(UsuarioSql.MODIFY_GCM_TOKEN_BY_USER.toString(),
+        return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
                 usuario.getGcmToken(), usuario.getuId());
     }
 
     int modifyUserGcmToken(GcmTokensHolder holder)
     {
-        return jdbcTemplate.update(UsuarioSql.MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
+        return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
 
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
@@ -314,7 +330,7 @@ public class UsuarioDao {
     {
         logger.info("passwordChangeWithName(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
-        return jdbcTemplate.update(UsuarioSql.NEW_PASSWORD.toString(),
+        return jdbcTemplate.update(NEW_PASSWORD.toString(),
                 usuario.getPassword(),
                 usuario.getuId());
     }
@@ -324,7 +340,7 @@ public class UsuarioDao {
         logger.info("seeUserComusByUser(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
 
         return jdbcTemplate.query(
-                UsuarioSql.USERCOMUS_BY_USER.toString(),
+                USERCOMUS_BY_USER.toString(),
                 new Object[]{userName},
                 new UsuarioFullComunidadMapper());
     }

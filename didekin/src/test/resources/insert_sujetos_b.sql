@@ -4,7 +4,7 @@ INSERT INTO didekin.comunidad VALUES (3, 'Calle', 'de El Escorial', 2, '', 305, 
 INSERT INTO didekin.comunidad VALUES (4, 'Calle', 'de la Plazuela', 23, '', 103, NOW(), NULL);
 INSERT INTO didekin.comunidad VALUES (6, 'Calle', 'del Olmo', 55, '', 105, NOW(), NULL);
 
-INSERT INTO didekin.usuario VALUES (3, 'pedronevado', '$2a$10$9Gg4THybJVAAOY3yfzDY1uaTEhajatpX.WC056Ibd.fQJMG9QyZ3S', 'pedro@pedro.com', NULL);
+INSERT INTO didekin.usuario VALUES (3, 'pedronevado', '$2a$10$9Gg4THybJVAAOY3yfzDY1uaTEhajatpX.WC056Ibd.fQJMG9QyZ3S', 'pedro@didekin.es', NULL);
 INSERT INTO didekin.usuario VALUES (5, 'luis_gomez', '$2a$10$km0D4Uc5cFV1Gv6aAnoeeu03XNk1i686uqlB2A0BClNtB5A8LucLK', 'luis@luis.com', NULL);
 INSERT INTO didekin.usuario VALUES (11, 'paco', '$2a$10$cdOjupfvgP/zpTOd5yyGROQVjjUhU18J/kg/04ZoUwLAUoeIo5xbK', 'paco@paco.com', NULL);
 -- No tiene usuario_comunidad en DB, no roles por lo tanto y no autorización.

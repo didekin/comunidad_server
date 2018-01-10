@@ -18,7 +18,6 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,7 +126,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CompleteWithUserComuRoles() throws Exception
+    public void test_CompleteWithUserComuRoles()
     {
         assertThat(usuarioManager.completeWithUserComuRoles(luis.getUserName(), 1L).getRoles(), is("adm,pro"));
     }
@@ -135,7 +134,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_deleteAccessTokenByUserName() throws Exception
+    public void test_deleteAccessTokenByUserName()
     {
         // No token in database: no delete.
         assertThat(usuarioManager.getAccessTokenByUserName(luis.getUserName()).isPresent(), is(false));
@@ -176,7 +175,7 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testDeleteUserAndComunidades() throws EntityException
     {
-        int comuDeleted = usuarioManager.deleteUserAndComunidades("pedro@pedro.com");
+        int comuDeleted = usuarioManager.deleteUserAndComunidades(pedro.getUserName());
         assertThat(comuDeleted, is(3));
 
         assertThat(comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
@@ -197,7 +196,7 @@ public abstract class UsuarioManagerTest {
     {
         // La comunidad tiene 2 usuarios. El usuario tiene 3 comunidades.
         Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(1L).build();
-        Usuario usuario = new Usuario.UsuarioBuilder().uId(3L).userName("pedro@pedro.com").build();
+        Usuario usuario = new Usuario.UsuarioBuilder().uId(3L).userName(pedro.getUserName()).build();
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build();
 
         int isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
@@ -254,7 +253,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
         try {
-            assertThat(usuarioManager.getUserByUserName("pedro@pedro.com"), notNullValue());
+            assertThat(usuarioManager.getUserByUserName(pedro.getUserName()), notNullValue());
         } catch (EntityException e) {
             fail();
         }
@@ -308,10 +307,10 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_GetGcmToken() throws Exception
+    public void test_GetGcmToken()
     {
         // Insertamos token en usuario.
-        Usuario usuario = doUsuario("pedro@pedro.com", "pedro_gcm_token");
+        Usuario usuario = doUsuario(pedro.getUserName(), "pedro_gcm_token");
         assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
         // Exec and check.
         assertThat(usuarioManager.getGcmToken(pedro.getuId()), is("pedro_gcm_token"));
@@ -358,7 +357,7 @@ public abstract class UsuarioManagerTest {
     public void test_getRolesSecurity()
     {
         List<String> authorities = usuarioManager.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("pedro@pedro.com").build());
+                new Usuario.UsuarioBuilder().userName(pedro.getUserName()).build());
 
         assertThat(authorities.size(), is(2));
         assertThat(authorities, hasItems(ADMINISTRADOR.authority, INQUILINO.authority));
@@ -380,7 +379,7 @@ public abstract class UsuarioManagerTest {
     public void testGetUserComuByUserAndComu() throws EntityException
     {
         // UsuarioComunidad en BD.
-        assertThat(usuarioManager.getUserComuByUserAndComu("pedro@pedro.com", 1L), is(pedro_plazuelas_10bis));
+        assertThat(usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 1L), is(pedro_plazuelas_10bis));
         // No existe la combinación (usario, comunidad); existe la comunidad.
         assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
         // No existe la comunidad.
@@ -403,7 +402,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testIsOldestUserComuId_1() throws InterruptedException, EntityException
+    public void testIsOldestUserComuId_1() throws EntityException
     {
         assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(3L).build(), 1L), is(true));
         assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(5L).build(), 1L), is(false));
@@ -411,12 +410,12 @@ public abstract class UsuarioManagerTest {
     }
 
     @Test
-    public void testIsOldestUserComuId_2() throws InterruptedException, EntityException
+    public void testIsOldestUserComuId_2() throws EntityException
     {
         // Caso: la comunidad no existe en BD.
-        Usuario pedro = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("password3").build();
+        Usuario pedroUser = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("password3").build();
         try {
-            assertThat(usuarioManager.isOldestUserComu(pedro, 999L), is(true));
+            assertThat(usuarioManager.isOldestUserComu(pedroUser, 999L), is(true));
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -428,10 +427,10 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testLogin_1() throws EntityException
     {
-        Usuario pedroOk = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("password3").build();
+        Usuario pedroOk = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("password3").build();
         Usuario pedroWrongUserName = new Usuario.UsuarioBuilder().userName("pedro@wrong.com").password("password3")
                 .build();
-        Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName("pedro@pedro.com").password("passwordWrong")
+        Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("passwordWrong")
                 .build();
 
         assertThat(usuarioManager.login(pedroOk), is(true));
@@ -457,7 +456,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyComuData() throws InterruptedException, EntityException
+    public void testModifyComuData() throws EntityException
     {
         // Caso 1: usuario ADM, no 'oldest' in comunidad.
         Comunidad comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(ronda_plazuela_10bis).sufijoNumero("Tris").build();
@@ -496,26 +495,36 @@ public abstract class UsuarioManagerTest {
                 .alias("new_juan_alias")
                 .build();
 
-        assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com"), is(1));
+        assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com", twoComponent_local_ES), is(1));
         assertThat(usuarioManager.getUserByUserName("juan@noauth.com").getAlias(), is("new_juan_alias"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUser_2() throws EntityException
+    public void testModifyUser_2() throws EntityException, IOException, MessagingException
     {
+        Usuario oldUser = usuarioManager.getUserByUserName("juan@noauth.com");
         // We change userName.
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
                 .uId(7L)
-                .userName("new_juan@juan.com")
+                .userName(TO)
                 .build();
 
-        assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com"), is(1));
-        assertThat(usuarioManager.getUserByUserName("new_juan@juan.com"), allOf(
+        assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
+        // Check new data in DB.
+        assertThat(usuarioManager.getUserByUserName(TO), allOf(
                 hasProperty("uId", equalTo(7L)),
                 hasProperty("alias", is("juan_no_auth")))
         );
+        // Login changed.
+        try {
+            usuarioManager.login(oldUser);
+            fail();
+        } catch (EntityException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+        checkPswdSentAndLogin(usuarioNew);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -528,7 +537,8 @@ public abstract class UsuarioManagerTest {
                 .uId(7L)
                 .build();
         try {
-            usuarioManager.modifyUser(usuarioNew, "juan@noauth.com");
+            usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", twoComponent_local_ES);
+            fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
         }
@@ -607,71 +617,75 @@ public abstract class UsuarioManagerTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_passwordSend() throws Exception
     {
         // Preconditions: dirección email válida.
-        Usuario usuarioIn = doLuisMail();
-        // Exec
-        assertThat(usuarioManager.passwordSend(usuarioIn.getUserName(), oneComponent_local_ES), is(true));
+        Usuario userDroid = new Usuario.UsuarioBuilder().copyUsuario(pedro).userName(TO).build();
+        UsuarioComunidad userComu = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, userDroid).userComuRest(pedro_escorial).build();
+        assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, twoComponent_local_ES), is(true));
         // Check password generated and sent.
         javaMailMonitor.extSetUp();
         String password = javaMailMonitor.getPswdFromMsg();
+        // Check login.
+        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(TO)).password(password).build();
+        assertThat(usuarioManager.login(userReg), is(true));
+
+        // Exec test.
+        assertThat(usuarioManager.passwordSend(userReg.getUserName(), oneComponent_local_ES), is(true));
+        assertThat(usuarioManager.login(userReg), is(false));
+
+        // Check password generated and sent.
+        javaMailMonitor.expungeFolder();
+        password = javaMailMonitor.getPswdFromMsg();
         checkGeneratedPassword(password, default_password_length);
+        // Check login.
+        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(userReg).password(password).build();
+        assertThat(usuarioManager.login(userIn), is(true));
         // Cleaning and closing.
         javaMailMonitor.closeStoreAndFolder();
-        // Login changed.
-        assertThat(usuarioManager.login(usuarioIn), is(false));
-        Usuario userNewPswd = new Usuario.UsuarioBuilder().copyUsuario(usuarioIn).password(password).build();
-        assertThat(usuarioManager.login(userNewPswd), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSend_mailFail() throws Exception
+    public void test_passwordSend_mailFail()
     {
         // Preconditions: dirección email válida.
+        Usuario usuarioIn = new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioManager.getUserByUserName(pedro.getUserName()))
+                .password(pedro.getPassword()).build();
         // Exec
         try {
-            usuarioManager.passwordSend(doLuisMail().getUserName(), oneComponent_local_ES, mailServiceForTest);
+            usuarioManager.passwordSend(usuarioIn.getUserName(), oneComponent_local_ES, mailServiceForTest);
             fail();
         } catch (EntityException e) {
             assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
         }
         // Login not changed.
-        assertThat(usuarioManager.login(doLuisMail()), is(true));
+        assertThat(usuarioManager.login(usuarioIn), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_1() throws SQLException, EntityException, IOException, MessagingException
+    public void testRegComuAndUserAndUserComu_1() throws EntityException, IOException, MessagingException
     {
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
         // Exec.
         assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES), is(true));
-        // Check password generated and sent.
-        javaMailMonitor.extSetUp();
-        String password = javaMailMonitor.getPswdFromMsg();
-        checkGeneratedPassword(password, default_password_length);
-        // Cleaning and closing.
-        javaMailMonitor.closeStoreAndFolder();
+        checkPswdSentAndLogin(userIn);
         // Check alta nueva comunidad.
         List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(userIn.getUserName());
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(userComu));
-        // Check login.
-        userIn = new Usuario.UsuarioBuilder().copyUsuario(userIn).password(password).build();
-        assertThat(usuarioManager.login(userIn), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_2() throws SQLException, EntityException, IOException, MessagingException
+    public void testRegComuAndUserAndUserComu_2() throws EntityException
     {
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
@@ -689,7 +703,7 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_3() throws SQLException, EntityException
+    public void testRegComuAndUserAndUserComu_3() throws EntityException
     {
         boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_PLAZUELA5_JUAN, oneComponent_local_ES);
         assertThat(isInserted_1, is(true));
@@ -702,7 +716,7 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_4() throws SQLException, EntityException
+    public void testRegComuAndUserAndUserComu_4() throws EntityException
     {
         boolean isInserted_1 = usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);
         assertThat(isInserted_1, is(true));
@@ -716,7 +730,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserComu_1() throws SQLException, EntityException
+    public void testRegComuAndUserComu_1() throws EntityException
     {
         // Preconditions: there is DB a user registered in a comunidad: juan en comunidades 2 y 4.
         assertThat(usuarioManager.getComusByUser(juan.getUserName()).size(), is(2));
@@ -748,7 +762,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_1() throws SQLException, EntityException
+    public void testRegUserAndUserComu_1() throws EntityException, MessagingException, IOException
     {
         // Preconditions: there is a comunidad associated to other users.
         assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
@@ -760,13 +774,16 @@ public abstract class UsuarioManagerTest {
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
 
         assertThat(usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES), is(true));
+        checkPswdSentAndLogin(newPepe.getUsuario());
+
+        // Check alta en comunidad.
         assertThat(usuarioManager.getComusByUser(TO).get(0), is(calle_el_escorial));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_2() throws SQLException, EntityException
+    public void testRegUserAndUserComu_2() throws EntityException
     {
         // Preconditions: there is a comunidad associated to other users.
         assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
@@ -801,7 +818,7 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSearchComunidades_1() throws SQLException, EntityException
+    public void testSearchComunidades_1() throws EntityException
     {
         // Criterio de búsqueda. La mantenemos constante.
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
@@ -863,7 +880,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CheckComuDataModificationPower() throws Exception
+    public void test_CheckComuDataModificationPower()
     {
         // No oldest, but adm.
         assertThat(usuarioManager.checkComuDataModificationPower(
@@ -883,12 +900,17 @@ public abstract class UsuarioManagerTest {
                 (gcmToken).build();
     }
 
-    private Usuario doLuisMail() throws EntityException, MessagingException
+    private void checkPswdSentAndLogin(Usuario newUsuario) throws MessagingException, IOException
     {
-        Usuario luisMail = new Usuario.UsuarioBuilder().copyUsuario(luis).userName(TO).build();
-        assertThat(usuarioManager.modifyUser(luisMail, luis.getUserName()), is(1));
-        assertThat(usuarioManager.login(luisMail), is(true));
-        return luisMail;
+        // Check password generated and sent.
+        javaMailMonitor.extSetUp();
+        String password = javaMailMonitor.getPswdFromMsg();
+        checkGeneratedPassword(password, default_password_length);
+        // Cleaning and closing.
+        javaMailMonitor.closeStoreAndFolder();
+        // Check login.
+        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(newUsuario).password(password).build();
+        assertThat(usuarioManager.login(userIn), is(true));
     }
 }
 

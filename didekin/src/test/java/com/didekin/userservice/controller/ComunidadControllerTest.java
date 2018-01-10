@@ -36,13 +36,13 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import retrofit2.Response;
 
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
 import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
 import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
@@ -70,7 +70,7 @@ public abstract class ComunidadControllerTest {
     UsuarioManagerIf sujetosService;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
         COMU_ENDPOINT = retrofitHandler.getService(ComunidadEndPoints.class);
@@ -101,7 +101,7 @@ public abstract class ComunidadControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
 
         token = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                "pedro@pedro.com",
+                pedro.getUserName(),
                 "password3",
                 PASSWORD_GRANT).execute().body();
         assertThat(COMU_ENDPOINT.getComuData(HELPER.doBearerAccessTkHeader(token), comunidad.getC_Id()).execute().body(),
@@ -111,7 +111,7 @@ public abstract class ComunidadControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSearchComunidades_1() throws SQLException, IOException
+    public void testSearchComunidades_1() throws IOException
     {
         // Exige comunidadDao.searchThree. Dos ocurrencias en DB que se ajustan a la regla 3.
 

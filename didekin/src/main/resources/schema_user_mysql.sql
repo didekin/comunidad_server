@@ -100,6 +100,8 @@ CREATE TABLE usuario
   --   num_tf INTEGER UNSIGNED NOT NULL,
   user_name VARCHAR(60)      NOT NULL, -- email.
   gcm_token VARCHAR(175)     NULL, -- google messages id token
+  fecha_alta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (u_id),
   UNIQUE (user_name),
   UNIQUE (gcm_token)

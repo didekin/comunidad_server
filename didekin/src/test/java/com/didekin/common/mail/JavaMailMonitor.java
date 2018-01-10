@@ -126,12 +126,12 @@ public class JavaMailMonitor {
 
     public String getPswdFromMsg() throws MessagingException, IOException
     {
-        waitAtMost(20, SECONDS).until(() -> folder.getMessageCount() != 0);
+        waitAtMost(22, SECONDS).until(() -> folder.getMessageCount() != 0);
         String msgContent = (String) folder.getMessages()[0].getContent();
         return msgContent.split(getDoubleLineSeparatorFromMsg(msgContent))[1].split(":")[1].trim();
     }
 
-    private void checkPswd(String msgContent, Usuario usuario) throws UnsupportedEncodingException
+    private void checkPswd(String msgContent, Usuario usuario)
     {
         assertThat(msgContent, containsString(usuario.getPassword()));
         String separator = getDoubleLineSeparatorFromMsg(msgContent);

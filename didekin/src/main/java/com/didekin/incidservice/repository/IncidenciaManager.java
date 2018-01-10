@@ -66,6 +66,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Preconditions:
      * 1. The user has adm functions in the comunidad.
      * 2. The incidencia is open.
+     * 3. The incidencia has already an open resolucion.
      * Postconditions:
      * 1. If the user hasn't got now the necessary powers, she is not the incidencia's initiator or the incidencia is closed, an exception is thrown.
      * 2. The incidencia and all its incidenciaUsers are deleted.

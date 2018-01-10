@@ -28,7 +28,7 @@ ext {
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
     retrofit2Version = '2.3.0'
     okhttpVersion = '3.8.1'
-    didekinlibsVersion = 'a-0.2.2'
+    didekinlibsVersion = 'a-0.2.3'
 
     didekinlibs = [":didekinlib_model-$rootProject.ext.didekinlibsVersion:@jar",
                    ":didekinlib_gcm-$rootProject.ext.didekinlibsVersion:@jar",
