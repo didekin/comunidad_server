@@ -3,7 +3,7 @@ VALUES (1, 1, 'luis@luis.com', 'incidencia_1', 41, DATE_SUB(NOW(), INTERVAL 20 S
 INSERT INTO didekin.incidencia
 VALUES (2, 2, 'juan@noauth.com', 'incidencia_2', 22, DATE_SUB(NOW(), INTERVAL 16 SECOND), NULL);
 INSERT INTO didekin.incidencia
-VALUES (3, 1, 'pedro@pedro.com', 'incidencia_3', 46, DATE_SUB(NOW(), INTERVAL 10 SECOND), NULL);
+VALUES (3, 1, 'pedro@didekin.es', 'incidencia_3', 46, DATE_SUB(NOW(), INTERVAL 10 SECOND), NULL);
 INSERT INTO didekin.incidencia
 VALUES (4, 4, 'paco@paco.com', 'incidencia_4', 37, DATE_SUB(NOW(), INTERVAL 8 SECOND), NULL);
 INSERT INTO didekin.incidencia
@@ -32,11 +32,11 @@ INSERT INTO didekin.incidencia_comment
 VALUES (4, 4, 4, 11, 'comment_4_incid_4_comu_4_user_11', DATE_ADD(NOW(), INTERVAL 4 SECOND));
 
 INSERT INTO didekin.incidencia_resolucion
-VALUES (3, 'pedro@pedro.com', 'plan_resol_3', 11, DATE_ADD(NOW(), INTERVAL 100 SECOND), 11, 'moraleja_3', DATE_ADD(NOW(), INTERVAL 8 SECOND));
+VALUES (3, 'pedro@didekin.es', 'plan_resol_3', 11, DATE_ADD(NOW(), INTERVAL 100 SECOND), 11, 'moraleja_3', DATE_ADD(NOW(), INTERVAL 8 SECOND));
 INSERT INTO didekin.incidencia_resolucion
 VALUES (5, 'paco@paco.com', 'plan_resol_5', 22, DATE_ADD(NOW(), INTERVAL 118 SECOND), 23, 'moraleja_5', DATE_ADD(NOW(), INTERVAL 18 SECOND));
 
 INSERT INTO didekin.incidencia_res_avance
-VALUES (1, 3, 'pedro@pedro.com', 'descripcion_avance_1_3', DATE_ADD(NOW(), INTERVAL 18 SECOND));
+VALUES (1, 3, 'pedro@didekin.es', 'descripcion_avance_1_3', DATE_ADD(NOW(), INTERVAL 18 SECOND));
 INSERT INTO didekin.incidencia_res_avance
-VALUES (2, 3, 'pedro@pedro.com', 'descripcion_avance_2_3', DATE_ADD(NOW(), INTERVAL 28 SECOND));
+VALUES (2, 3, 'pedro@didekin.es', 'descripcion_avance_2_3', DATE_ADD(NOW(), INTERVAL 28 SECOND));

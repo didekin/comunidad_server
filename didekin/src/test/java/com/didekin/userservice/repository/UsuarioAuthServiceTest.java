@@ -11,6 +11,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Collection;
 
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.ROLES_NOT_FOUND;
 import static org.hamcrest.Matchers.containsString;
@@ -48,7 +49,7 @@ public abstract class UsuarioAuthServiceTest {
         Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) userDetails.getAuthorities();
         assertThat(authorities, hasItems(new SimpleGrantedAuthority("admon"), new SimpleGrantedAuthority("user")));
 
-        userDetails = authService.loadUserByUsername("pedro@pedro.com");
+        userDetails = authService.loadUserByUsername(pedro.getUserName());
         authorities = (Collection<GrantedAuthority>) userDetails.getAuthorities();
         assertThat(userDetails.getAuthorities().size(), is(2));
         assertThat(authorities, hasItems(new SimpleGrantedAuthority("admon"), new SimpleGrantedAuthority("user")));

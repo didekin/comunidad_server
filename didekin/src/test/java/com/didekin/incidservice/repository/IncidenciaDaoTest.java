@@ -679,7 +679,7 @@ public abstract class IncidenciaDaoTest {
                 hasProperty("redactor",
                         allOf(
                                 is(new Usuario.UsuarioBuilder().uId(3L).build()),
-                                hasProperty("userName", is("pedro@pedro.com")),
+                                hasProperty("userName", is(pedro.getUserName())),
                                 hasProperty("alias", is("pedronevado"))
                         )
                 ),
