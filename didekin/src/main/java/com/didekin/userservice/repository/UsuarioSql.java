@@ -39,7 +39,7 @@ enum UsuarioSql {
             "AND gcm_token IS NOT NULL " +
             "ORDER BY gcm_token"),
 
-    INSERT("INSERT INTO usuario values (?,?,?,?,?)"),
+    INSERT("INSERT INTO usuario(u_id, alias, password, user_name, gcm_token) values (?,?,?,?,?)"),
 
     IS_USER_IN_COMUNIDAD("SELECT COUNT(*) FROM " + USUARIO_TB +
             " INNER JOIN " + USUARIO_COMUNIDAD_TB +

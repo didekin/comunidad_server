@@ -306,7 +306,7 @@ public abstract class UsuarioDaoTest {
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test(/*expected = EntityException.class*/)
+    @Test
     public void testInsertUsuario_2() throws Exception
     {
         Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();

@@ -20,13 +20,14 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import static com.didekin.common.EntityException.GENERATED_KEY;
+import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 
 /**
@@ -117,8 +118,7 @@ public class ComunidadDao {
         ResultSet rs;
         long pkValue;
 
-        try (PreparedStatement insertComunidad = conn.prepareStatement(ComunidadSql.INSERT.toString(),
-                Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement insertComunidad = conn.prepareStatement(INSERT.toString(), RETURN_GENERATED_KEYS)) {
 
             insertComunidad.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
             insertComunidad.setString(2, comunidad.getTipoVia());
