@@ -484,19 +484,24 @@ public abstract class UsuarioManagerTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUser_1() throws EntityException
     {
-        // We change alias ONLY.
+        // Preconditions.
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .uId(7L)
+                .userName(juan.getUserName())
+                .password(juan.getPassword())
                 .alias("new_juan_alias")
                 .build();
-
+        assertThat(usuarioManager.login(usuarioIn), is(true));
+        // We change alias ONLY.
         assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com", twoComponent_local_ES), is(1));
         assertThat(usuarioManager.getUserByUserName("juan@noauth.com").getAlias(), is("new_juan_alias"));
+        // Login has not changed.
+        assertThat(usuarioManager.login(usuarioIn), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")

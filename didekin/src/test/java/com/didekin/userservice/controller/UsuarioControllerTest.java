@@ -265,6 +265,7 @@ public abstract class UsuarioControllerTest {
     {
         // Change alias.
         Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
+                .userName(paco.getUserName())
                 .alias("newAlias")
                 .uId(paco.getuId())
                 .build();

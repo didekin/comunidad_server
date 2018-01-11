@@ -319,7 +319,7 @@ public class UsuarioManager implements UsuarioManagerIf {
         logger.info("modifyUser()");
         Usuario userInDB =  usuarioDao.getUsuarioById(userNew.getuId());
         boolean isAliasNew = userNew.getAlias() != null && !userNew.getAlias().isEmpty();
-        boolean isUserNameNew = userNew.getUserName() != null && !userNew.getUserName().isEmpty();
+        boolean isUserNameNew = userNew.getUserName() != null && !userNew.getUserName().isEmpty() && !userNew.getUserName().equals(oldUserName);
 
         if (isUserNameNew) {
             Usuario.UsuarioBuilder userToDbBuilder = new Usuario.UsuarioBuilder()
