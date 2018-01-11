@@ -3,7 +3,6 @@ package com.didekin.common.mail;
 import com.didekinlib.model.usuario.Usuario;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 
 import javax.mail.Folder;
@@ -83,7 +82,9 @@ public class JavaMailMonitor {
 
     public void extSetUp() throws MessagingException
     {
-        folder.open(READ_WRITE);
+        if (!folder.isOpen()) {
+            folder.open(READ_WRITE);
+        }
         expungeFolder();
     }
 
