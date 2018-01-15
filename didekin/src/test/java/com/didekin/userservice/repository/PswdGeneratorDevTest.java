@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_lower;
+import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_lower_1;
+import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_lower_2;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_upper_1;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_upper_2;
+import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.letter_upper_3;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.number;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.underscore;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
@@ -50,19 +52,28 @@ public class PswdGeneratorDevTest {
     }
 
     @Test
-    public void test_IsInside() throws Exception
+    public void test_IsInside()
     {
         assertThat(number.isInside(49), is(true));
-        assertThat(number.isInside(57), is(true));
-        assertThat(number.isInside(54), is(true));
         assertThat(number.isInside(58), is(false));
+
+        assertThat(letter_upper_1.isInside(65), is(true));
+        assertThat(letter_upper_1.isInside(73), is(false));
+        assertThat(letter_upper_2.isInside(73), is(true));
+        assertThat(letter_upper_2.isInside(79), is(false));
+        assertThat(letter_upper_3.isInside(80), is(true));
+        assertThat(letter_upper_3.isInside(91), is(false));
+        assertThat(letter_lower_1.isInside(97), is(true));
+        assertThat(letter_lower_1.isInside(108), is(false));
+        assertThat(letter_lower_2.isInside(109), is(true));
+        assertThat(letter_lower_2.isInside(123), is(false));
 
         assertThat(underscore.isInside(95), is(true));
         assertThat(underscore.isInside(96), is(false));
     }
 
     @Test
-    public void test_AddAsciiToList() throws Exception
+    public void test_AddAsciiToList()
     {
         AtomicInteger expectedListSize = new AtomicInteger(0);
         List<Integer> asciiList = new ArrayList<>(60);
@@ -70,8 +81,10 @@ public class PswdGeneratorDevTest {
         addCheckList(expectedListSize, asciiList, number);
         addCheckList(expectedListSize, asciiList, letter_upper_1);
         addCheckList(expectedListSize, asciiList, letter_upper_2);
+        addCheckList(expectedListSize, asciiList, letter_upper_3);
         addCheckList(expectedListSize, asciiList, underscore);
-        addCheckList(expectedListSize, asciiList, letter_lower);
+        addCheckList(expectedListSize, asciiList, letter_lower_1);
+        addCheckList(expectedListSize, asciiList, letter_lower_2);
 
         assertThat(AsciiInterval.asciiList.size(), is(expectedListSize.get()));
     }

@@ -13,7 +13,7 @@ import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.asc
  */
 public class PswdGenerator {
 
-    public static final int default_password_length = 14;
+    static final int default_password_length = 14;
     private final int pswdLength;
 
     PswdGenerator()
@@ -39,12 +39,14 @@ public class PswdGenerator {
     public enum AsciiInterval {
 
         number(49, 57),
-        letter_upper_1(65, 78),
-        letter_upper_2(80, 90),
+        letter_upper_1(65, 72),
+        letter_upper_2(73, 78),
+        letter_upper_3(80, 90),
         underscore(95, 95),
-        letter_lower(97, 122),;
+        letter_lower_1(97, 107),
+        letter_lower_2(109, 122),;
 
-        static final List<Integer> asciiList = new ArrayList<>(61); // aproximate guess.
+        static final List<Integer> asciiList = new ArrayList<>(60); // aproximate guess.
 
         static {
             for (AsciiInterval interval : values()) {
