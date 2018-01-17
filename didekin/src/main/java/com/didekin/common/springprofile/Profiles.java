@@ -1,5 +1,7 @@
 package com.didekin.common.springprofile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 
 /**
@@ -8,6 +10,8 @@ import org.springframework.core.env.Environment;
  * Time: 16:35
  */
 public final class Profiles {
+
+    private static final Logger logger = LoggerFactory.getLogger(Profiles.class.getCanonicalName());
 
     /**
      * This variable is hard-coded in didekindroid/terminal/env_init.sh (to start didekin_web application when testing in local).
@@ -25,7 +29,9 @@ public final class Profiles {
 
     public static void checkActiveProfiles(Environment environment)
     {
+        logger.debug("checkActiveProfiles()");
         for (final String profileName : environment.getActiveProfiles()) {
+            logger.debug("Profiles: %s", profileName);
             assertTrue(profileName.equals(NGINX_JETTY_LOCAL)
                             || profileName.equals(NGINX_JETTY_PRE)
                             || profileName.equals(MAIL_PRE),

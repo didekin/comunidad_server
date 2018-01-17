@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekin.userservice.repository.UsuarioManager.doCatchSqlException;
 import static com.didekin.userservice.repository.UsuarioManager.doFinallyJdbc;
 import static com.didekin.userservice.repository.UsuarioManager.doUserEncryptPswd;
@@ -35,6 +37,8 @@ public class UserMockManager {
     private final UsuarioDao usuarioDao;
 
     @Autowired
+    Environment env;
+    @Autowired
     UserMockManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
     {
         this.comunidadDao = comunidadDao;
@@ -44,6 +48,7 @@ public class UserMockManager {
     public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws EntityException
     {
         logger.info("regComuAndUserAndUserComu()");
+        checkActiveProfiles(env);
 
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioCom.getUsuario()))
@@ -79,6 +84,7 @@ public class UserMockManager {
     public boolean regUserAndUserComu(final UsuarioComunidad userComu) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
+        checkActiveProfiles(env);
 
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(userComu.getUsuario()))
