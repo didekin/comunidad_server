@@ -39,8 +39,8 @@ import java.util.List;
 
 import retrofit2.Response;
 
-import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
-import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_EL_ESCORIAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_FUENTE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_10bis;

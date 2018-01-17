@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.didekin.common.mail.BundleUtil.getLocale;
-import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
-import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 

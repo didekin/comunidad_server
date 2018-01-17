@@ -20,9 +20,9 @@ import java.io.IOException;
 import javax.mail.MessagingException;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
-import static com.didekin.common.testutils.Constant.oneComponent_local_EN;
-import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
-import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_EN;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static javax.mail.Folder.READ_WRITE;
 import static org.hamcrest.CoreMatchers.is;

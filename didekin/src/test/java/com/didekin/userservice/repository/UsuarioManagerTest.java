@@ -23,8 +23,8 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
-import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
-import static com.didekin.common.testutils.Constant.twoComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;

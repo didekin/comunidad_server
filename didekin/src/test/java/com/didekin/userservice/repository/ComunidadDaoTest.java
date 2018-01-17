@@ -15,7 +15,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_10;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;

@@ -9,7 +9,7 @@ import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
-import com.didekin.common.testutils.Constant;
+import com.didekin.common.testutils.LocaleConstant;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.oauth2.SpringOauthToken;
@@ -126,7 +126,7 @@ public abstract class ComunidadControllerTest {
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portal1", "esc2",
                 "planta3", "puerta12", PROPIETARIO.function);
 
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(Constant.oneComponent_local_ES, userComu);
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(LocaleConstant.oneComponent_local_ES, userComu);
 
         // Datos de comunidad de búsqueda.
         Comunidad comunidadSearch = new Comunidad.ComunidadBuilder()

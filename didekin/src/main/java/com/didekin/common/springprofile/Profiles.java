@@ -13,13 +13,9 @@ public final class Profiles {
 
     private static final Logger logger = LoggerFactory.getLogger(Profiles.class.getCanonicalName());
 
-    /**
-     * This variable is hard-coded in didekindroid/terminal/env_init.sh (to start didekin_web application when testing in local).
-     */
+    /* This variable is hard-coded in didekindroid/terminal/env_init.sh (to start didekin_web application when testing in local). */
     public static final String NGINX_JETTY_LOCAL = "nginx-jetty-local";
-    /**
-     * This variable is hard-coded in didekin_web/terminal/aws_pre/.ebextensions/env-var.config.
-     */
+    /* This variable is hard-coded in didekin_web/terminal/aws_pre/.ebextensions/env-var.config. */
     public static final String NGINX_JETTY_PRE = "nginx-jetty-pre";
     public static final String MAIL_PRE = "mail-pre";
 
