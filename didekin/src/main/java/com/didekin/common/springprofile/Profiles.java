@@ -31,7 +31,7 @@ public final class Profiles {
     {
         logger.debug("checkActiveProfiles()");
         for (final String profileName : environment.getActiveProfiles()) {
-            logger.debug("Profiles: %s", profileName);
+            logger.debug(profileName);
             assertTrue(profileName.equals(NGINX_JETTY_LOCAL)
                             || profileName.equals(NGINX_JETTY_PRE)
                             || profileName.equals(MAIL_PRE),

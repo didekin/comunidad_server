@@ -154,7 +154,6 @@ public class ComunidadDao {
             insertUsuarioCom.setString(7, usuarioCom.getRoles());
             rowsInserted = insertUsuarioCom.executeUpdate();
         }
-        logger.debug("rowsInserted = %d%n", rowsInserted);
         return rowsInserted;
     }
 
