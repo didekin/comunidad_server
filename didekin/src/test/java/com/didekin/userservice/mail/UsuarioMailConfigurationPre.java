@@ -1,6 +1,5 @@
 package com.didekin.userservice.mail;
 
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.mail.JavaMailMonitor;
 
 import org.springframework.context.annotation.Bean;
@@ -14,6 +13,8 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+
 /**
  * User: pedro@didekin
  * Date: 13/10/15
@@ -23,6 +24,7 @@ import javax.mail.Store;
  */
 
 @Configuration
+@Profile({MAIL_PRE})
 @Import(UsuarioMailConfiguration.class)
 public class UsuarioMailConfigurationPre {
 
@@ -33,7 +35,6 @@ public class UsuarioMailConfigurationPre {
     public static final String strato_buzon_folder = "Inbox";
     public static final String TO = strato_buzon_user;
 
-    @Profile({Profiles.MAIL_PRE})
     @Bean
     public JavaMailMonitor javaMailMonitor() throws MessagingException
     {
@@ -45,7 +46,6 @@ public class UsuarioMailConfigurationPre {
         return new JavaMailMonitor(store);
     }
 
-    @Profile({Profiles.MAIL_PRE})
     @Bean
     public UsuarioMailServiceForTest usuarioMailServiceForTest()
     {
