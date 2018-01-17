@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;

@@ -1,7 +1,7 @@
 package com.didekin.userservice.controller;
 
-import com.didekin.common.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -10,13 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
-import static com.didekin.common.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.UsuarioServConstant.OPEN;
@@ -42,6 +44,9 @@ public class UserComuMockController extends AppControllerAbstract {
     static final String user_delete = mockPath + "/user_delete";
 
     @Autowired
+    Environment env;
+
+    @Autowired
     public UserComuMockController(UserMockManager userMockManager, UsuarioManagerIf usuarioManager)
     {
         this.userMockManager = userMockManager;
@@ -53,6 +58,7 @@ public class UserComuMockController extends AppControllerAbstract {
             throws EntityException
     {
         logger.debug("regComuAndUserAndUserComu()");
+        checkActiveProfiles(env);
         return userMockManager.regComuAndUserAndUserComu(usuarioCom);
     }
 
@@ -60,6 +66,7 @@ public class UserComuMockController extends AppControllerAbstract {
     public boolean regUserAndUserComu(@RequestBody UsuarioComunidad userComu) throws EntityException
     {
         logger.debug("regUserAndUserComu()");
+        checkActiveProfiles(env);
         return userMockManager.regUserAndUserComu(userComu);
     }
 
@@ -67,6 +74,7 @@ public class UserComuMockController extends AppControllerAbstract {
     public boolean deleteUser(@RequestParam(USER_PARAM) String userName)
     {
         logger.debug("deleteUser()");
+        checkActiveProfiles(env);
         return usuarioManager.deleteUser(userName);
     }
 }

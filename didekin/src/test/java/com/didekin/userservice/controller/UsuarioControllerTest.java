@@ -3,7 +3,7 @@ package com.didekin.userservice.controller;
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -42,9 +42,9 @@ import javax.mail.MessagingException;
 
 import retrofit2.Response;
 
-import static com.didekin.common.Profiles.MAIL_PRE;
-import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
-import static com.didekin.common.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;

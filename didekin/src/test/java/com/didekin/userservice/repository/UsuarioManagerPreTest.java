@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static com.didekin.common.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 
 /**
  * User: pedro@didekin

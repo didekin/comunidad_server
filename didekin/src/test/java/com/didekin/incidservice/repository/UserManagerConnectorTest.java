@@ -1,7 +1,7 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.DbPre;
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.LocalDev;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
 

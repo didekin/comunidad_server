@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;

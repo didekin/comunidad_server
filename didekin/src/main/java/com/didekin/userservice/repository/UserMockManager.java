@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static com.didekin.common.Profiles.NGINX_JETTY_LOCAL;
-import static com.didekin.common.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.repository.UsuarioManager.doCatchSqlException;
 import static com.didekin.userservice.repository.UsuarioManager.doFinallyJdbc;
 import static com.didekin.userservice.repository.UsuarioManager.doUserEncryptPswd;

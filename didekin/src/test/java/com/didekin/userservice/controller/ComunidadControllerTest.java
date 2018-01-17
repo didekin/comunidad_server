@@ -5,7 +5,7 @@ import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;

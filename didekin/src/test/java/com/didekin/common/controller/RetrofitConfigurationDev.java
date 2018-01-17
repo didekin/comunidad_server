@@ -1,6 +1,6 @@
 package com.didekin.common.controller;
 
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekinlib.http.retrofit.RetrofitHandler;
 
 import org.springframework.context.annotation.Bean;
@@ -22,7 +22,7 @@ public class RetrofitConfigurationDev {
     private static final int http_timeOut = 120;
 
     @Bean
-    public RetrofitHandler retrofitHandler() throws NoSuchFieldException, IllegalAccessException
+    public RetrofitHandler retrofitHandler()
     {
         return new RetrofitHandler(jetty_local_URL, new RetrofitHandler.JksInAppClient(local_jks_appclient, local_jks_appclient_pswd),http_timeOut);
     }

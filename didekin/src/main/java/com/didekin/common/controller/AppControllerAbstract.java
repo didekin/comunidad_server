@@ -1,6 +1,6 @@
 package com.didekin.common.controller;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.ErrorBean;
 import com.didekinlib.model.exception.ExceptionMsgIf;

@@ -1,4 +1,4 @@
-package com.didekin.common;
+package com.didekin.common.repository;
 
 
 import com.didekinlib.model.exception.ExceptionMsgIf;

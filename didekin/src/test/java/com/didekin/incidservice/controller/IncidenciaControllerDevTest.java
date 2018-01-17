@@ -2,7 +2,7 @@ package com.didekin.incidservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.LocalDev;
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 
 import org.junit.experimental.categories.Category;

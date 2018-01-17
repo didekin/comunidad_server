@@ -1,25 +1,18 @@
 package com.didekin.userservice.mail;
 
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.mail.JavaMailMonitor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
-
-import static com.didekin.common.mail.MailConstant.aws_smtp_host;
-import static com.didekin.userservice.mail.UsuarioMailConfiguration.doProperties;
-import static com.didekin.userservice.mail.UsuarioMailConfiguration.doSenderSettings;
 
 /**
  * User: pedro@didekin

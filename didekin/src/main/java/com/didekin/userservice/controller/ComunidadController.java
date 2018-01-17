@@ -1,6 +1,6 @@
 package com.didekin.userservice.controller;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.comunidad.Comunidad;

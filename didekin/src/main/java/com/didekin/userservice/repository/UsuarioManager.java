@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.didekin.common.EntityException.COMUNIDAD_UNIQUE_KEY;
-import static com.didekin.common.EntityException.DUPLICATE_ENTRY;
-import static com.didekin.common.EntityException.USER_NAME;
+import static com.didekin.common.repository.EntityException.COMUNIDAD_UNIQUE_KEY;
+import static com.didekin.common.repository.EntityException.DUPLICATE_ENTRY;
+import static com.didekin.common.repository.EntityException.USER_NAME;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;

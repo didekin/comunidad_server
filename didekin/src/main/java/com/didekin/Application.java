@@ -172,7 +172,7 @@ public class Application {
         }
 
         @Override
-        public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception
+        public void configure(AuthorizationServerEndpointsConfigurer endpoints)
         {
             endpoints.authenticationManager(authenticationManager)
                     .tokenStore(authTokenStore)
@@ -181,7 +181,7 @@ public class Application {
         }
 
         @Override
-        public void configure(AuthorizationServerSecurityConfigurer security) throws Exception
+        public void configure(AuthorizationServerSecurityConfigurer security)
         {
 //            security.sslOnly();
         }

@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;

@@ -1,7 +1,7 @@
 package com.didekin.incidservice.repository;
 
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
 import com.didekinlib.gcm.model.incidservice.GcmIncidRequestData;
 import com.didekinlib.model.comunidad.Comunidad;

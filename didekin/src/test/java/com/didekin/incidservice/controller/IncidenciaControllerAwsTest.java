@@ -1,7 +1,7 @@
 package com.didekin.incidservice.controller;
 
 import com.didekin.common.AwsPre;
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.incidservice.repository.IncidenciaManagerConfiguration;
 

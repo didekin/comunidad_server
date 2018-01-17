@@ -18,7 +18,7 @@ public class RetrofitConfiguration {
     private static final int http_timeOut = 60;
 
     @Bean
-    public RetrofitHandler retrofitHandler() throws NoSuchFieldException, IllegalAccessException
+    public RetrofitHandler retrofitHandler()
     {
         return new RetrofitHandler(aws_eb_url, http_timeOut);
     }

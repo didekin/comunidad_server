@@ -2,7 +2,7 @@ package com.didekin.userservice.security;
 
 import com.didekin.Application;
 import com.didekin.common.DbPre;
-import com.didekin.common.Profiles;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 

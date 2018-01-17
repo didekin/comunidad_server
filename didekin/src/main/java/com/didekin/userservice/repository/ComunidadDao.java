@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.ComunidadAutonoma;
 import com.didekinlib.model.comunidad.Municipio;
@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.didekin.common.EntityException.GENERATED_KEY;
+import static com.didekin.common.repository.EntityException.GENERATED_KEY;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;

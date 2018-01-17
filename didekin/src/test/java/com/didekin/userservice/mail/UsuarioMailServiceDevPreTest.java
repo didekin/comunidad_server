@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import javax.mail.MessagingException;
 
-import static com.didekin.common.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.testutils.Constant.oneComponent_local_EN;
 import static com.didekin.common.testutils.Constant.oneComponent_local_ES;
 import static com.didekin.common.testutils.Constant.twoComponent_local_ES;

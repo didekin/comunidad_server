@@ -1,5 +1,7 @@
 package com.didekin.common;
 
+import com.didekin.common.springprofile.Profiles;
+
 import org.springframework.context.annotation.Profile;
 
 /**

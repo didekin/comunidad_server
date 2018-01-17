@@ -1,6 +1,6 @@
 package com.didekin.incidservice.controller;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekin.incidservice.repository.UserManagerConnector;

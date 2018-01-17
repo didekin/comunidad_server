@@ -1,7 +1,7 @@
 package com.didekin.userservice.testutils;
 
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManagerIf;

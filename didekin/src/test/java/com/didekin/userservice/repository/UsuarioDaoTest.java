@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
@@ -16,8 +16,8 @@ import org.springframework.test.context.jdbc.Sql;
 import java.sql.Connection;
 import java.util.List;
 
-import static com.didekin.common.EntityException.DUPLICATE_ENTRY;
-import static com.didekin.common.EntityException.USER_NAME;
+import static com.didekin.common.repository.EntityException.DUPLICATE_ENTRY;
+import static com.didekin.common.repository.EntityException.USER_NAME;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;

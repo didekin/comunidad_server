@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;

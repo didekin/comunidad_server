@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
 
-import com.didekin.common.EntityException;
+import com.didekin.common.repository.EntityException;
 import com.didekinlib.model.usuario.Usuario;
 
 import org.slf4j.Logger;
