@@ -14,14 +14,14 @@ import javax.mail.internet.InternetAddress;
 import static com.didekin.common.mail.BundleUtil.getLocale;
 import static com.didekin.common.mail.BundleUtil.mailBundleName;
 import static com.didekin.common.mail.BundleUtil.usuarioMailBundleName;
-import static com.didekin.common.mail.MailConstant.mail_from;
-import static com.didekin.common.mail.MailConstant.text_plain_UTF_8;
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.text_plain_UTF_8;
 import static com.didekin.common.mail.MailKey.SALUDO;
 import static com.didekin.common.mail.MailKey.SUBJECT;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.strato_buzon_folder;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
+import static java.lang.System.getenv;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.mail.Flags.Flag.DELETED;
 import static javax.mail.Folder.READ_WRITE;
@@ -142,7 +142,7 @@ public class JavaMailMonitor {
 
     private void checkFromTo(Message message) throws MessagingException
     {
-        assertThat(((InternetAddress) message.getFrom()[0]).getAddress(), is(mail_from));
+        assertThat(((InternetAddress) message.getFrom()[0]).getAddress(), is(getenv("mail_from")));
         assertThat(((InternetAddress) message.getAllRecipients()[0]).getAddress(), is(TO));
     }
 

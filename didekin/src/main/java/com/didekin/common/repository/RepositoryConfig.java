@@ -19,6 +19,7 @@ public class RepositoryConfig {
 
     private static final String JDBC_URL_DEFAULT_PORT = "3306";
     private static final String SSL_DEFAULT_VALUE = "useSSL=false";
+    private static final String DB_NAME = "didekin";
 
     @Bean
     public DataSource dataSource()
@@ -41,7 +42,7 @@ public class RepositoryConfig {
         ds.setUrl("jdbc:mysql://"
                 + System.getenv("RDS_HOSTNAME")
                 + ":" + jdbcUrlPort
-                + "/" + System.getenv("RDS_DB_NAME")
+                + "/" + DB_NAME
                 + "?" + SSL_DEFAULT_VALUE
         );
         ds.setUsername(System.getenv("RDS_USERNAME"));

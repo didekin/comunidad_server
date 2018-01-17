@@ -7,15 +7,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
-import static com.didekin.common.mail.MailConstant.aws_cred_password;
-import static com.didekin.common.mail.MailConstant.aws_cred_username;
-import static com.didekin.common.mail.MailConstant.aws_smtp_host;
-import static com.didekin.common.mail.MailConstant.aws_smtp_port;
-import static com.didekin.common.mail.MailConstant.default_encoding;
-import static com.didekin.common.mail.MailConstant.mail_smtp_auth_prop;
-import static com.didekin.common.mail.MailConstant.mail_smtp_starttls_enable_prop;
-import static com.didekin.common.mail.MailConstant.mail_smtp_starttls_required;
-import static com.didekin.common.mail.MailConstant.mail_transport_protocol;
+import static java.lang.System.getenv;
 
 /**
  * User: pedro@didekin
@@ -25,6 +17,8 @@ import static com.didekin.common.mail.MailConstant.mail_transport_protocol;
 
 @Configuration
 public class UsuarioMailConfiguration {
+
+    public static final String text_plain_UTF_8 = "text/plain; charset=UTF-8";
 
     @Bean
     public JavaMailSender javaMailSender()
@@ -43,20 +37,20 @@ public class UsuarioMailConfiguration {
 
     static void doSenderSettings(JavaMailSenderImpl mailSender)
     {
-        mailSender.setProtocol(mail_transport_protocol);
-        mailSender.setHost(aws_smtp_host);
-        mailSender.setPort(aws_smtp_port);
-        mailSender.setUsername(aws_cred_username);
-        mailSender.setPassword(aws_cred_password);
-        mailSender.setDefaultEncoding(default_encoding);
+        mailSender.setProtocol("smtp");
+        mailSender.setHost("email-smtp.eu-west-1.amazonaws.com");
+        mailSender.setPort(2587);
+        mailSender.setUsername(getenv("aws_cred_username"));
+        mailSender.setPassword(getenv("aws_cred_password"));
+        mailSender.setDefaultEncoding("UTF-8");
     }
 
     static Properties doProperties()
     {
         Properties mailProperties = new Properties();
-        mailProperties.setProperty(mail_smtp_auth_prop, String.valueOf(true));
-        mailProperties.setProperty(mail_smtp_starttls_enable_prop, String.valueOf(true));
-        mailProperties.setProperty(mail_smtp_starttls_required, String.valueOf(true));
+        mailProperties.setProperty("mail.smtp.auth", String.valueOf(true));
+        mailProperties.setProperty("mail.smtp.starttls.enable", String.valueOf(true));
+        mailProperties.setProperty("mail.smtp.starttls.required", String.valueOf(true));
         return mailProperties;
     }
 }

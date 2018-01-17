@@ -13,12 +13,12 @@ import java.util.ResourceBundle;
 import static com.didekin.common.mail.BundleUtil.getLocale;
 import static com.didekin.common.mail.BundleUtil.mailBundleName;
 import static com.didekin.common.mail.BundleUtil.usuarioMailBundleName;
-import static com.didekin.common.mail.MailConstant.mail_from;
 import static com.didekin.common.mail.MailKey.BYE;
 import static com.didekin.common.mail.MailKey.SALUDO;
 import static com.didekin.common.mail.MailKey.SUBJECT;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
+import static java.lang.System.getenv;
 import static java.lang.System.lineSeparator;
 import static java.util.ResourceBundle.getBundle;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -61,7 +61,7 @@ public class UsuarioMailService implements UsuarioMailServiceIf {
         SimpleMailMessage mailMsg = new SimpleMailMessage();
         mailMsg.setTo(user.getUserName());
         mailMsg.setSubject(usuarioBundle.getString(SUBJECT.name()));
-        mailMsg.setFrom(mail_from);
+        mailMsg.setFrom(getenv("mail_from"));
         mailMsg.setText(mailBundle.getString(SALUDO.name()) + " " + user.getAlias() + "."
                 + doubleLineSeparator
                 + usuarioBundle.getString(TXT_Password.name()) + user.getPassword()
