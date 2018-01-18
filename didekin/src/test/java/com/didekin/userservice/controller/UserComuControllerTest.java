@@ -268,10 +268,10 @@ public abstract class UserComuControllerTest {
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_2() throws EntityException, IOException  // TODO: fail in awspre
+    public void testRegUserAndUserComu_2() throws EntityException, IOException  // TODO: fail
     {
         // Duplicate user (and comunidad).
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN);
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
         Usuario usuario = sujetosService.getUserByUserName(USER_JUAN.getUserName());
         Comunidad comunidad = sujetosService.getComusByUser(USER_JUAN.getUserName()).get(0);
 
