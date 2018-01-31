@@ -12,11 +12,11 @@ import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.common.testutils.LocaleConstant;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.oauth2.SpringOauthToken;
-import com.didekinlib.http.retrofit.ComunidadEndPoints;
-import com.didekinlib.http.retrofit.Oauth2EndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.auth.AuthEndPoints;
+import com.didekinlib.http.auth.SpringOauthToken;
+import com.didekinlib.http.comunidad.ComunidadEndPoints;
+import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -43,9 +43,9 @@ import retrofit2.Response;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
-import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.http.auth.AuthClient.CL_USER;
+import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
+import static com.didekinlib.http.auth.AuthConstant.PASSWORD_GRANT;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.Matchers.is;
@@ -61,18 +61,18 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 public abstract class ComunidadControllerTest {
 
     private ComunidadEndPoints COMU_ENDPOINT;
-    private Oauth2EndPoints OAUTH_ENDPOINT;
+    private AuthEndPoints OAUTH_ENDPOINT;
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
 
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
     @Autowired
     UsuarioManagerIf sujetosService;
 
     @Before
     public void setUp()
     {
-        OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
+        OAUTH_ENDPOINT = retrofitHandler.getService(AuthEndPoints.class);
         COMU_ENDPOINT = retrofitHandler.getService(ComunidadEndPoints.class);
         USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
     }
@@ -96,7 +96,7 @@ public abstract class ComunidadControllerTest {
                 "password5",
                 PASSWORD_GRANT).execute().body();
         // NO existe el par (comunidad, usuario).
-        Response<Comunidad> response = COMU_ENDPOINT.getComuData(HELPER.doBearerAccessTkHeader(token), comunidad.getC_Id()).execute();
+        Response<Comunidad> response = COMU_ENDPOINT.getComuData(doBearerAccessTkHeader(token), comunidad.getC_Id()).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
 
@@ -104,7 +104,7 @@ public abstract class ComunidadControllerTest {
                 pedro.getUserName(),
                 "password3",
                 PASSWORD_GRANT).execute().body();
-        assertThat(COMU_ENDPOINT.getComuData(HELPER.doBearerAccessTkHeader(token), comunidad.getC_Id()).execute().body(),
+        assertThat(COMU_ENDPOINT.getComuData(doBearerAccessTkHeader(token), comunidad.getC_Id()).execute().body(),
                 is(comunidad));
     }
 

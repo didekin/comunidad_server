@@ -10,7 +10,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.retrofit.RetrofitHandler;
+import com.didekinlib.http.HttpHandler;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -50,12 +50,12 @@ public abstract class UserComuMockControllerTest {
     private UserComuMockEndPoints userComuMockEndPoint;
 
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
     @Autowired
     private UsuarioManagerIf usuarioManager;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         userComuMockEndPoint = retrofitHandler.getService(UserComuMockEndPoints.class);
     }

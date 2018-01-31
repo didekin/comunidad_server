@@ -1,7 +1,8 @@
 package com.didekin.common.controller;
 
 import com.didekin.common.springprofile.Profiles;
-import com.didekinlib.http.retrofit.RetrofitHandler;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.HttpHandler.JksInAppClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +23,8 @@ public class RetrofitConfigurationDev {
     private static final int http_timeOut = 120;
 
     @Bean
-    public RetrofitHandler retrofitHandler()
+    public HttpHandler retrofitHandler()
     {
-        return new RetrofitHandler(jetty_local_URL, new RetrofitHandler.JksInAppClient(local_jks_appclient, local_jks_appclient_pswd),http_timeOut);
+        return new HttpHandler(jetty_local_URL, new JksInAppClient(local_jks_appclient, local_jks_appclient_pswd),http_timeOut);
     }
 }

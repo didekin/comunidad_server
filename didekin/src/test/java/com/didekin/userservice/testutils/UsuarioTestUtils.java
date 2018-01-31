@@ -5,8 +5,8 @@ import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManagerIf;
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioEndPoints;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.usuario.UsuarioEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -243,29 +243,29 @@ public final class UsuarioTestUtils {
                 .roles(roles).build();
     }
 
-    public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, RetrofitHandler retrofitHandler) throws IOException
+    public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, HttpHandler retrofitHandler) throws IOException
     {
         return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
                 usuario.getPassword())).execute().body();
     }
 
-    public static String tokenPedro(RetrofitHandler retrofitHandler) throws IOException
+    public static String tokenPedro(HttpHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
     }
 
-    public static String tokenLuis(RetrofitHandler retrofitHandler) throws IOException
+    public static String tokenLuis(HttpHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
     }
 
-    public static String tokenPaco(RetrofitHandler retrofitHandler) throws IOException
+    public static String tokenPaco(HttpHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());
     }
 
     @SuppressWarnings("unused")
-    public static String tokenPepe(RetrofitHandler retrofitHandler) throws IOException
+    public static String tokenPepe(HttpHandler retrofitHandler) throws IOException
     {
         return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());
     }

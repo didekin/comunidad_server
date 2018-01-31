@@ -12,11 +12,11 @@ import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.oauth2.SpringOauthToken;
-import com.didekinlib.http.retrofit.Oauth2EndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
-import com.didekinlib.http.retrofit.UsuarioEndPoints;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.auth.AuthEndPoints;
+import com.didekinlib.http.auth.SpringOauthToken;
+import com.didekinlib.http.usuario.UsuarioEndPoints;
+import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -57,10 +57,10 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPaco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
-import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
-import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.http.auth.AuthClient.CL_USER;
+import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
+import static com.didekinlib.http.auth.AuthConstant.PASSWORD_GRANT;
+import static com.didekinlib.http.auth.AuthConstant.REFRESH_TOKEN_GRANT;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -78,10 +78,10 @@ public abstract class UsuarioControllerTest {
 
     private UsuarioEndPoints USER_ENDPOINT;
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
-    private Oauth2EndPoints OAUTH_ENDPOINT;
+    private AuthEndPoints OAUTH_ENDPOINT;
 
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
     @Autowired
     private UsuarioManagerIf usuarioManager;
     @Autowired
@@ -90,7 +90,7 @@ public abstract class UsuarioControllerTest {
     @Before
     public void setUp()
     {
-        OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
+        OAUTH_ENDPOINT = retrofitHandler.getService(AuthEndPoints.class);
         USER_ENDPOINT = retrofitHandler.getService(UsuarioEndPoints.class);
         USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
     }
@@ -154,11 +154,11 @@ public abstract class UsuarioControllerTest {
                 pedro.getUserName(),
                 "password3",
                 PASSWORD_GRANT).execute().body();
-        boolean isDeleted = USER_ENDPOINT.deleteAccessToken(HELPER.doBearerAccessTkHeader(token_1), token_1.getValue
+        boolean isDeleted = USER_ENDPOINT.deleteAccessToken(doBearerAccessTkHeader(token_1), token_1.getValue
                 ()).execute().body();
         assertThat(isDeleted, is(true));
 
-        Response<Usuario> response = USER_ENDPOINT.getUserData(HELPER.doBearerAccessTkHeader(token_1)).execute();
+        Response<Usuario> response = USER_ENDPOINT.getUserData(doBearerAccessTkHeader(token_1)).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
 
@@ -203,7 +203,7 @@ public abstract class UsuarioControllerTest {
     {
         // We send an invailid token.
         Response<Usuario> response = USER_ENDPOINT.getUserData(
-                HELPER.doBearerAccessTkHeader(
+                doBearerAccessTkHeader(
                         new SpringOauthToken("fake_token", null, null, new SpringOauthToken.OauthToken("faked_token_refresh", null), null)
                 )).execute();
         assertThat(response.isSuccessful(), is(false));
@@ -296,7 +296,7 @@ public abstract class UsuarioControllerTest {
         assertThat(usuarioManager.getAccessTokenByUserName(paco.getUserName()).isPresent(), is(true));
         // Call the controller.
         String newClearPswd = "newPacoPassword";
-        assertThat(USER_ENDPOINT.passwordChange(HELPER.doBearerAccessTkHeader(accessToken), newClearPswd).execute().body(),
+        assertThat(USER_ENDPOINT.passwordChange(doBearerAccessTkHeader(accessToken), newClearPswd).execute().body(),
                 is(1));
         // Check.
         assertThat(new BCryptPasswordEncoder()

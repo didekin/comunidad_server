@@ -2,10 +2,10 @@ package com.didekin.userservice.security;
 
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekinlib.http.ErrorBean;
-import com.didekinlib.http.oauth2.SpringOauthToken;
-import com.didekinlib.http.retrofit.Oauth2EndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioEndPoints;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.auth.AuthEndPoints;
+import com.didekinlib.http.auth.SpringOauthToken;
+import com.didekinlib.http.usuario.UsuarioEndPoints;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,9 +22,9 @@ import static com.didekin.Application.REFRESHTK_VALIDITY_SECONDS;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.GenericExceptionMsg.NOT_FOUND;
-import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
-import static com.didekinlib.http.oauth2.OauthConstant.REFRESH_TOKEN_GRANT;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.http.auth.AuthClient.CL_USER;
+import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
+import static com.didekinlib.http.auth.AuthConstant.REFRESH_TOKEN_GRANT;
 import static java.lang.Math.abs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -39,16 +39,16 @@ import static org.junit.Assert.assertThat;
  */
 public abstract class OauthConfigTest {
 
-    private Oauth2EndPoints OAUTH_ENDPOINT;
+    private AuthEndPoints OAUTH_ENDPOINT;
     private UsuarioEndPoints USER_ENDPOINT;
 
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
 
     @Before
     public void setUp()
     {
-        OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
+        OAUTH_ENDPOINT = retrofitHandler.getService(AuthEndPoints.class);
         USER_ENDPOINT = retrofitHandler.getService(UsuarioEndPoints.class);
     }
 
@@ -207,7 +207,7 @@ public abstract class OauthConfigTest {
         SpringOauthToken token_1 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();
         assertThat(token_1.getRefreshToken().getValue(), notNullValue());
 
-        assertThat(USER_ENDPOINT.deleteAccessToken(HELPER.doBearerAccessTkHeader(token_1), token_1.getValue
+        assertThat(USER_ENDPOINT.deleteAccessToken(doBearerAccessTkHeader(token_1), token_1.getValue
                 ()).execute().body(), is(true));
 
         SpringOauthToken token_2 = new SecurityTestUtils(retrofitHandler).getPasswordUserToken(pedro.getUserName(), "password3").body();

@@ -12,10 +12,10 @@ import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.oauth2.SpringOauthToken;
-import com.didekinlib.http.retrofit.Oauth2EndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.UsuarioComunidadEndPoints;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.auth.AuthEndPoints;
+import com.didekinlib.http.auth.SpringOauthToken;
+import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -63,10 +63,10 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenLuis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPaco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
-import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.http.auth.AuthClient.CL_USER;
+import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
+import static com.didekinlib.http.auth.AuthConstant.PASSWORD_GRANT;
+import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
@@ -88,17 +88,17 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 public abstract class UserComuControllerTest {
 
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
-    private Oauth2EndPoints OAUTH_ENDPOINT;
+    private AuthEndPoints OAUTH_ENDPOINT;
 
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
     @Autowired
     private UsuarioManagerIf sujetosService;
 
     @Before
     public void setUp()
     {
-        OAUTH_ENDPOINT = retrofitHandler.getService(Oauth2EndPoints.class);
+        OAUTH_ENDPOINT = retrofitHandler.getService(AuthEndPoints.class);
         USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
     }
 
@@ -152,7 +152,7 @@ public abstract class UserComuControllerTest {
     {
         // Intento de consulta con token de usuario no registrado.
         Response<List<Comunidad>> response = USERCOMU_ENDPOINT.getComusByUser(
-                HELPER.doBearerAccessTkHeader(
+                doBearerAccessTkHeader(
                         new SpringOauthToken("faked_token", null, null, new SpringOauthToken.OauthToken("faked_token_refresh", null), null)))
                 .execute();
         assertThat(response.isSuccessful(), is(false));

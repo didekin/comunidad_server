@@ -1,9 +1,9 @@
 package com.didekin.common.controller;
 
-import com.didekinlib.http.oauth2.OauthClient;
-import com.didekinlib.http.oauth2.SpringOauthToken;
-import com.didekinlib.http.retrofit.Oauth2EndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.auth.AuthClient;
+import com.didekinlib.http.auth.AuthEndPoints;
+import com.didekinlib.http.auth.SpringOauthToken;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -13,10 +13,10 @@ import java.util.Base64;
 
 import retrofit2.Response;
 
-import static com.didekinlib.http.oauth2.OauthClient.CL_USER;
-import static com.didekinlib.http.oauth2.OauthConstant.PASSWORD_GRANT;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.BASIC_AND_SPACE;
-import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
+import static com.didekinlib.http.auth.AuthClient.BASIC_AND_SPACE;
+import static com.didekinlib.http.auth.AuthClient.CL_USER;
+import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
+import static com.didekinlib.http.auth.AuthConstant.PASSWORD_GRANT;
 
 /**
  * User: pedro@didekin
@@ -26,16 +26,16 @@ import static com.didekinlib.http.oauth2.OauthTokenHelper.HELPER;
 @ContextConfiguration(classes = {RetrofitConfigurationDev.class, RetrofitConfigurationPre.class})
 public final class SecurityTestUtils {
 
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
 
     @Autowired
-    public SecurityTestUtils(RetrofitHandler retrofitHandler){
+    public SecurityTestUtils(HttpHandler retrofitHandler){
         this.retrofitHandler = retrofitHandler;
     }
 
     public Response<SpringOauthToken> getPasswordUserToken(String userName, String password) throws IOException
     {
-        Oauth2EndPoints endPoints = retrofitHandler.getService(Oauth2EndPoints.class);
+        AuthEndPoints endPoints = retrofitHandler.getService(AuthEndPoints.class);
         return endPoints.getPasswordUserToken(
                 doAuthBasicHeader(CL_USER),
                 userName,
@@ -48,13 +48,13 @@ public final class SecurityTestUtils {
         Response<SpringOauthToken> response = getPasswordUserToken(userName, password);
 
         if (response.isSuccessful()){
-            return HELPER.doBearerAccessTkHeader(response.body());
+            return doBearerAccessTkHeader(response.body());
         } else {
             return null;
         }
     }
 
-    public String doAuthBasicHeader(final OauthClient cliente)
+    public String doAuthBasicHeader(final AuthClient cliente)
     {
         final String baseString = cliente.getId() + ":" + cliente.getSecret();
 

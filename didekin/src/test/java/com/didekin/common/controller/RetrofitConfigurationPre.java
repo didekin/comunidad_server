@@ -1,14 +1,13 @@
 package com.didekin.common.controller;
 
-import com.didekinlib.http.retrofit.RetrofitHandler;
-import com.didekinlib.http.retrofit.RetrofitHandler.JksInAppClient;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.HttpHandler.JksInAppClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
-import static java.lang.System.getenv;
 
 /**
  * User: pedro@didekin
@@ -25,9 +24,9 @@ public class RetrofitConfigurationPre {
     private static final int http_timeOut = 90;
 
     @Bean
-    public RetrofitHandler retrofitHandler()
+    public HttpHandler retrofitHandler()
     {
-        return new RetrofitHandler(
+        return new HttpHandler(
                 jetty_awspre_URL,
                 new JksInAppClient(jetty_awspre_jks_appclient, jetty_awspre_jks_appclient_pswd), http_timeOut);
     }

@@ -49,7 +49,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pepe;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
-import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
+import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;

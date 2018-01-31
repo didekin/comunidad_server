@@ -31,7 +31,7 @@ import static com.didekin.common.repository.EntityException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.EntityException.USER_NAME;
 import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
 import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
-import static com.didekinlib.http.UsuarioServConstant.IS_USER_DELETED;
+import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;

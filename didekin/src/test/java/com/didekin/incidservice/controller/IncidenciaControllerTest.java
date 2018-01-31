@@ -6,8 +6,8 @@ import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekin.incidservice.repository.UserManagerConnector;
 import com.didekin.incidservice.testutils.IncidenciaTestUtils;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
-import com.didekinlib.http.retrofit.IncidenciaServEndPoints;
-import com.didekinlib.http.retrofit.RetrofitHandler;
+import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.incidencia.IncidenciaServEndPoints;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
@@ -77,7 +77,7 @@ abstract class IncidenciaControllerTest {
     @Autowired
     private IncidenciaManagerIf incidenciaManager;
     @Autowired
-    private RetrofitHandler retrofitHandler;
+    private HttpHandler retrofitHandler;
     @Autowired
     private UserManagerConnector connector;
 
