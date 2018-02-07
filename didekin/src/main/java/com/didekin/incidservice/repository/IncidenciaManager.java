@@ -159,8 +159,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * @param incidImportancia : an IncidImportancia instance with incidencia and importancia fields fulfilled (importancia default initialization == 0).
      * @return number of rows modified in DB: 1 or 2 if incidImportancia.importancia is also updated.
      * @throws EntityException USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
-     *                         INCIDENCIA_NOT_FOUND (if the incidencia is closed or it doesn't exist),
-     *                         INCID_IMPORTANCIA_WRONG_INIT (if incidImportancia.importancia is wrongly initialized).
+     *                         INCIDENCIA_NOT_FOUND (if the incidencia is closed or it doesn't exist).
      */
     @Override
     public int modifyIncidImportancia(String userNameInSession, IncidImportancia incidImportancia) throws EntityException
