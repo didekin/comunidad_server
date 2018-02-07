@@ -29,17 +29,17 @@ import java.util.stream.Stream;
 import static com.didekin.common.repository.EntityException.COMUNIDAD_UNIQUE_KEY;
 import static com.didekin.common.repository.EntityException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.EntityException.USER_NAME;
-import static com.didekinlib.http.GenericExceptionMsg.TOKEN_NOT_DELETED;
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
+import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
+import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_NOT_DELETED;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
-import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**

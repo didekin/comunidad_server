@@ -37,12 +37,12 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.sql.Timestamp.from;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -87,7 +87,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_2() throws EntityException, InterruptedException
+    public void testCloseIncidencia_2() throws EntityException
     {
         // CASO: incidencia is closed.
         try {
@@ -160,7 +160,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_IsImportanciaUser() throws Exception
+    public void test_IsImportanciaUser()
     {
         assertThat(incidenciaDao.isImportanciaUser(luis.getuId(), 3L), is(0));
         assertThat(incidenciaDao.isImportanciaUser(pedro.getuId(), 3L), is(1));
@@ -170,7 +170,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testIsIncidenciaOpen_1() throws SQLException
+    public void testIsIncidenciaOpen_1()
     {
         assertThat(incidenciaDao.isIncidenciaOpen(1L), is(true));
         incidenciaDao.closeIncidencia(1L);
@@ -559,7 +559,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidencia_2() throws Exception
+    public void testRegIncidencia_2()
     {
         // No existe comunidadId
         Incidencia incidencia = doIncidencia(juan.getUserName(), "Nueva incidencia en Cámaras de vigilancia", 999L, (short) 11);
@@ -706,7 +706,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_SeeIncidenciaById() throws Exception
+    public void test_SeeIncidenciaById()
     {
         assertThat(incidenciaDao.seeIncidenciaById(1L), allOf(
                 hasProperty("incidenciaId", is(1L)),
@@ -731,7 +731,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_1() throws SQLException, EntityException
+    public void testSeeIncidImportanciaByUser_1() throws EntityException
     {
         // Incidencia con resolución. Hay registro incidImportancia para el usuario
         assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));

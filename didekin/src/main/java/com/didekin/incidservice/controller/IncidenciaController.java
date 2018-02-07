@@ -37,7 +37,7 @@ import static com.didekinlib.http.incidencia.IncidServConstant.SEE_INCID_COMMENT
 import static com.didekinlib.http.incidencia.IncidServConstant.SEE_INCID_IMPORTANCIA;
 import static com.didekinlib.http.incidencia.IncidServConstant.SEE_RESOLUCION;
 import static com.didekinlib.http.incidencia.IncidServConstant.SEE_USERCOMUS_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;

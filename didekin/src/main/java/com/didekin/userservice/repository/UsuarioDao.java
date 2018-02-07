@@ -48,9 +48,9 @@ import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_WITH_GCMTOKEN;
 import static com.didekin.userservice.repository.UsuarioSql.USUARIO_BY_EMAIL;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USER_COMU_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static java.sql.JDBCType.INTEGER;
 
 /**

@@ -1,10 +1,10 @@
 package com.didekin.userservice.security;
 
 import com.didekin.common.controller.SecurityTestUtils;
-import com.didekinlib.http.ErrorBean;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.auth.AuthEndPoints;
 import com.didekinlib.http.auth.SpringOauthToken;
+import com.didekinlib.http.exception.ErrorBean;
 import com.didekinlib.http.usuario.UsuarioEndPoints;
 
 import org.junit.Before;
@@ -20,11 +20,11 @@ import retrofit2.Response;
 
 import static com.didekin.Application.REFRESHTK_VALIDITY_SECONDS;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.GenericExceptionMsg.BAD_REQUEST;
-import static com.didekinlib.http.GenericExceptionMsg.NOT_FOUND;
 import static com.didekinlib.http.auth.AuthClient.CL_USER;
 import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
 import static com.didekinlib.http.auth.AuthConstant.REFRESH_TOKEN_GRANT;
+import static com.didekinlib.http.exception.GenericExceptionMsg.NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static java.lang.Math.abs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

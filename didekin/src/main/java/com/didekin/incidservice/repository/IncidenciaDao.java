@@ -29,7 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.didekin.incidservice.repository.IncidenciaSql.CLOSE_INCIDENCIA;
 import static com.didekin.incidservice.repository.IncidenciaSql.COUNT_RESOLUCION_BY_INCID;
@@ -53,12 +52,12 @@ import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_CLOSE
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_OPEN_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_RESOLUCION;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_USER_COMUS_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.stream.Stream.of;
 
@@ -204,7 +203,7 @@ public class IncidenciaDao {
     }
 
     /**
-     *  @return 1 if incidImportancia is updated; 0 if not (incidencia is closed, p.e.)
+     * @return 1 if incidImportancia is updated; 0 if not (incidencia is closed, p.e.)
      */
     int modifyIncidImportancia(IncidImportancia incidImportancia) throws EntityException
     {
@@ -505,10 +504,11 @@ public class IncidenciaDao {
      * - importancia
      * @throws EntityException INCIDENCIA_NOT_FOUND.
      */
+    @SuppressWarnings("SimplifyStreamApiCallChains")
     List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)
     {
         logger.debug("seeUserComusImportancia()");
-        return Stream.of(
+        return of(
                 jdbcTemplate.query(SEE_USER_COMUS_IMPORTANCIA.toString(),
                         new Object[]{incidenciaId},
                         (rs, rowNum) -> new ImportanciaUser(rs.getString("alias"), rs.getShort("importancia")))

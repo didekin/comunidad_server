@@ -1,7 +1,7 @@
 package com.didekin.incidservice.controller;
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.common.repository.EntityException;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekin.incidservice.repository.UserManagerConnector;
 import com.didekin.incidservice.testutils.IncidenciaTestUtils;
@@ -42,10 +42,10 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED_TX_TO_USER;
-import static com.didekinlib.model.incidencia.dominio.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static org.hamcrest.CoreMatchers.notNullValue;

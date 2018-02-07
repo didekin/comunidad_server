@@ -62,13 +62,13 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenLuis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPaco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
-import static com.didekinlib.http.GenericExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.auth.AuthClient.CL_USER;
 import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;
 import static com.didekinlib.http.auth.AuthConstant.PASSWORD_GRANT;
+import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.model.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.model.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;

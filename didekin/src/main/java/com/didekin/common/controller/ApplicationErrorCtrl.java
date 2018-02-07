@@ -1,7 +1,7 @@
 package com.didekin.common.controller;
 
 
-import com.didekinlib.http.ErrorBean;
+import com.didekinlib.http.exception.ErrorBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

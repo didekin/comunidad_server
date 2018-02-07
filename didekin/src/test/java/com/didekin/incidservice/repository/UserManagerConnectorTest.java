@@ -17,7 +17,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.model.usuariocomunidad.UsuarioComunidadExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -38,7 +38,7 @@ public abstract class UserManagerConnectorTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CheckAuthorityInComunidad() throws Exception
+    public void test_CheckAuthorityInComunidad()
     {
         assertThat(connector.checkAuthorityInComunidad(pedro.getUserName(), 1L), is(true));
         assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
@@ -47,7 +47,7 @@ public abstract class UserManagerConnectorTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CheckIncidModificationPower() throws Exception
+    public void test_CheckIncidModificationPower()
     {
         // Premises: user with rol 'inq' in DB.
         assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
@@ -60,7 +60,7 @@ public abstract class UserManagerConnectorTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CheckUserInComunidad() throws Exception
+    public void test_CheckUserInComunidad()
     {
         assertThat(connector.checkUserInComunidad(pedro.getUserName(), 1L), is(true));
         try {
@@ -74,7 +74,7 @@ public abstract class UserManagerConnectorTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CompleteUser() throws Exception
+    public void test_CompleteUser()
     {
         assertThat(connector.completeUser(paco.getUserName()),
                 allOf(
@@ -89,7 +89,7 @@ public abstract class UserManagerConnectorTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CompleteUserAndComuRoles() throws Exception
+    public void test_CompleteUserAndComuRoles()
     {
         assertThat(connector.completeUserAndComuRoles(luis.getUserName(), 1L),
                 allOf(
