@@ -1,7 +1,6 @@
 package com.didekin.common.controller;
 
 import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.HttpHandler.JksInAppClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
