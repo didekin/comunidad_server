@@ -18,7 +18,7 @@ import java.util.Date;
 
 import retrofit2.Response;
 
-import static com.didekin.Application.REFRESHTK_VALIDITY_SECONDS;
+import static com.didekin.common.jwtserver.TokenConstant.REFRESHTK_VALIDITY_SECONDS;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.auth.AuthClient.CL_USER;
 import static com.didekinlib.http.auth.AuthClient.doBearerAccessTkHeader;

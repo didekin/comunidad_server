@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
 public class BundleUtilTest {
 
     @Test
-    public void test_GetLocale() throws Exception
+    public void test_GetLocale()
     {
         assertThat(getLocale(twoComponent_local_ES), is(new Locale("es", "ES")));
         assertThat(getLocale(twoComponent_local_ES).toString(), is("es_ES"));

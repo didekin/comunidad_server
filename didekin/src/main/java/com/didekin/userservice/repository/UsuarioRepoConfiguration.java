@@ -2,6 +2,7 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.RepositoryConfig;
 import com.didekin.userservice.mail.UsuarioMailConfiguration;
+import com.didekin.userservice.mail.UsuarioMailService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,17 +17,24 @@ import javax.sql.DataSource;
  * User: pedro
  * Date: 26/03/15
  * Time: 10:53
- *
+ * <p>
  * UsuarioMailConfiguration is used by UsuarioService to send emails.
  */
 @Configuration
-@Import(value={RepositoryConfig.class, UsuarioMailConfiguration.class})
+@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class})
 public class UsuarioRepoConfiguration {
 
+    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+    private final UsuarioMailService mailService;
+
     @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public UsuarioRepoConfiguration(DataSource dataSource, JdbcTemplate jdbcTemplate, UsuarioMailService mailService)
+    {
+        this.dataSource = dataSource;
+        this.jdbcTemplate = jdbcTemplate;
+        this.mailService = mailService;
+    }
 
     @Bean
     public JdbcTokenStore tokenStore()
@@ -55,6 +63,6 @@ public class UsuarioRepoConfiguration {
     @Bean
     public UsuarioManagerIf usuarioManager()
     {
-        return new UsuarioManager(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate));
+        return new UsuarioManager(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate), tokenStore(), mailService);
     }
 }

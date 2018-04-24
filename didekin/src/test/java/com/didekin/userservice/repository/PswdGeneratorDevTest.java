@@ -45,7 +45,7 @@ public class PswdGeneratorDevTest {
     public void testMakePswd_2() throws Exception
     {
         String password;
-        for (int i = 0; i <= 200; ++i) {
+        for (int i = 0; i <= 2000; ++i) {
             password = new PswdGenerator(10).makePassword();
             checkGeneratedPassword(password, 10);
         }
@@ -59,7 +59,6 @@ public class PswdGeneratorDevTest {
 
         assertThat(letter_upper_1.isInside(65), is(true));
         assertThat(letter_upper_1.isInside(73), is(false));
-        assertThat(letter_upper_2.isInside(73), is(true));
         assertThat(letter_upper_2.isInside(79), is(false));
         assertThat(letter_upper_3.isInside(80), is(true));
         assertThat(letter_upper_3.isInside(91), is(false));

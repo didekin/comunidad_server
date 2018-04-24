@@ -1,9 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'spring-boot'
-apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
 configurations {
-    compile.exclude module: "spring-boot-starter-tomcat"
+    implementation.exclude module: "spring-boot-starter-tomcat"
 }
 
 jar {
@@ -30,26 +29,27 @@ test {
 }
 
 dependencies {
-    compile 'com.google.code.gson:gson:2.6.1'
-    compile 'com.google.guava:guava:19.0'
-    compile 'com.sun.mail:javax.mail:1.5.6'
-    compile 'mysql:mysql-connector-java:5.1.38'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.guava:guava:19.0'
+    implementation 'com.sun.mail:javax.mail:1.5.6'
+    implementation 'mysql:mysql-connector-java:5.1.38'
 
-    compile("org.springframework.boot:spring-boot-starter-web") {
+    implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude group: 'com.fasterxml.jackson.core'
     }
-    compile 'org.springframework.boot:spring-boot-starter-jetty'
-    compile 'org.springframework:spring-context-support'
-    compile 'org.springframework.boot:spring-boot-starter-jdbc'
-    compile 'org.springframework.boot:spring-boot-starter-security'
-    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.9.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-jetty'
+    implementation 'org.springframework:spring-context-support'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.0.9.RELEASE'
 
-    compile rootProject.ext.didekinlibs
-    compile rootProject.ext.retrofit2
+    implementation rootProject.ext.didekinlibs
+    implementation rootProject.ext.retrofit2
+    implementation rootProject.ext.json_4_j
 
-    testCompile rootProject.ext.mock_server
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile rootProject.ext.awaitility
+    testImplementation rootProject.ext.mock_server
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation rootProject.ext.awaitility
 }
 
 

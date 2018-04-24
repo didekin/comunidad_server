@@ -40,7 +40,7 @@ public class PswdGenerator {
 
         number(49, 57),
         letter_upper_1(65, 72),
-        letter_upper_2(73, 78),
+        letter_upper_2(74, 78),
         letter_upper_3(80, 90),
         underscore(95, 95),
         letter_lower_1(97, 107),

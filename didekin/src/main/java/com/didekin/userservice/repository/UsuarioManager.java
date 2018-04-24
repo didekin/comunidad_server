@@ -55,16 +55,16 @@ public class UsuarioManager implements UsuarioManagerIf {
 
     private final ComunidadDao comunidadDao;
     private final UsuarioDao usuarioDao;
-    @Autowired
-    UsuarioMailService usuarioMailService;
-    @Autowired
-    private JdbcTokenStore tokenStore;
+    private final UsuarioMailService usuarioMailService;
+    private final JdbcTokenStore tokenStore;
 
     @Autowired
-    UsuarioManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
+    UsuarioManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao, JdbcTokenStore tokenStore, UsuarioMailService usuarioMailService)
     {
         this.comunidadDao = comunidadDao;
         this.usuarioDao = usuarioDao;
+        this.tokenStore = tokenStore;
+        this.usuarioMailService = usuarioMailService;
     }
 
     @Override
@@ -253,13 +253,11 @@ public class UsuarioManager implements UsuarioManagerIf {
     public boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException
     {
         logger.debug("isOldestOrAdmonUserComu()");
-        long idOldestUser = 0;
+        long idOldestUser;
         try {
             idOldestUser = usuarioDao.getOldestUserComuId(comunidadId);
-        } catch (Exception e) {
-            if (e instanceof EmptyResultDataAccessException) {
-                throw new EntityException(COMUNIDAD_NOT_FOUND);
-            }
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityException(COMUNIDAD_NOT_FOUND);
         }
         return user.getuId() == idOldestUser;
     }
@@ -317,7 +315,7 @@ public class UsuarioManager implements UsuarioManagerIf {
     public int modifyUser(final Usuario userNew, String oldUserName, String localeToStr) throws EntityException
     {
         logger.info("modifyUser()");
-        Usuario userInDB =  usuarioDao.getUsuarioById(userNew.getuId());
+        Usuario userInDB = usuarioDao.getUsuarioById(userNew.getuId());
         boolean isAliasNew = userNew.getAlias() != null && !userNew.getAlias().isEmpty();
         boolean isUserNameNew = userNew.getUserName() != null && !userNew.getUserName().isEmpty() && !userNew.getUserName().equals(oldUserName);
 

@@ -1,8 +1,8 @@
 package com.didekin.userservice.testutils;
 
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.HttpHandler;
@@ -22,7 +22,9 @@ import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -285,6 +287,7 @@ public final class UsuarioTestUtils {
                 }
             }
             assertThat(isInside, is(true));
+            assertThat(pswdInt, allOf(not(is(73)), not(is(108))));
         }
         assertThat(PASSWORD.isPatternOk(password), is(true));
     }

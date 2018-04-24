@@ -1,13 +1,13 @@
 package com.didekin.userservice.security;
 
 import com.didekin.common.AwsPre;
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.repository.RepositoryConfig;
+import com.didekin.common.springprofile.Profiles;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Time: 16:22
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
+@SpringBootTest(classes = {RetrofitConfigurationPre.class,
         RepositoryConfig.class})
 @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE})
 @Category({AwsPre.class})

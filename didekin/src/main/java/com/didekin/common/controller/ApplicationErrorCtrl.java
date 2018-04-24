@@ -6,12 +6,13 @@ import com.didekinlib.http.exception.ErrorBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ErrorAttributes;
-import org.springframework.boot.autoconfigure.web.ErrorController;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public class ApplicationErrorCtrl implements ErrorController {
         logger.info("handleErrors()");
 
         RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-        Map<String, Object> errorMap = errorAttributes.getErrorAttributes(requestAttributes, false);
+        Map<String, Object> errorMap = errorAttributes.getErrorAttributes((WebRequest) requestAttributes, false);
         logger.error(errorMap.get("error") + "Http status: " + errorMap.get("status"));
         return new ErrorBean((String) errorMap.get("error"), (Integer) errorMap.get("status"));
     }

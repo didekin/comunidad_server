@@ -3,12 +3,12 @@ package com.didekin.userservice.controller;
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
 import com.didekin.common.mail.JavaMailMonitor;
+import com.didekin.common.repository.EntityException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
@@ -25,8 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.test.annotation.DirtiesContext;
@@ -65,6 +64,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUN
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -348,31 +348,32 @@ public abstract class UsuarioControllerTest {
     //  ==============================================  INNER CLASSES =============================================
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
+    @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class,
-            UsuarioMailConfigurationPre.class})
+            UsuarioMailConfigurationPre.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class UsuarioControllerDevTest extends UsuarioControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
+    @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class,
-            UsuarioMailConfigurationPre.class})
+            UsuarioMailConfigurationPre.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class UsuarioControllerPreTest extends UsuarioControllerTest {
     }
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+    @SpringBootTest(classes = {RetrofitConfigurationPre.class,
+            UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UsuarioControllerAwsTest extends UsuarioControllerTest {

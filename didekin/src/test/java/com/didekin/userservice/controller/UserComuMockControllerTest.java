@@ -5,9 +5,9 @@ import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
@@ -19,8 +19,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -37,6 +36,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -99,29 +99,30 @@ public abstract class UserComuMockControllerTest {
 //  ==============================================  INNER CLASSES =============================================
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
-            RetrofitConfigurationDev.class})
+    @SpringBootTest(classes = {Application.class,
+            RetrofitConfigurationDev.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
     @Category({LocalDev.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class UserComuMockControllerDevTest extends UserComuMockControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
-            RetrofitConfigurationDev.class})
+    @SpringBootTest(classes = {Application.class,
+            RetrofitConfigurationDev.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
     @Category({DbPre.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class UserComuMockControllerPreTest extends UserComuMockControllerTest {
     }
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class})
+    @SpringBootTest(classes = {RetrofitConfigurationPre.class,
+            UsuarioRepoConfiguration.class},
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, Profiles.MAIL_PRE})
     @Category({AwsPre.class})
     public static class UserComuMockControllerAwsTest extends UserComuMockControllerTest {

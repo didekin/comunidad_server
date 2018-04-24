@@ -7,8 +7,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -19,11 +18,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Time: 11:47
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {Application.class,
-        RetrofitConfigurationDev.class})
+@SpringBootTest(classes = {Application.class,
+        RetrofitConfigurationDev.class},
+        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
 @Category({LocalDev.class})
-@WebIntegrationTest
 @DirtiesContext
 public class IncidenciaControllerDevTest extends IncidenciaControllerTest {
 }

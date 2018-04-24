@@ -82,7 +82,7 @@ public class UsuarioDao {
 
     int deleteGcmToken(String originalGcmTk)
     {
-        logger.info("deleteGcmToken(),jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("deleteGcmToken(),jdbcUrl: " + jdbcTemplate.getDataSource().toString());
         return jdbcTemplate.update(DELETE_GCM_TOKEN.toString(), originalGcmTk);
     }
 
@@ -99,7 +99,7 @@ public class UsuarioDao {
 
     int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws EntityException
     {
-        logger.info("deleteUserComunidad(),jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("deleteUserComunidad(),jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         Comunidad comunidad = usuarioComunidad.getComunidad();
 
@@ -115,7 +115,7 @@ public class UsuarioDao {
 
     List<String> getAllRolesFunctionalUser(String userName)
     {
-        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         List<String> roles = jdbcTemplate.queryForList(
                 ROLES_ALL_FUNC.toString(), String.class, userName);
@@ -137,14 +137,14 @@ public class UsuarioDao {
 
     List<Comunidad> getComusByUser(String userName)
     {
-        logger.info("getComusByUser() ,jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("getComusByUser() ,jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.query(COMUS_BY_USER.toString(), new Object[]{userName},
                 new ComunidadDao.ComunidadMapper());
     }
 
     List<String> getGcmTokensByComunidad(long comunidadId)
     {
-        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.queryForList(GCM_TOKENS_BY_COMUNIDAD.toString(), String.class, comunidadId);
     }
 
@@ -156,7 +156,7 @@ public class UsuarioDao {
 
     long getOldestUserComuId(long comunidadId)
     {
-        logger.debug("getOldestUserComuId(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("getOldestUserComuId(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.queryForObject(
                 OLDEST_USER_COMU.toString(),
@@ -167,7 +167,7 @@ public class UsuarioDao {
 
     Usuario getUserByUserName(String userName) throws UsernameNotFoundException
     {
-        logger.info("getUserByUserName(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("getUserByUserName(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
@@ -181,7 +181,7 @@ public class UsuarioDao {
 
     Usuario getUsuarioById(long idUsuario) throws EntityException
     {
-        logger.info("getUsuarioById(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("getUsuarioById(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
@@ -199,7 +199,7 @@ public class UsuarioDao {
      */
     UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws EntityException
     {
-        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         try {
             return jdbcTemplate.queryForObject(USERCOMU_BY_COMU.toString(),
                     new UsuarioFullComunidadMapper(), userName, comunidadId);
@@ -228,7 +228,7 @@ public class UsuarioDao {
 
     Usuario getUsuarioWithGcmToken(long usuarioId)
     {
-        logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.queryForObject(USER_WITH_GCMTOKEN.toString(), new UsuarioMapperForGcm(), usuarioId);
     }
 
@@ -252,7 +252,7 @@ public class UsuarioDao {
     @SuppressWarnings("Duplicates")
     long insertUsuario(final Usuario usuario, Connection conn) throws SQLException
     {
-        logger.info("insertUsuario(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("insertUsuario(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         ResultSet rs;
         long usuarioId;
 
@@ -287,7 +287,7 @@ public class UsuarioDao {
      */
     int modifyUser(Usuario usuario)
     {
-        logger.debug("modifyUser(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("modifyUser(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(MODIFY_USER.toString(),
                 usuario.getAlias(),
@@ -307,7 +307,7 @@ public class UsuarioDao {
 
     int modifyUserGcmToken(Usuario usuario)
     {
-        logger.debug("modifyUserGcmToken(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.debug("modifyUserGcmToken(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
                 usuario.getGcmToken(), usuario.getuId());
     }
@@ -319,7 +319,7 @@ public class UsuarioDao {
 
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
-        logger.info("seeUserComusByComu(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("seeUserComusByComu(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
         List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(), new
                 Object[]{idComunidad}, new UsuarioComunidadMapper());
         logger.debug("seeUserComusByComu(); usuariosComunidad.size = " + usuariosComunidad.size());
@@ -328,7 +328,7 @@ public class UsuarioDao {
 
     int passwordChange(Usuario usuario)
     {
-        logger.info("passwordChangeWithName(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("passwordChangeWithName(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(NEW_PASSWORD.toString(),
                 usuario.getPassword(),
@@ -337,7 +337,7 @@ public class UsuarioDao {
 
     List<UsuarioComunidad> seeUserComusByUser(String userName)
     {
-        logger.info("seeUserComusByUser(), jdbcUrl: " + ((org.apache.tomcat.jdbc.pool.DataSource) jdbcTemplate.getDataSource()).getUrl());
+        logger.info("seeUserComusByUser(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.query(
                 USERCOMUS_BY_USER.toString(),

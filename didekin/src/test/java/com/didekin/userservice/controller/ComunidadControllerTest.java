@@ -5,10 +5,10 @@ import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.controller.SecurityTestUtils;
+import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.testutils.LocaleConstant;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
@@ -28,8 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -170,28 +169,28 @@ public abstract class ComunidadControllerTest {
 //  ==============================================  INNER CLASSES =============================================
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
-            RetrofitConfigurationDev.class})
+    @SpringBootTest(classes = {Application.class,
+            RetrofitConfigurationDev.class},
+            webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
     @Category({LocalDev.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class ComunidadControllerDevTest extends ComunidadControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {Application.class,
-            RetrofitConfigurationDev.class})
+    @SpringBootTest(classes = {Application.class,
+            RetrofitConfigurationDev.class},
+            webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
     @Category({DbPre.class})
-    @WebIntegrationTest
     @DirtiesContext
     public static class ComunidadControllerPreTest extends ComunidadControllerTest {
     }
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringApplicationConfiguration(classes = {RetrofitConfigurationPre.class,
+    @SpringBootTest(classes = {RetrofitConfigurationPre.class,
             UsuarioRepoConfiguration.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, Profiles.MAIL_PRE})
     @Category({AwsPre.class})
