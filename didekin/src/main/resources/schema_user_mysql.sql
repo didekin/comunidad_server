@@ -22,8 +22,9 @@ CREATE TABLE comunidad
   numero        SMALLINT UNSIGNED NOT NULL,
   sufijo_numero CHAR(10)          NULL,
   m_id          INTEGER UNSIGNED  NOT NULL,
-  fecha_alta    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_mod     TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  fecha_alta    TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod     TIMESTAMP         NULL
+  ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (c_id),
   UNIQUE (tipo_via, nombre_via, numero, sufijo_numero, m_id),
   INDEX id_parent_municipio (m_id),
@@ -59,7 +60,7 @@ CREATE TABLE oauth_access_token (
   user_name         VARCHAR(100) NOT NULL,
   client_id         VARCHAR(100),
   authentication    BLOB,
-  refresh_token     VARCHAR(100) NOT NULL ,
+  refresh_token     VARCHAR(100) NOT NULL,
   fecha_alta        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (user_name),
   INDEX refresh_token_index (refresh_token),
@@ -69,7 +70,7 @@ CREATE TABLE oauth_access_token (
 );
 
 CREATE TABLE oauth_refresh_token (
-  token_id       VARCHAR(100) NOT NULL ,
+  token_id       VARCHAR(100) NOT NULL,
   token          BLOB,
   authentication BLOB,
   PRIMARY KEY (token_id),
@@ -93,15 +94,16 @@ CREATE TABLE provincia
 
 CREATE TABLE usuario
 (
-  u_id      INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  alias     VARCHAR(30)      NOT NULL,
-  password  VARCHAR(125)     NOT NULL,
+  u_id       INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  alias      VARCHAR(30)      NOT NULL,
+  password   VARCHAR(125)     NOT NULL,
   --   prefix_tf SMALLINT UNSIGNED NULL,
   --   num_tf INTEGER UNSIGNED NOT NULL,
-  user_name VARCHAR(60)      NOT NULL, -- email.
-  gcm_token VARCHAR(175)     NULL, -- google messages id token
-  fecha_alta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_mod  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  user_name  VARCHAR(60)      NOT NULL, -- email.
+  gcm_token  VARCHAR(175)     NULL, -- google messages id token
+  fecha_alta TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod  TIMESTAMP        NULL
+  ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (u_id),
   UNIQUE (user_name),
   UNIQUE (gcm_token)
@@ -109,15 +111,16 @@ CREATE TABLE usuario
 
 CREATE TABLE usuario_comunidad
 (
-  c_id       INTEGER UNSIGNED                NOT NULL, -- id comunidad de pertenencia.
-  u_id       INTEGER UNSIGNED                NOT NULL, -- usuario de la dirección.
-  portal     CHAR(10)                        NULL,
-  escalera   CHAR(10)                        NULL,
-  planta     CHAR(10)                        NULL,
-  puerta     CHAR(10)                        NULL,
-  roles      SET('adm', 'pre', 'pro', 'inq') NOT NULL,
-  fecha_alta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_mod  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  c_id       INTEGER UNSIGNED                 NOT NULL, -- id comunidad de pertenencia.
+  u_id       INTEGER UNSIGNED                 NOT NULL, -- usuario de la dirección.
+  portal     CHAR(10)                         NULL,
+  escalera   CHAR(10)                         NULL,
+  planta     CHAR(10)                         NULL,
+  puerta     CHAR(10)                         NULL,
+  roles      SET ('adm', 'pre', 'pro', 'inq') NOT NULL,
+  fecha_alta TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_mod  TIMESTAMP                        NULL
+  ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (c_id, u_id),
   /*UNIQUE (c_id, portal, escalera, planta, puerta),*/
   INDEX id_parent_com (c_id),

@@ -1,16 +1,13 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-
 import java.util.List;
-import java.util.Optional;
 
 /**
  * User: pedro@didekin
@@ -19,31 +16,30 @@ import java.util.Optional;
  */
 public interface UsuarioManagerIf {
 
-    Usuario completeUser(String userName) throws EntityException;
+    Usuario completeUser(String userName) throws ServiceException;
 
-    UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws EntityException;
+    UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws ServiceException;
 
-    boolean deleteAccessToken(String accessTkValue) throws EntityException;
+    boolean deleteAccessTokenByUserName(String userName) throws ServiceException;
 
-    boolean deleteAccessTokenByUserName(String userName) throws EntityException;
+    boolean deleteUser(String userName) throws ServiceException;
 
-    boolean deleteUser(String userName) throws EntityException;
+    int deleteUserAndComunidades(String userName) throws ServiceException;
 
-    int deleteUserAndComunidades(String userName) throws EntityException;
+    int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws ServiceException;
 
-    int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws EntityException;
+    // TODO: descomentar y revisar.
+    /*OAuth2AccessToken getAccessToken(String accesTkValue);
 
-    OAuth2AccessToken getAccessToken(String accesTkValue);
-
-    Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName);
+    Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName);*/
 
     /**
      * Overloaded method, mainly for tests.
      */
     @SuppressWarnings("UnusedReturnValue")
-    Comunidad getComunidadById(long comunidadId) throws EntityException;
+    Comunidad getComunidadById(long comunidadId) throws ServiceException;
 
-    Comunidad getComunidadById(Usuario user, long comunidadId) throws EntityException;
+    Comunidad getComunidadById(Usuario user, long comunidadId) throws ServiceException;
 
     List<Comunidad> getComusByUser(String userName);
 
@@ -56,39 +52,39 @@ public interface UsuarioManagerIf {
      */
     List<String> getRolesSecurity(Usuario usuario);
 
-    UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws EntityException;
+    UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws ServiceException;
 
-    Usuario getUserByUserName(String email) throws EntityException;
+    Usuario getUserByUserName(String email) throws ServiceException;
 
     UsuarioDao getUsuarioDao();
 
-    boolean isOldestUserComu(Usuario user, long comunidadId) throws EntityException;
+    boolean isOldestUserComu(Usuario user, long comunidadId) throws ServiceException;
 
-    boolean login(Usuario usuario) throws EntityException;
+    boolean login(Usuario usuario) throws ServiceException;
 
-    String makeNewPassword() throws EntityException;
+    String makeNewPassword() throws ServiceException;
 
-    int modifyComuData(Usuario user, Comunidad comunidad) throws EntityException;
+    int modifyComuData(Usuario user, Comunidad comunidad) throws ServiceException;
 
     int modifyUserGcmToken(Usuario usuario);
 
-    int modifyUserGcmToken(String userName, String gcmToken) throws EntityException;
+    int modifyUserGcmToken(String userName, String gcmToken) throws ServiceException;
 
     int modifyUserGcmTokens(List<GcmTokensHolder> holdersList);
 
-    int modifyUser(Usuario usuario, String oldUserName, String localeToStr) throws EntityException;
+    int modifyUser(Usuario usuario, String oldUserName, String localeToStr) throws ServiceException;
 
     int modifyUserComu(UsuarioComunidad userComu);
 
-    int passwordChangeWithName(String userName, String newPassword) throws EntityException;
+    int passwordChangeWithName(String userName, String newPassword) throws ServiceException;
 
-    boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... usuarioMailService) throws EntityException;
+    boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... usuarioMailService) throws ServiceException;
 
-    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException;
+    boolean regComuAndUserAndUserComu(UsuarioComunidad usuarioCom, String localeToStr, UsuarioMailServiceIf... mailServTest) throws ServiceException;
 
-    boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws EntityException;
+    boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws ServiceException;
 
-    boolean regUserAndUserComu(UsuarioComunidad userComu, String localeToStr, UsuarioMailServiceIf... mailServTest) throws EntityException;
+    boolean regUserAndUserComu(UsuarioComunidad userComu, String localeToStr, UsuarioMailServiceIf... mailServTest) throws ServiceException;
 
     int regUserComu(UsuarioComunidad usuarioComunidad);
 
@@ -98,5 +94,5 @@ public interface UsuarioManagerIf {
 
     List<UsuarioComunidad> seeUserComusByUser(String userName);
 
-    boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws EntityException;
+    boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws ServiceException;
 }

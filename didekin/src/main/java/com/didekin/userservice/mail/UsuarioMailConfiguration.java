@@ -20,21 +20,6 @@ public class UsuarioMailConfiguration {
 
     public static final String text_plain_UTF_8 = "text/plain; charset=UTF-8";
 
-    @Bean
-    public JavaMailSender javaMailSender()
-    {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setJavaMailProperties(doProperties());
-        doSenderSettings(mailSender);
-        return mailSender;
-    }
-
-    @Bean
-    public UsuarioMailService usuarioMailService()
-    {
-        return new UsuarioMailService(javaMailSender());
-    }
-
     static void doSenderSettings(JavaMailSenderImpl mailSender)
     {
         mailSender.setProtocol("smtp");
@@ -52,5 +37,20 @@ public class UsuarioMailConfiguration {
         mailProperties.setProperty("mail.smtp.starttls.enable", String.valueOf(true));
         mailProperties.setProperty("mail.smtp.starttls.required", String.valueOf(true));
         return mailProperties;
+    }
+
+    @Bean
+    public JavaMailSender javaMailSender()
+    {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setJavaMailProperties(doProperties());
+        doSenderSettings(mailSender);
+        return mailSender;
+    }
+
+    @Bean
+    public UsuarioMailService usuarioMailService()
+    {
+        return new UsuarioMailService(javaMailSender());
     }
 }

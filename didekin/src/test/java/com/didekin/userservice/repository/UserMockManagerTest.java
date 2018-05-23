@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -45,7 +45,7 @@ public abstract class UserMockManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu_1() throws SQLException, EntityException, IOException, MessagingException
+    public void testRegComuAndUserAndUserComu_1() throws SQLException, ServiceException, IOException, MessagingException
     {
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
@@ -62,7 +62,7 @@ public abstract class UserMockManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_1() throws SQLException, EntityException
+    public void testRegUserAndUserComu_1() throws SQLException, ServiceException
     {
         // Preconditions: there is a comunidad associated to other users.
         assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));

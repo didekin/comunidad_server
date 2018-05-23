@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
 import javax.sql.DataSource;
 
@@ -36,11 +35,12 @@ public class UsuarioRepoConfiguration {
         this.mailService = mailService;
     }
 
-    @Bean
+    // TODO: descomentar y revisar.
+    /*@Bean
     public JdbcTokenStore tokenStore()
     {
         return new JdbcTokenStore(dataSource);
-    }
+    }*/
 
     @Bean
     public MunicipioDao municipioDao(JdbcTemplate jdbcTemplate)
@@ -60,9 +60,10 @@ public class UsuarioRepoConfiguration {
         return new ComunidadDao(jdbcTemplate);
     }
 
-    @Bean
+    // TODO: descomentar y revisar.
+    /*@Bean
     public UsuarioManagerIf usuarioManager()
     {
         return new UsuarioManager(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate), tokenStore(), mailService);
-    }
+    }*/
 }

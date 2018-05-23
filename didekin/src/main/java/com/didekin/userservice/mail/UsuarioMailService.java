@@ -44,13 +44,6 @@ public class UsuarioMailService implements UsuarioMailServiceIf {
 
 //  ...................................................................
 
-    @Override
-    public void sendMessage(Usuario user, String localeToStr)
-    {
-        logger.debug("sendMessage()");
-        mailSender.send(doPswdMsgFromBundles(user, localeToStr));
-    }
-
     static SimpleMailMessage doPswdMsgFromBundles(Usuario user, String localeToStr)
     {
         logger.debug("doPswdMsgFromBundles()");
@@ -73,5 +66,12 @@ public class UsuarioMailService implements UsuarioMailServiceIf {
         logger.debug("sendMessage(): message from = " + mailMsg.getFrom());
         logger.debug("sendMessage(): message = \n" + mailMsg.getText());
         return mailMsg;
+    }
+
+    @Override
+    public void sendMessage(Usuario user, String localeToStr)
+    {
+        logger.debug("sendMessage()");
+        mailSender.send(doPswdMsgFromBundles(user, localeToStr));
     }
 }

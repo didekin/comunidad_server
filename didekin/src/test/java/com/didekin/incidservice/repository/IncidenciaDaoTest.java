@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -75,7 +75,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_1() throws EntityException, InterruptedException
+    public void testCloseIncidencia_1() throws ServiceException, InterruptedException
     {
         assertThat(incidenciaDao.seeIncidenciaById(1L).getFechaCierre(), nullValue());
         Thread.sleep(1000);
@@ -87,13 +87,13 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_2() throws EntityException
+    public void testCloseIncidencia_2() throws ServiceException
     {
         // CASO: incidencia is closed.
         try {
             incidenciaDao.closeIncidencia(5L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -102,14 +102,14 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql","classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIndcidencia_1() throws EntityException
+    public void testDeleteIndcidencia_1() throws ServiceException
     {
         // Existe incidencia.
         assertThat(incidenciaDao.deleteIncidencia(1L), is(1));
         // Verificamos que también ha borrado en tabla incidencia_user.
         try {
             incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 1L);
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
 
@@ -117,7 +117,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.deleteIncidencia(999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -126,7 +126,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIncidencia_2() throws EntityException
+    public void testDeleteIncidencia_2() throws ServiceException
     {
         // Caso NOT OK: la incidencia tiene resolución.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(3L);
@@ -135,7 +135,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.deleteIncidencia(incidencia.getIncidenciaId());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -144,7 +144,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testGetIncidenciaById() throws EntityException
+    public void testGetIncidenciaById() throws ServiceException
     {
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(1L);
         assertThat(incidencia.getIncidenciaId(), is(1L));
@@ -181,7 +181,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidencia_1() throws EntityException
+    public void testModifyIncidencia_1() throws ServiceException
     {
         // Premises.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(2L);
@@ -213,7 +213,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.modifyIncidencia(incidencia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
 
@@ -222,7 +222,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.modifyIncidencia(incidenciaNew);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -231,7 +231,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_1() throws EntityException
+    public void testModifyIncidImportancia_1() throws ServiceException
     {
         // Caso OK: hay registro previo de incidImportancia.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(4L);
@@ -251,7 +251,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_2() throws EntityException
+    public void testModifyIncidImportancia_2() throws ServiceException
     {
         // Caso: incidencia cerrada. No hay modificación. Devuelve 0.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(5L);
@@ -268,7 +268,7 @@ public abstract class IncidenciaDaoTest {
      * Tests sobre fallos en los campos que componen la clave primaria del registro en tabla.
      */
     @Test
-    public void testModifyIncidImportancia_3() throws EntityException
+    public void testModifyIncidImportancia_3() throws ServiceException
     {
         /* CASO: Incidencia no existe en BD: incidId == 0;*/
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia_no_BD", 2L, (short) 11);
@@ -298,7 +298,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_1() throws EntityException
+    public void testModifyResolucion_1() throws ServiceException
     {
         // Caso: resolución con avances. No añadimos ningún avance.
         Resolucion resolucion = incidenciaDao.seeResolucion(3L);
@@ -325,7 +325,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_2() throws EntityException
+    public void testModifyResolucion_2() throws ServiceException
     {
         // Caso: la incidencia está cerrada: INCIDENCIA_NOT_FOUND.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(5L);
@@ -339,7 +339,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.modifyResolucion(resolucion);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -348,7 +348,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegAvance_1() throws EntityException
+    public void testRegAvance_1() throws ServiceException
     {
         // Caso: resolución con 2 avances.
         Resolucion resolucion = incidenciaDao.seeResolucion(3L);
@@ -369,7 +369,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegAvance_2() throws EntityException
+    public void testRegAvance_2() throws ServiceException
     {
         // Caso: resolución sin avances.
         Resolucion resolucion = incidenciaDao.seeResolucion(5L);
@@ -390,7 +390,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegAvance_3() throws EntityException
+    public void testRegAvance_3() throws ServiceException
     {
         // Caso: no existe la FK incid_id de resolución.
         Resolucion resolucion = new Resolucion.ResolucionBuilder(
@@ -408,7 +408,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regAvance(resolucion.getIncidencia().getIncidenciaId(), avance);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(RESOLUCION_NOT_FOUND));
         }
     }
@@ -417,7 +417,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_1() throws EntityException
+    public void testRegIncidComment_1() throws ServiceException
     {
         // Caso OK.
         IncidComment comment = new IncidComment.IncidCommentBuilder()
@@ -432,7 +432,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_2() throws EntityException
+    public void testRegIncidComment_2() throws ServiceException
     {
         // No existe la incidencia en BD. Sí existe la comunidad.
         Incidencia incidencia = doIncidenciaWithId(null, 999L, ronda_plazuela_10bis.getC_Id(), (short) 28);
@@ -440,7 +440,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regIncidComment(comment);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -449,7 +449,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_3() throws EntityException
+    public void testRegIncidComment_3() throws ServiceException
     {
         // No existe usuarioComunidad en BD; sí existen usuario y comunidad.
         Incidencia incidencia = doIncidenciaWithId(null, 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
@@ -457,7 +457,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regIncidComment(comment);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -466,14 +466,14 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_1() throws EntityException
+    public void testRegIncidImportancia_1() throws ServiceException
     {
         // Premisas: no existe el par incidenciaImportancia-usuario; sí existe la incidencia.
         IncidImportancia incidImportancia;
         try {
             incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
         // Data.
@@ -495,7 +495,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_2() throws EntityException
+    public void testRegIncidImportancia_2() throws ServiceException
     {
         // Incidencia no existe en BD.
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Nueva incidencia en Cámaras de vigilancia", 2L, (short) 11);
@@ -507,7 +507,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regIncidImportancia(incidImportancia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -516,7 +516,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_3() throws EntityException
+    public void testRegIncidImportancia_3() throws ServiceException
     {
         // Premisa: usuarioComunidad incongruente con incidencia_comunidad.
         assertThat(usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 4L), nullValue());
@@ -532,7 +532,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regIncidImportancia(incidImportancia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -567,7 +567,7 @@ public abstract class IncidenciaDaoTest {
             incidenciaDao.regIncidencia(incidencia);
             fail();
         } catch (SQLException e) {
-            assertThat(e.getMessage().contains(EntityException.COMUNIDAD_FK), is(true));
+            assertThat(e.getMessage().contains(ServiceException.COMUNIDAD_FK), is(true));
         }
     }
 
@@ -586,7 +586,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegResolucion_1() throws EntityException
+    public void testRegResolucion_1() throws ServiceException
     {
         // Caso OK.
         Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
@@ -598,7 +598,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegResolucion_2() throws EntityException
+    public void testRegResolucion_2() throws ServiceException
     {
         // Caso: dos resoluciones para una misma incidencia.
         Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
@@ -608,7 +608,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regResolucion(resolucion_2);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(RESOLUCION_DUPLICATE));
         }
     }
@@ -625,7 +625,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.regResolucion(resolucion);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             // NO existe la combinación incidencia + comunidad.
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
@@ -635,7 +635,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeAvancesByResolucion_1() throws EntityException
+    public void testSeeAvancesByResolucion_1() throws ServiceException
     {
         // Caso: resolución con avances.
 
@@ -731,7 +731,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_1() throws EntityException
+    public void testSeeIncidImportanciaByUser_1() throws ServiceException
     {
         // Incidencia con resolución. Hay registro incidImportancia para el usuario
         assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));
@@ -780,14 +780,14 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_2() throws EntityException
+    public void testSeeIncidImportanciaByUser_2() throws ServiceException
     {
         // Caso: existe incidencia; existe usuario, pero no existe el par incidencia_usuario.
         assertThat(incidenciaDao.seeIncidenciaById(4L), notNullValue());
         try {
             incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
 
@@ -795,7 +795,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
 
@@ -803,7 +803,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 5L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
     }
@@ -812,7 +812,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_3() throws EntityException
+    public void testSeeIncidImportanciaByUser_3() throws ServiceException
     {
         // Incidencia SIN resolución. Hay registro incidImportancia para el usuario
         assertThat(incidenciaDao.countResolucionByIncid(2L), is(0));
@@ -832,7 +832,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void test_SeeIncidsClosedByComu_1() throws EntityException
+    public void test_SeeIncidsClosedByComu_1() throws ServiceException
     {
         // Premisas: comunidad con 1 incidencia cerrada; con antigüedad inferior a 2 años.
 
@@ -968,7 +968,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_1() throws EntityException
+    public void testSeeResolucion_1() throws ServiceException
     {
         /* Caso: resolución con avances.*/
         Resolucion resolucion = incidenciaDao.seeResolucion(3L);
@@ -1006,7 +1006,7 @@ public abstract class IncidenciaDaoTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_2() throws EntityException
+    public void testSeeResolucion_2() throws ServiceException
     {
         // Premisa: resolucion sin avances.
         Resolucion resolucion = incidenciaDao.seeResolucion(5L);
@@ -1061,7 +1061,7 @@ public abstract class IncidenciaDaoTest {
         try {
             incidenciaDao.seeUserComusImportancia(999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }

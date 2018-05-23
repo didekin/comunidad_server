@@ -40,16 +40,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jetty'
     implementation 'org.springframework:spring-context-support'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.0.9.RELEASE'
 
     implementation rootProject.ext.didekinlibs
     implementation rootProject.ext.retrofit2
     implementation rootProject.ext.json_4_j
+    implementation rootProject.ext.jbcrypt
 
     testImplementation rootProject.ext.mock_server
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation rootProject.ext.awaitility
 }
-
-

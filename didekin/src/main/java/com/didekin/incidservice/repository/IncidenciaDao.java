@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.AmbitoIncidencia;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -79,12 +79,78 @@ public class IncidenciaDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    int closeIncidencia(long incidenciaId) throws EntityException
+    private static IncidenciaUser doBasicIncidenciaUser(ResultSet rs) throws SQLException
+    {
+        final Incidencia incidencia = new Incidencia.IncidenciaBuilder()
+                .incidenciaId(rs.getLong("incid_id"))
+                .comunidad(new Comunidad.ComunidadBuilder()
+                        .c_id(rs.getLong("c_id")).build())
+                .userName(rs.getString("user_name"))
+                .descripcion(rs.getString("descripcion"))
+                .ambitoIncid(new AmbitoIncidencia(rs.getShort("ambito")))
+                .importanciaAvg(rs.getFloat("importancia_avg"))
+                .fechaAlta(rs.getTimestamp("fecha_alta"))
+                .fechaCierre(rs.getTimestamp("fecha_cierre"))
+                .build();
+
+        final Usuario usuario = new Usuario.UsuarioBuilder()
+                .uId(rs.getLong("u_id"))
+                .userName(rs.getString("user_name"))
+                .alias(rs.getString("alias"))
+                .build();
+
+        return new IncidenciaUser.IncidenciaUserBuilder(incidencia)
+                .usuario(usuario)
+                .build();
+    }
+
+    private static IncidAndResolBundle doIncidImpResolView(ResultSet rs) throws SQLException
+    {
+        Comunidad comunidad = new Comunidad.ComunidadBuilder()
+                .c_id(rs.getLong("c_id"))
+                .tipoVia(rs.getString("comunidad_tipo_via"))
+                .nombreVia(rs.getString("comunidad_nombre_via"))
+                .numero(rs.getShort("comunidad_numero"))
+                .sufijoNumero(rs.getString("comunidad_sufijo"))
+                .build();
+
+        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(
+                new Incidencia.IncidenciaBuilder()
+                        .incidenciaId(rs.getLong("incid_id"))
+                        .comunidad(comunidad)
+                        .userName(rs.getString("incid_user_initiator"))
+                        .descripcion(rs.getString("descripcion"))
+                        .ambitoIncid(new AmbitoIncidencia(rs.getShort("ambito")))
+                        .fechaAlta(rs.getTimestamp("fecha_alta_incidencia"))
+                        .build())
+                .usuarioComunidad(
+                        new UsuarioComunidad.UserComuBuilder(
+                                comunidad,
+                                doUsuarioFromDb(rs))
+                                .roles(rs.getString("roles"))
+                                .build())
+                .importancia(rs.getShort("importancia"))
+                .fechaAlta(rs.getTimestamp("fecha_alta"))
+                .build();
+
+        return new IncidAndResolBundle(incidImportancia, rs.getTimestamp("fecha_alta_resolucion") != null);
+    }
+
+    private static Usuario doUsuarioFromDb(ResultSet rs) throws SQLException
+    {
+        return new Usuario.UsuarioBuilder()
+                .uId(rs.getLong("u_id"))
+                .userName(rs.getString("user_name"))
+                .alias(rs.getString("alias"))
+                .build();
+    }
+
+    int closeIncidencia(long incidenciaId) throws ServiceException
     {
         logger.debug("closeIncidencia()");
         int rowsUpdated = jdbcTemplate.update(CLOSE_INCIDENCIA.toString(), incidenciaId);
         if (rowsUpdated <= 0) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
         return rowsUpdated;
     }
@@ -100,18 +166,18 @@ public class IncidenciaDao {
     /**
      * The update query controls the existence of a resolucion for the incidencia.
      */
-    int deleteIncidencia(long incidenciaId) throws EntityException
+    int deleteIncidencia(long incidenciaId) throws ServiceException
     {
         logger.debug("deleteIncidencia()");
         int rowsDeleted = jdbcTemplate.update(DELETE_INCIDENCIA.toString(), incidenciaId);
         if (rowsDeleted <= 0) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
         return rowsDeleted;
     }
 
     @SuppressWarnings("SameParameterValue")
-    List<Incidencia> getIncidenciasByComu(long comunidadId) throws EntityException
+    List<Incidencia> getIncidenciasByComu(long comunidadId) throws ServiceException
     {
         logger.debug("getIncidenciaByComu()");
         return jdbcTemplate.query(
@@ -159,7 +225,7 @@ public class IncidenciaDao {
      *
      * @param incidencia : an Incidencia instance with incidenciaId, descripcion and ambitoId.
      * @return number of rows modified in DB (0 or 1).
-     * @throws EntityException INCIDENCIA_NOT_FOUND (or closed).
+     * @throws ServiceException INCIDENCIA_NOT_FOUND (or closed).
      */
     int modifyIncidencia(Incidencia incidencia)
     {
@@ -171,7 +237,7 @@ public class IncidenciaDao {
                 incidencia.getIncidenciaId());
 
         if (rowsModified < 1) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
         return rowsModified;
     }
@@ -180,9 +246,9 @@ public class IncidenciaDao {
      * Control of the state 'incidencia is open' is made in the sql query.
      *
      * @return number of rows updated: 1 without new avance; 2 with new avance.
-     * @throws EntityException INCIDENCIA_NOT_FOUND if incidencia is closed or doesn't exist.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND if incidencia is closed or doesn't exist.
      */
-    int modifyResolucion(Resolucion resolucion) throws EntityException
+    int modifyResolucion(Resolucion resolucion) throws ServiceException
     {
         logger.debug("modifyResolucion()");
 
@@ -199,13 +265,13 @@ public class IncidenciaDao {
                             return (avances == null || avances.size() == 0) ? updateCount : (updateCount + regAvance(resolucion1.getIncidencia().getIncidenciaId(), avances.get(0)));
                         }
                 ).filter(rowsUpdated -> rowsUpdated > 0)
-                .findFirst().orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
+                .findFirst().orElseThrow(() -> new ServiceException(INCIDENCIA_NOT_FOUND));
     }
 
     /**
      * @return 1 if incidImportancia is updated; 0 if not (incidencia is closed, p.e.)
      */
-    int modifyIncidImportancia(IncidImportancia incidImportancia) throws EntityException
+    int modifyIncidImportancia(IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("modifyIncidImportancia()");
         int updatedRow;
@@ -217,7 +283,7 @@ public class IncidenciaDao {
         return updatedRow;
     }
 
-    int regAvance(final long incidenciaId, final Avance avance) throws EntityException
+    int regAvance(final long incidenciaId, final Avance avance) throws ServiceException
     {
         logger.debug("regAvance()");
         try {
@@ -227,13 +293,13 @@ public class IncidenciaDao {
                     avance.getUserName());
         } catch (DataAccessException e) {
             if (e.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
-                throw new EntityException(RESOLUCION_NOT_FOUND);
+                throw new ServiceException(RESOLUCION_NOT_FOUND);
             }
             throw e;
         }
     }
 
-    int regIncidComment(IncidComment comment) throws EntityException
+    int regIncidComment(IncidComment comment) throws ServiceException
     {
         logger.debug("regIncidComment()");
         int insertedRow;
@@ -253,7 +319,7 @@ public class IncidenciaDao {
     /**
      * @return incidenciaId.
      */
-    long regIncidencia(Incidencia incidencia) throws SQLException, EntityException
+    long regIncidencia(Incidencia incidencia) throws SQLException, ServiceException
     {
         logger.debug("regIncidencia()");
         ResultSet rs;
@@ -273,13 +339,13 @@ public class IncidenciaDao {
             if (rs.next()) {
                 incidenciaPk = rs.getLong(1);
             } else {
-                throw new EntityException(INCIDENCIA_NOT_REGISTERED);
+                throw new ServiceException(INCIDENCIA_NOT_REGISTERED);
             }
         }
         return incidenciaPk;
     }
 
-    int regIncidImportancia(IncidImportancia incidImportancia) throws EntityException
+    int regIncidImportancia(IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("regIncidImportancia()");
 
@@ -297,7 +363,7 @@ public class IncidenciaDao {
         return rowInserted;
     }
 
-    int regResolucion(Resolucion resolucion) throws EntityException
+    int regResolucion(Resolucion resolucion) throws ServiceException
     {
         logger.debug("regResolucion()");
         int insertRow;
@@ -347,7 +413,7 @@ public class IncidenciaDao {
      * - fechaAlta
      * - fechaCierre (NULL if it's open).
      */
-    Incidencia seeIncidenciaById(long incidenciaId) throws EntityException
+    Incidencia seeIncidenciaById(long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidenciaById()");
         Incidencia incidencia;
@@ -372,7 +438,7 @@ public class IncidenciaDao {
                             .build(),
                     incidenciaId);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
         return incidencia;
     }
@@ -400,9 +466,9 @@ public class IncidenciaDao {
      * - incidImportancia.importancia.
      * - incidImportancia.fechaAlta
      * - hasResolucion (from fechaAltaResolucion == null?).
-     * @throws EntityException INCID_IMPORTANCIA_NOT_FOUND, if there isn't incidImportancia record for the user or the incidencia is closed.
+     * @throws ServiceException INCID_IMPORTANCIA_NOT_FOUND, if there isn't incidImportancia record for the user or the incidencia is closed.
      */
-    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException
+    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidImportanciaByUser()");
 
@@ -412,7 +478,7 @@ public class IncidenciaDao {
                     new Object[]{userName, incidenciaId},
                     (rs, rowNum) -> doIncidImpResolView(rs));
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityException(INCID_IMPORTANCIA_NOT_FOUND);
+            throw new ServiceException(INCID_IMPORTANCIA_NOT_FOUND);
         }
     }
 
@@ -437,6 +503,8 @@ public class IncidenciaDao {
         logger.debug("seeIncidsClosedByComu()");
         return jdbcTemplate.query(SEE_INCIDS_CLOSED_BY_COMU.toString(), new Object[]{comunidadId}, (rs, rowNum) -> doBasicIncidenciaUser(rs));
     }
+
+//    =========================== MAPPERS ==================================
 
     /**
      * Postconditions:
@@ -473,7 +541,7 @@ public class IncidenciaDao {
      * - avances (avance.avanceDesc, avance.userName, avance.fechaAlta)
      * 2. null, if the resolucion does not exist.
      */
-    Resolucion seeResolucion(final long incidenciaId) throws EntityException
+    Resolucion seeResolucion(final long incidenciaId) throws ServiceException
     {
         logger.debug("seeResolucion()");
 
@@ -498,11 +566,13 @@ public class IncidenciaDao {
         }
     }
 
+    //    =========================== HELPERS ==================================
+
     /**
      * @return list of ImportanciaUser instances with:
      * - userAlias
      * - importancia
-     * @throws EntityException INCIDENCIA_NOT_FOUND.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND.
      */
     @SuppressWarnings("SimplifyStreamApiCallChains")
     List<ImportanciaUser> seeUserComusImportancia(long incidenciaId)
@@ -514,10 +584,28 @@ public class IncidenciaDao {
                         (rs, rowNum) -> new ImportanciaUser(rs.getString("alias"), rs.getShort("importancia")))
         ).findFirst()
                 .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new EntityException(INCIDENCIA_NOT_FOUND));
+                .orElseThrow(() -> new ServiceException(INCIDENCIA_NOT_FOUND));
     }
 
-//    =========================== MAPPERS ==================================
+    private void doCatchIncidenciaUserIntegrity(DataAccessException de) throws ServiceException
+    {
+        if (de.getMessage().contains("FOREIGN KEY (`c_id`, `u_id`)")) {
+            logger.error(de.getMessage());
+            throw new ServiceException(USERCOMU_WRONG_INIT);
+        }
+        if (de.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
+            logger.error(de.getMessage());
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
+        }
+    }
+
+    private void doCatchDuplicateResolucionForIncid(DataAccessException e) throws ServiceException
+    {
+        if (e.getMessage().contains(ServiceException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
+            logger.error(e.getMessage());
+            throw new ServiceException(RESOLUCION_DUPLICATE);
+        }
+    }
 
     private static class IncidCommentMapper implements RowMapper<IncidComment> {
 
@@ -558,93 +646,5 @@ public class IncidenciaDao {
                     .fechaAlta(rs.getTimestamp("fecha_alta"))
                     .build();
         }
-    }
-
-    //    =========================== HELPERS ==================================
-
-    private static IncidenciaUser doBasicIncidenciaUser(ResultSet rs) throws SQLException
-    {
-        final Incidencia incidencia = new Incidencia.IncidenciaBuilder()
-                .incidenciaId(rs.getLong("incid_id"))
-                .comunidad(new Comunidad.ComunidadBuilder()
-                        .c_id(rs.getLong("c_id")).build())
-                .userName(rs.getString("user_name"))
-                .descripcion(rs.getString("descripcion"))
-                .ambitoIncid(new AmbitoIncidencia(rs.getShort("ambito")))
-                .importanciaAvg(rs.getFloat("importancia_avg"))
-                .fechaAlta(rs.getTimestamp("fecha_alta"))
-                .fechaCierre(rs.getTimestamp("fecha_cierre"))
-                .build();
-
-        final Usuario usuario = new Usuario.UsuarioBuilder()
-                .uId(rs.getLong("u_id"))
-                .userName(rs.getString("user_name"))
-                .alias(rs.getString("alias"))
-                .build();
-
-        return new IncidenciaUser.IncidenciaUserBuilder(incidencia)
-                .usuario(usuario)
-                .build();
-    }
-
-    private void doCatchIncidenciaUserIntegrity(DataAccessException de) throws EntityException
-    {
-        if (de.getMessage().contains("FOREIGN KEY (`c_id`, `u_id`)")) {
-            logger.error(de.getMessage());
-            throw new EntityException(USERCOMU_WRONG_INIT);
-        }
-        if (de.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
-            logger.error(de.getMessage());
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
-        }
-    }
-
-    private void doCatchDuplicateResolucionForIncid(DataAccessException e) throws EntityException
-    {
-        if (e.getMessage().contains(EntityException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
-            logger.error(e.getMessage());
-            throw new EntityException(RESOLUCION_DUPLICATE);
-        }
-    }
-
-    private static IncidAndResolBundle doIncidImpResolView(ResultSet rs) throws SQLException
-    {
-        Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .c_id(rs.getLong("c_id"))
-                .tipoVia(rs.getString("comunidad_tipo_via"))
-                .nombreVia(rs.getString("comunidad_nombre_via"))
-                .numero(rs.getShort("comunidad_numero"))
-                .sufijoNumero(rs.getString("comunidad_sufijo"))
-                .build();
-
-        IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(
-                new Incidencia.IncidenciaBuilder()
-                        .incidenciaId(rs.getLong("incid_id"))
-                        .comunidad(comunidad)
-                        .userName(rs.getString("incid_user_initiator"))
-                        .descripcion(rs.getString("descripcion"))
-                        .ambitoIncid(new AmbitoIncidencia(rs.getShort("ambito")))
-                        .fechaAlta(rs.getTimestamp("fecha_alta_incidencia"))
-                        .build())
-                .usuarioComunidad(
-                        new UsuarioComunidad.UserComuBuilder(
-                                comunidad,
-                                doUsuarioFromDb(rs))
-                                .roles(rs.getString("roles"))
-                                .build())
-                .importancia(rs.getShort("importancia"))
-                .fechaAlta(rs.getTimestamp("fecha_alta"))
-                .build();
-
-        return new IncidAndResolBundle(incidImportancia, rs.getTimestamp("fecha_alta_resolucion") != null);
-    }
-
-    private static Usuario doUsuarioFromDb(ResultSet rs) throws SQLException
-    {
-        return new Usuario.UsuarioBuilder()
-                .uId(rs.getLong("u_id"))
-                .userName(rs.getString("user_name"))
-                .alias(rs.getString("alias"))
-                .build();
     }
 }

@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
@@ -88,7 +88,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.checkIncidenciaOpen(5L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -109,7 +109,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_1() throws EntityException
+    public void testCloseIncidencia_1() throws ServiceException
     {
         // Caso OK: añadimos un avance a una resolución con avances, y cerramos la incidencia.
         // Premisas.
@@ -141,7 +141,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_2() throws EntityException
+    public void testCloseIncidencia_2() throws ServiceException
     {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
@@ -176,7 +176,7 @@ public abstract class IncidenciaManagerTest {
                             Instant.now().plus(12, DAYS))
             );
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -185,7 +185,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIncidencia_1() throws EntityException
+    public void testDeleteIncidencia_1() throws ServiceException
     {
         // Premises: usuario iniciador incidencia; no ADM.
         assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(2L).getUserName()), is(true));
@@ -198,7 +198,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testDeleteIncidencia_2() throws EntityException
+    public void testDeleteIncidencia_2() throws ServiceException
     {
         // Premises: no usuario iniciador; no ADM.
         assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(4L).getUserName()), is(false));
@@ -207,7 +207,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.deleteIncidencia(juan.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
         }
     }
@@ -216,7 +216,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidencia_1() throws EntityException
+    public void testModifyIncidencia_1() throws ServiceException
     {
         // Caso OK: usuario iniciador y adm modifica incidencia.
         // Premises.
@@ -239,7 +239,7 @@ public abstract class IncidenciaManagerTest {
         try {
             ((IncidenciaManager) incidenciaManager).modifyIncidencia(pedro.getUserName(), incidencia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_USER_WRONG_INIT));
         }
     }
@@ -248,7 +248,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidencia_3() throws EntityException
+    public void testModifyIncidencia_3() throws ServiceException
     {
         // Premisas: usuario no ADM ni iniciador incidencia.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
@@ -263,7 +263,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_1() throws EntityException
+    public void testModifyIncidImportancia_1() throws ServiceException
     {
         // Premisas: SIN registro previo de incidImportancia; NO usuario ADM, ni iniciador; existe registro de incidencia.
         IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), 4L);
@@ -284,7 +284,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_2() throws EntityException
+    public void testModifyIncidImportancia_2() throws ServiceException
     {
         // Premisas: usuario iniciador ( -> existe registro previo de incidImportancia); no ADM.
         final IncidImportancia incidImportancia = incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 6L).getIncidImportancia();
@@ -304,7 +304,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_3() throws EntityException
+    public void testModifyIncidImportancia_3() throws ServiceException
     {
         // Premisa: CON registro previo de incidImportancia, sin cambiar nada. Usuario no iniciador, función ADM.
         IncidImportancia incidImportancia = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 2L).getIncidImportancia();
@@ -321,7 +321,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_4() throws EntityException
+    public void testModifyIncidImportancia_4() throws ServiceException
     {
         // Premisa: incidencia is closed. Usuario inicidador.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(7L);
@@ -333,7 +333,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidNew);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
 
@@ -341,7 +341,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.getUsuarioConnector().checkUserInComunidad(pedro.getUserName(), calle_olmo_55.getC_Id());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
         // Data:
@@ -354,7 +354,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.modifyIncidImportancia(pedro.getUserName(), incidNew);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -363,7 +363,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_5() throws EntityException
+    public void testModifyIncidImportancia_5() throws ServiceException
     {
         // Premisa: importancia <= 0; usuario iniciador.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(6L);
@@ -387,7 +387,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_1() throws EntityException
+    public void testModifyResolucion_1() throws ServiceException
     {
         // Caso OK: resolucion con 2 avances; se modifica resolucion.coste estimado y se añade avance: devuelve 2.
         Resolucion resolucion = incidenciaManager.seeResolucion(pedro.getUserName(), 3L);
@@ -419,7 +419,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_1() throws EntityException
+    public void testRegIncidComment_1() throws ServiceException
     {
         // Incidencia is closed.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
@@ -433,7 +433,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_2() throws EntityException
+    public void testRegIncidComment_2() throws ServiceException
     {
         // Incidencia is open.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
@@ -463,7 +463,7 @@ public abstract class IncidenciaManagerTest {
         try {
             ((IncidenciaManager) incidenciaManager).regIncidencia(incidencia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_REGISTERED));
         }
 
@@ -508,7 +508,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.regIncidImportancia(juan.getUserName(), incidImportancia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
 
@@ -517,7 +517,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.getUsuarioConnector().checkUserInComunidad(paco.getUserName(), 1L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
         // Data.
@@ -526,7 +526,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.regIncidImportancia(paco.getUserName(), incidImportancia);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -575,7 +575,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegResolucion() throws EntityException
+    public void testRegResolucion() throws ServiceException
     {
         // Caso: la incidencia ya está cerrada. Incidencia 5, comunidad 4.
         // Devuelve INCIDENCIA_NOT_FOUND, porque no está entre las incidencias ABIERTAS.
@@ -585,7 +585,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.regResolucion(paco.getUserName(), resolucion);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -600,7 +600,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.seeCommentsByIncid(999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -609,7 +609,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeCommentsByIncid_2() throws EntityException
+    public void testSeeCommentsByIncid_2() throws ServiceException
     {
         // La incidencia existe, no tiene comentarios.
         List<IncidComment> comments = incidenciaManager.seeCommentsByIncid(2L);
@@ -621,7 +621,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_1() throws EntityException
+    public void testSeeIncidImportanciaByUser_1() throws ServiceException
     {
         // Premise: existe registro de incidImportancia en BD para el usuario; incidencia sin resolución iniciada.
         assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
@@ -637,7 +637,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_2() throws EntityException
+    public void testSeeIncidImportanciaByUser_2() throws ServiceException
     {
         // Premisa: la incidencia está cerrada.
         assertThat(incidenciaManager.seeIncidenciaById(5L).getFechaCierre(), notNullValue());
@@ -645,7 +645,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 5L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }
@@ -654,13 +654,13 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_3() throws EntityException
+    public void testSeeIncidImportanciaByUser_3() throws ServiceException
     {
         // Caso: no hay registro incidImportancia para el usuario; existen usuario-comunidad e incidencia-comunidad; NO resolución asociada.
         try {
             incidenciaDao.seeIncidImportanciaByUser(juan.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
         assertThat(incidenciaDao.countResolucionByIncid(4L), is(0));
@@ -709,13 +709,13 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportanciaByUser_4() throws EntityException
+    public void testSeeIncidImportanciaByUser_4() throws ServiceException
     {
         // Caso: no hay registro incidImportancia para el usuario; existen usuario-comunidad e incidencia-comunidad; SÍ resolución asociada.
         try {
             incidenciaDao.seeIncidImportanciaByUser(luis.getUserName(), 3L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCID_IMPORTANCIA_NOT_FOUND));
         }
         assertThat(incidenciaDao.countResolucionByIncid(3L), is(1));
@@ -761,7 +761,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.seeIncidsClosedByComu("noexisto@no.com", 2L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
 
@@ -769,7 +769,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.seeIncidsClosedByComu(juan.getUserName(), 999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -778,7 +778,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsOpenByComu_1() throws EntityException
+    public void testSeeIncidsOpenByComu_1() throws ServiceException
     {
         // Premisas: una única incidencia en la comunidad; abierta.
         List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(pedro.getUserName(), calle_la_fuente_11.getC_Id());
@@ -795,7 +795,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsOpenByComu_2() throws EntityException
+    public void testSeeIncidsOpenByComu_2() throws ServiceException
     {
         // Caso: no incidencias en la comunidad.
         assertThat(incidenciaManager.deleteIncidencia(juan.getUserName(), 2L), is(1));
@@ -807,7 +807,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_1() throws EntityException
+    public void testSeeResolucion_1() throws ServiceException
     {
         // Premisa: resolucion sin avances.
         Resolucion resolucion = incidenciaManager.seeResolucion(paco.getUserName(), 5L);
@@ -826,7 +826,7 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_2() throws EntityException
+    public void testSeeResolucion_2() throws ServiceException
     {
         // Premisa: incidencia sin resolucion.
         assertThat(incidenciaDao.seeResolucion(2L), nullValue());
@@ -844,7 +844,7 @@ public abstract class IncidenciaManagerTest {
         try {
             incidenciaManager.seeUserComusImportancia(pedro.getUserName(), 999L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
     }

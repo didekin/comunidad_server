@@ -13,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import static com.didekin.ThreadPoolConstants.IDLE_TIMEOUT_FRONT;
+import static org.springframework.boot.Banner.Mode.OFF;
 
 /**
  * User: pedro
@@ -31,6 +32,7 @@ public class Application {
     {
         logger.debug("Before calling run()");
         SpringApplication app = new SpringApplication(Application.class);
+        app.setBannerMode(OFF);
         app.run(args);
     }
 

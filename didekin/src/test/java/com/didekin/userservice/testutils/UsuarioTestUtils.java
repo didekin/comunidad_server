@@ -1,8 +1,7 @@
 package com.didekin.userservice.testutils;
 
 
-import com.didekin.common.controller.SecurityTestUtils;
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.http.HttpHandler;
@@ -244,32 +243,37 @@ public final class UsuarioTestUtils {
                 .puerta(puerta)
                 .roles(roles).build();
     }
-
+    // TODO: descomentar y revisar.
     public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, HttpHandler retrofitHandler) throws IOException
     {
-        return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
-                usuario.getPassword())).execute().body();
+        /*return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
+                usuario.getPassword())).execute().body();*/
+        return null;
     }
 
-    public static String tokenPedro(HttpHandler retrofitHandler) throws IOException
+    public static String tokenPedro(HttpHandler retrofitHandler) throws IOException    // TODO: descomentar y revisar.
     {
-        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
+//        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
+        return null;
     }
 
-    public static String tokenLuis(HttpHandler retrofitHandler) throws IOException
+    public static String tokenLuis(HttpHandler retrofitHandler) throws IOException  // TODO: descomentar y revisar.
     {
-        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
+        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());*/
+        return null;
     }
 
-    public static String tokenPaco(HttpHandler retrofitHandler) throws IOException
+    public static String tokenPaco(HttpHandler retrofitHandler) throws IOException   // TODO: descomentar y revisar.
     {
-        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());
+        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());*/
+        return null;
     }
 
     @SuppressWarnings("unused")
-    public static String tokenPepe(HttpHandler retrofitHandler) throws IOException
+    public static String tokenPepe(HttpHandler retrofitHandler) throws IOException    // TODO: descomentar y revisar.
     {
-        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());
+        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());*/
+        return null;
     }
 
     public static void checkGeneratedPassword(String password, int passwordLength) throws UnsupportedEncodingException
@@ -297,7 +301,7 @@ public final class UsuarioTestUtils {
         try {
             usuarioManager.getUserByUserName(userName);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }

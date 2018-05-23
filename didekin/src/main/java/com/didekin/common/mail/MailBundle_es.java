@@ -13,11 +13,12 @@ import static com.didekin.common.mail.MailKey.SALUDO;
 public class MailBundle_es extends ListResourceBundle {
 
     private static final Object[][] contents = new Object[][]{
-            {SALUDO.name(), "Hola"} ,
+            {SALUDO.name(), "Hola"},
             {BYE.name(), "Saludos del equipo de Dídekin"}
     };
 
-    static Object[][] getContentStatic(){
+    static Object[][] getContentStatic()
+    {
         return contents;
     }
 

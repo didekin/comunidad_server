@@ -7,7 +7,7 @@ import com.didekinlib.http.exception.ExceptionMsgIf;
  * Date: 19/07/15
  * Time: 10:33
  */
-public class EntityException extends RuntimeException {
+public class ServiceException extends RuntimeException {
 
     public static final String COMUNIDAD_FK = " FOREIGN KEY (`c_id`)";
     public static final String COMUNIDAD_UNIQUE_KEY = "key 'tipo_via'";
@@ -18,7 +18,7 @@ public class EntityException extends RuntimeException {
 
     private final ExceptionMsgIf exceptionMsg;
 
-    public EntityException(ExceptionMsgIf exceptionMsg)
+    public ServiceException(ExceptionMsgIf exceptionMsg)
     {
         this.exceptionMsg = exceptionMsg;
     }

@@ -1,7 +1,7 @@
 package com.didekin.userservice.controller;
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.comunidad.Comunidad;
 
@@ -42,7 +42,7 @@ public class ComunidadController extends AppControllerAbstract {
 
     @RequestMapping(value = COMUNIDAD_READ + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public Comunidad getComuData(@RequestHeader("Authorization") String accessToken, @PathVariable long comunidadId)
-            throws EntityException
+            throws ServiceException
     {
         logger.debug("getComunidadById()");
         return usuarioService.getComunidadById(getUserFromDb(usuarioService), comunidadId);

@@ -1,7 +1,7 @@
 package com.didekin.userservice.controller;
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManagerIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
@@ -58,7 +58,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = USERCOMU_DELETE + "/{comunidadId}", method = DELETE)
     public int deleteUserComu(@RequestHeader("Authorization") String accessToken,
-                              @PathVariable long comunidadId) throws EntityException
+                              @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("deleteUserComu()");
         return usuarioManager.deleteUserComunidad(
@@ -80,7 +80,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = USERCOMU_READ + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public UsuarioComunidad getUserComuByUserAndComu(@RequestHeader("Authorization") String accessToken, @PathVariable long
-            comunidadId) throws EntityException
+            comunidadId) throws ServiceException
     {
         logger.debug("getUserComuByUserAndComu");
         return usuarioManager.getUserComuByUserAndComu(getUserNameFromAuthentication(), comunidadId);
@@ -88,7 +88,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = COMUNIDAD_OLDEST_USER + "/{comunidadId}", method = GET)
     public boolean isOldestOrAdmonUserComu(@RequestHeader("Authorization") String accessToken,
-                                           @PathVariable long comunidadId) throws EntityException
+                                           @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("isOldestOrAdmonUserComu()");
         return usuarioManager.checkComuDataModificationPower(getUserFromDb(usuarioManager),
@@ -98,7 +98,7 @@ public class UserComuController extends AppControllerAbstract {
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)
     public int modifyComuData(@RequestHeader("Authorization") String accessToken,
                               @RequestBody final Comunidad comunidad)
-            throws EntityException
+            throws ServiceException
     {
         logger.info("modifyComuData()");
         return usuarioManager.modifyComuData(getUserFromDb(usuarioManager), comunidad);
@@ -106,7 +106,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = USERCOMU_MODIFY, method = PUT, consumes = MIME_JSON)
     public int modifyUserComu(@RequestHeader("Authorization") String accessToken,
-                              @RequestBody final UsuarioComunidad userComu) throws EntityException
+                              @RequestBody final UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("modifyUserComu()");
         return usuarioManager.modifyUserComu(new UsuarioComunidad
@@ -119,7 +119,7 @@ public class UserComuController extends AppControllerAbstract {
     @RequestMapping(value = REG_COMU_AND_USER_AND_USERCOMU, method = POST, consumes = MIME_JSON)
     public boolean regComuAndUserAndUserComu(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
                                              @RequestBody UsuarioComunidad usuarioCom)
-            throws EntityException
+            throws ServiceException
     {
         logger.debug("regComuAndUserAndUserComu()");
         return usuarioManager.regComuAndUserAndUserComu(usuarioCom, localeToStr);
@@ -127,7 +127,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = REG_COMU_USERCOMU, method = POST, consumes = MIME_JSON)
     public boolean regComuAndUserComu(@RequestHeader("Authorization") String headerAccessToken,
-                                      @RequestBody UsuarioComunidad usuarioCom) throws EntityException
+                                      @RequestBody UsuarioComunidad usuarioCom) throws ServiceException
     {
         logger.debug("regComuAndUserComu()");
 
@@ -139,7 +139,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = REG_USER_USERCOMU, method = POST, consumes = MIME_JSON)
     public boolean regUserAndUserComu(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
-                                      @RequestBody UsuarioComunidad userComu) throws EntityException
+                                      @RequestBody UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("regUserAndUserComu()");
         return usuarioManager.regUserAndUserComu(userComu, localeToStr);
@@ -147,7 +147,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = REG_USERCOMU, method = POST, consumes = MIME_JSON)
     public int regUserComu(@RequestHeader("Authorization") String headerAccessToken,
-                           @RequestBody UsuarioComunidad usuarioComunidad) throws EntityException
+                           @RequestBody UsuarioComunidad usuarioComunidad) throws ServiceException
     {
         logger.debug("regUserComu()");
         Usuario usuario = getUserFromDb(usuarioManager);
@@ -166,7 +166,7 @@ public class UserComuController extends AppControllerAbstract {
 
     @RequestMapping(value = USERCOMUS_BY_USER, produces = MIME_JSON, method = GET)
     public List<UsuarioComunidad> seeUserComusByUser(@RequestHeader("Authorization") String accessToken)
-            throws EntityException
+            throws ServiceException
     {
         logger.debug("seeUserComusByUser()");
         return usuarioManager.seeUserComusByUser(getUserFromDb(usuarioManager).getUserName());

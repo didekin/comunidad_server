@@ -1,7 +1,7 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.DbPre;
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.common.LocalDev;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
 
@@ -66,7 +66,7 @@ public abstract class UserManagerConnectorTest {
         try {
             connector.checkUserInComunidad(pedro.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }

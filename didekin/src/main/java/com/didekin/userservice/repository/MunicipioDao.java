@@ -38,16 +38,17 @@ public class MunicipioDao {
                         municipioCodeInProv);
     }
 
-    Municipio getMunicipioById(int municipioId){
+    Municipio getMunicipioById(int municipioId)
+    {
         logger.info("::getMuncipioById()");
-        return jdbcTemplate.queryForObject(MunicipioSql.BY_ID.toString(),new MunicipioMapper(),
+        return jdbcTemplate.queryForObject(MunicipioSql.BY_ID.toString(), new MunicipioMapper(),
                 municipioId);
     }
 
 
     // ............. HELPER CLASSES ...............
 
-    private static class MunicipioMapper implements RowMapper<Municipio>{
+    private static class MunicipioMapper implements RowMapper<Municipio> {
 
         @Override
         public Municipio mapRow(ResultSet rs, int rowNum) throws SQLException

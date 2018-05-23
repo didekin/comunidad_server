@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Import(value = {RepositoryConfig.class, GcmConfiguration.class})
 public class IncidenciaManagerConfiguration {
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SpringJavaAutowiredFieldsWarningInspection"})
     @Autowired
     JdbcTemplate jdbcTemplate;
 

@@ -1,7 +1,7 @@
 package com.didekin.incidservice.controller;
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
@@ -60,7 +60,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = CLOSE_INCIDENCIA, method = PUT, consumes = MIME_JSON)
     int closeIncidencia(@RequestHeader("Authorization") String accessToken,
-                        @RequestBody Resolucion resolucion) throws EntityException
+                        @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.debug("closeIncidencia()");
         return incidenciaManager.closeIncidencia(getUserNameFromAuthentication(), resolucion);
@@ -68,7 +68,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = DELETE_INCID + "/{incidenciaId}", method = DELETE)
     public int deleteIncidencia(@RequestHeader("Authorization") String accessToken,
-                                @PathVariable long incidenciaId) throws EntityException
+                                @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("deleteIncidencia()");
         return incidenciaManager.deleteIncidencia(getUserNameFromAuthentication(), incidenciaId);
@@ -76,7 +76,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = MOD_INCID_IMPORTANCIA, method = PUT, consumes = MIME_JSON)
     public int modifyIncidImportancia(@RequestHeader("Authorization") String accessToken,
-                                      @RequestBody IncidImportancia incidImportancia) throws EntityException
+                                      @RequestBody IncidImportancia incidImportancia) throws ServiceException
     {
         logger.error("modifyIncidImportancia()");
         return incidenciaManager.modifyIncidImportancia(getUserNameFromAuthentication(), incidImportancia);
@@ -84,7 +84,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = MOD_RESOLUCION, method = PUT, consumes = MIME_JSON)
     public int modifyResolucion(@RequestHeader("Authorization") String accessToken,
-                                @RequestBody Resolucion resolucion) throws EntityException
+                                @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.error("modifyResolucion()");
         return incidenciaManager.modifyResolucion(getUserNameFromAuthentication(), resolucion);
@@ -92,7 +92,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = REG_INCID_COMMENT, method = POST, consumes = MIME_JSON)
     public int regIncidComment(@RequestHeader("Authorization") String accessToken,
-                               @RequestBody final IncidComment comment) throws EntityException
+                               @RequestBody final IncidComment comment) throws ServiceException
     {
         logger.debug("regIncidComment()");
         return incidenciaManager.regIncidComment(getUserNameFromAuthentication(), comment);
@@ -100,7 +100,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = REG_INCID_IMPORTANCIA, method = RequestMethod.POST, consumes = MIME_JSON)
     public int regIncidImportancia(@RequestHeader("Authorization") String accessToken,
-                                   @RequestBody IncidImportancia incidImportancia) throws EntityException
+                                   @RequestBody IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("regIncidImportancia()");
         return incidenciaManager.regIncidImportancia(getUserNameFromAuthentication(), incidImportancia);
@@ -109,7 +109,7 @@ class IncidenciaController extends AppControllerAbstract {
     @SuppressWarnings("UnnecessaryLocalVariable")
     @RequestMapping(value = REG_RESOLUCION, method = POST, consumes = MIME_JSON)
     public int regResolucion(@RequestHeader("Authorization") String accessToken,
-                             @RequestBody Resolucion resolucion) throws EntityException
+                             @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.debug("regResolucion()");
         return incidenciaManager.regResolucion(getUserNameFromAuthentication(), resolucion);
@@ -120,12 +120,12 @@ class IncidenciaController extends AppControllerAbstract {
      * 1. The user is registered in the comunidad of the incidencia.
      * 2. The incidencia can be OPEN or CLOSED.
      *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user doesn't belong to the comunidad of the incidencia.
-     * @throws EntityException INCIDENCIA_NOT_FOUND, if the incidencia doesn't exist.
+     * @throws ServiceException USERCOMU_WRONG_INIT, if the user doesn't belong to the comunidad of the incidencia.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND, if the incidencia doesn't exist.
      */
     @RequestMapping(value = SEE_INCID_COMMENTS + "/{incidenciaId}", method = GET, produces = MIME_JSON)
     List<IncidComment> seeCommentsByIncid(@RequestHeader("Authorization") String accessToken,
-                                          @PathVariable long incidenciaId) throws EntityException
+                                          @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeCommentsByIncid()");
         final Incidencia incidenciaIn = incidenciaManager.seeIncidenciaById(incidenciaId);
@@ -134,14 +134,14 @@ class IncidenciaController extends AppControllerAbstract {
 
         try {
             return incidenciaManager.seeCommentsByIncid(incidenciaId);
-        } catch (EntityException e) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+        } catch (ServiceException e) {
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
     }
 
     @RequestMapping(value = SEE_INCID_IMPORTANCIA + "/{incidenciaId}", method = GET, produces = MIME_JSON)
     public IncidAndResolBundle seeIncidImportancia(@RequestHeader("Authorization") String accessToken,
-                                                   @PathVariable long incidenciaId) throws EntityException
+                                                   @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidImportanciaByUser");
         return incidenciaManager.seeIncidImportanciaByUser(getUserNameFromAuthentication(), incidenciaId);
@@ -149,7 +149,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = SEE_INCIDS_CLOSED_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public List<IncidenciaUser> seeIncidsClosedByComu(@RequestHeader("Authorization") String accessToken,
-                                                      @PathVariable long comunidadId) throws EntityException
+                                                      @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("seeIncidsClosedByComu()");
         return incidenciaManager.seeIncidsClosedByComu(getUserNameFromAuthentication(), comunidadId);
@@ -157,15 +157,15 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = SEE_INCIDS_OPEN_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
     public List<IncidenciaUser> seeIncidsOpenByComu(@RequestHeader("Authorization") String accessToken,
-                                                    @PathVariable long comunidadId) throws EntityException
+                                                    @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("seeIncidsOpenByComu()");
-        return incidenciaManager.seeIncidsOpenByComu(getUserNameFromAuthentication(),comunidadId);
+        return incidenciaManager.seeIncidsOpenByComu(getUserNameFromAuthentication(), comunidadId);
     }
 
     @RequestMapping(value = SEE_RESOLUCION + "/{incidenciaId}", produces = MIME_JSON, method = GET)
     public Resolucion seeResolucion(@RequestHeader("Authorization") String accessToken,
-                                    @PathVariable long incidenciaId) throws EntityException
+                                    @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeResolucion()");
         return incidenciaManager.seeResolucion(getUserNameFromAuthentication(), incidenciaId);
@@ -173,7 +173,7 @@ class IncidenciaController extends AppControllerAbstract {
 
     @RequestMapping(value = SEE_USERCOMUS_IMPORTANCIA + "/{incidenciaId}", produces = MIME_JSON, method = GET)
     List<ImportanciaUser> seeUserComusImportancia(@RequestHeader("Authorization") String accessToken,
-                                                  @PathVariable long incidenciaId) throws EntityException
+                                                  @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeUserComusImportancia()");
         return incidenciaManager.seeUserComusImportancia(getUserNameFromAuthentication(), incidenciaId);

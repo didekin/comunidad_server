@@ -1,11 +1,10 @@
 package com.didekin.userservice.controller;
 
-import com.didekin.common.repository.EntityException;
 import com.didekin.common.controller.AppControllerAbstract;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.repository.UsuarioManagerIf;
-import com.didekinlib.http.exception.ErrorBean;
 import com.didekinlib.model.usuario.GcmTokenWrapper;
 import com.didekinlib.model.usuario.Usuario;
 
@@ -13,9 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.didekinlib.http.CommonServConstant.ACCEPT_LANGUAGE;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioServConstant.ACCESS_TOKEN_DELETE;
-import static com.didekinlib.http.usuario.UsuarioServConstant.GCM_TOKEN_PARAM;
+import static com.didekinlib.http.usuario.UsuarioServConstant.APP_ID_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.LOGIN;
 import static com.didekinlib.http.usuario.UsuarioServConstant.PASSWORD_MODIFY;
 import static com.didekinlib.http.usuario.UsuarioServConstant.PASSWORD_SEND;
@@ -63,30 +57,22 @@ public class UsuarioController extends AppControllerAbstract {
         this.usuarioManager = usuarioManager;
     }
 
-    @RequestMapping(value = ACCESS_TOKEN_DELETE + "/{oldTk}", method = DELETE)
-    public boolean deleteAccessToken(@RequestHeader("Authorization") String accessToken,
-                                     @PathVariable String oldTk) throws EntityException
-    {
-        logger.debug("deleteAccessToken()");
-        return usuarioManager.deleteAccessToken(oldTk);
-    }
-
     @RequestMapping(value = USER_DELETE, method = DELETE, produces = MIME_JSON)
-    public boolean deleteUser(@RequestHeader("Authorization") String accessToken) throws EntityException
+    public boolean deleteUser(@RequestHeader("Authorization") String accessToken) throws ServiceException
     {
         logger.debug("deleteUser()");
         return usuarioManager.deleteUser(getUserNameFromAuthentication());
     }
 
     @RequestMapping(value = USER_READ_GCM_TOKEN, method = GET, produces = MIME_JSON)
-    public GcmTokenWrapper getGcmToken(@RequestHeader("Authorization") String accessToken) throws EntityException
+    public GcmTokenWrapper getGcmToken(@RequestHeader("Authorization") String accessToken) throws ServiceException
     {
         logger.debug("getGcmToken()");
         return new GcmTokenWrapper(usuarioManager.getGcmToken(getUserFromDb(usuarioManager).getuId()));
     }
 
     @RequestMapping(value = USER_READ, method = GET, produces = MIME_JSON)
-    public Usuario getUserData(@RequestHeader("Authorization") String accessToken) throws EntityException
+    public Usuario getUserData(@RequestHeader("Authorization") String accessToken) throws ServiceException
     {
         logger.debug("getUserData()");
         Usuario usuarioDb = getUserFromDb(usuarioManager);
@@ -98,7 +84,7 @@ public class UsuarioController extends AppControllerAbstract {
 
     @RequestMapping(value = LOGIN, method = POST, consumes = FORM_URLENCODED)
     public boolean login(@RequestParam(USER_PARAM) String userName, @RequestParam(PSWD_PARAM) String password)
-            throws EntityException
+            throws ServiceException
     {
         logger.debug("login()");
         return usuarioManager.login(new Usuario.UsuarioBuilder().userName(userName).password(password).build());
@@ -106,7 +92,7 @@ public class UsuarioController extends AppControllerAbstract {
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
     public int modifyUserGcmTokens(@RequestHeader("Authorization") String accessToken,
-                                   @RequestParam(GCM_TOKEN_PARAM) final String gcmToken) throws EntityException
+                                   @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken()");
         return usuarioManager.modifyUserGcmToken(getUserNameFromAuthentication(), gcmToken);
@@ -116,7 +102,7 @@ public class UsuarioController extends AppControllerAbstract {
     public int modifyUser(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
                           @RequestHeader("Authorization") String accessToken,
                           @RequestBody final Usuario newUsuario)
-            throws EntityException
+            throws ServiceException
     {
         logger.debug("modifyUser()");
         return usuarioManager.modifyUser(newUsuario, getUserNameFromAuthentication(), localeToStr);
@@ -124,7 +110,7 @@ public class UsuarioController extends AppControllerAbstract {
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
     public int passwordChange(@RequestHeader("Authorization") String accessToken,
-                              @RequestParam(PSWD_PARAM) String newPassword) throws EntityException
+                              @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
         logger.debug("passwordChangeWithName()");
         return usuarioManager.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
@@ -132,18 +118,9 @@ public class UsuarioController extends AppControllerAbstract {
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)
     public boolean passwordSend(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
-                                @RequestParam(USER_PARAM) String userName) throws EntityException, MailException
+                                @RequestParam(USER_PARAM) String userName) throws ServiceException, MailException
     {
         logger.debug("passwordSend()");
         return usuarioManager.passwordSend(userName, localeToStr);
-    }
-
-//    ............................ HANDLING EXCEPTIONS ................................
-
-    @ExceptionHandler({UsernameNotFoundException.class})
-    public ErrorBean userNameExceptionHandling(EntityException e) throws EntityException
-    {
-        logger.info("userNameExceptionHandling()");
-        throw new EntityException(USER_NAME_NOT_FOUND);
     }
 }

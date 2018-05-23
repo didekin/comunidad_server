@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
@@ -10,14 +10,14 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.Connection;
 import java.util.List;
 
-import static com.didekin.common.repository.EntityException.DUPLICATE_ENTRY;
-import static com.didekin.common.repository.EntityException.USER_NAME;
+import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
+import static com.didekin.common.repository.ServiceException.USER_NAME;
+import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;
@@ -36,6 +36,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mindrot.jbcrypt.BCrypt.checkpw;
+import static org.mindrot.jbcrypt.BCrypt.hashpw;
 
 /**
  * User: pedro
@@ -62,7 +64,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testDeleteUserByName() throws EntityException
+    public void testDeleteUserByName() throws ServiceException
     {
         List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName());
         assertThat(usuarioComunidades.size(), is(3));
@@ -71,7 +73,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.getUserByUserName(pedro.getUserName());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
@@ -82,7 +84,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.deleteUser("noexiste@noexiste.com");
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
@@ -90,7 +92,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
-    public void testDeleteUserComunidad_1() throws EntityException
+    public void testDeleteUserComunidad_1() throws ServiceException
     {
         Usuario usuario = new Usuario.UsuarioBuilder().uId(3L).build();
         Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(1L).build();
@@ -110,7 +112,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.deleteUserComunidad(new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_COMU_NOT_FOUND));
         }
 
@@ -120,7 +122,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.deleteUserComunidad(new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_COMU_NOT_FOUND));
         }
 
@@ -130,7 +132,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.deleteUserComunidad(new UsuarioComunidad.UserComuBuilder(comunidad, usuario).build());
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_COMU_NOT_FOUND));
         }
     }
@@ -187,19 +189,19 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUsuarioById_1() throws EntityException
+    public void testGetUsuarioById_1() throws ServiceException
     {
         Usuario usuario = usuarioDao.getUsuarioById(5L);
         assertThat(usuario.getUserName(), equalTo("luis@luis.com"));
     }
 
-    @Test(/*expected = EntityException.class*/)
+    @Test(/*expected = ServiceException.class*/)
     public void testGetUsuarioById_2()
     {
         try {
             usuarioDao.getUsuarioById(11L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
@@ -221,7 +223,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.getUserByUserName("noexisto@no.com");
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
@@ -248,7 +250,7 @@ public abstract class UsuarioDaoTest {
         try {
             usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 4L);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
     }
@@ -256,7 +258,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_GetUserFullComuByUserAndComu_1() throws EntityException
+    public void test_GetUserFullComuByUserAndComu_1() throws ServiceException
     {
 
         // UsuarioComunidad no existe en BD. Devuelve null.
@@ -344,14 +346,14 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUser() throws EntityException
+    public void testModifyUser() throws ServiceException
     {
         // We change username.
         Usuario usuarioDB = usuarioDao.getUserByUserName("juan@noauth.com");
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .alias(usuarioDB.getAlias())
                 .userName("new_juan@juan.com")
-                .password(new BCryptPasswordEncoder().encode("new_password"))
+                .password(hashpw("new_password", BCRYPT_SALT))
                 .uId(usuarioDB.getuId())
                 .build();
 
@@ -359,13 +361,13 @@ public abstract class UsuarioDaoTest {
         assertThat(updatedRow, is(1));
         Usuario usuarioDBOut = usuarioDao.getUsuarioById(usuarioIn.getuId());
         assertThat(usuarioDBOut.getUserName(), is(usuarioIn.getUserName()));
-        assertThat(new BCryptPasswordEncoder().matches("new_password", usuarioDBOut.getPassword()), is(true));
+        assertThat(checkpw("new_password", usuarioDBOut.getPassword()), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUserAlias() throws EntityException
+    public void testModifyUserAlias() throws ServiceException
     {
         // We change alias.
         Usuario usuarioDB = usuarioDao.getUserByUserName("juan@noauth.com");

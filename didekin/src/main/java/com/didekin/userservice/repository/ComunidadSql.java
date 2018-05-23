@@ -55,8 +55,7 @@ public enum ComunidadSql {
             " ORDER BY tipo_via, nombre_via LIMIT 100"),
 
     USERS_ID_BY_COMU("select u_id from usuario_comunidad as cu " +
-            " where cu.c_id = ?"),
-    ;
+            " where cu.c_id = ?"),;
 
     String sqlText;
 

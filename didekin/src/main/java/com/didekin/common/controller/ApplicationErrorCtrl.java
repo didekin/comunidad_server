@@ -4,7 +4,6 @@ package com.didekin.common.controller;
 import com.didekinlib.http.exception.ErrorBean;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -20,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import static com.didekinlib.http.CommonServConstant.ERROR;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
+import static org.slf4j.LoggerFactory.getLogger;
 
 
 /**
@@ -31,7 +31,7 @@ import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 @RestController
 public class ApplicationErrorCtrl implements ErrorController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationErrorCtrl.class.getCanonicalName());
+    private static final Logger logger = getLogger(ApplicationErrorCtrl.class.getCanonicalName());
 
     private final ErrorAttributes errorAttributes;
 

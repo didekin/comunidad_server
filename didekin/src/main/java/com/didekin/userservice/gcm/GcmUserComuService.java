@@ -42,15 +42,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * Time: 18:57
  */
 @Service
-class GcmUserComuService implements GcmUserComuServiceIf {     // TODO: Migrate to RX_JAVA; test it: it is untested in server, only on the android app client.
+class GcmUserComuService implements
+        GcmUserComuServiceIf {     // TODO: Migrate to RX_JAVA; test it: it is untested in server, only on the android app client.
 
     private static final Logger logger = LoggerFactory.getLogger(GcmUserComuService.class.getCanonicalName());
-
-    private String didekin_package = "com.didekindroid";
-    private String didekin_firebase_project_key =
-            "AAAADknoTJQ:APA91bGRihWJup9TYYtKl6LV7d01f5DZJDr5edlwh8KV4fLzq8S20OYyxnqP7Hsj2b4B4zDU0G_jzDH8bOwXGlz77XMFzcPWnEZ8EcDqTbiNTSjDHxuegT2eE8Dsn9YvozF4GIbIHFaJ";
-    private String didekin_api_key_header = "key=" + didekin_firebase_project_key;
-
     /**
      * This service sends the messages and  processes the results.
      */
@@ -61,8 +56,10 @@ class GcmUserComuService implements GcmUserComuServiceIf {     // TODO: Migrate 
      */
     private final ExecutorService gcmUpdaterExec;
     private final ThreadPoolExecutor gcmUpdaterPool;
-
-
+    private String didekin_package = "com.didekindroid";
+    private String didekin_firebase_project_key =
+            "AAAADknoTJQ:APA91bGRihWJup9TYYtKl6LV7d01f5DZJDr5edlwh8KV4fLzq8S20OYyxnqP7Hsj2b4B4zDU0G_jzDH8bOwXGlz77XMFzcPWnEZ8EcDqTbiNTSjDHxuegT2eE8Dsn9YvozF4GIbIHFaJ";
+    private String didekin_api_key_header = "key=" + didekin_firebase_project_key;
     private GcmEndPointImp gcmEndPoint;
     private UsuarioManagerIf usuarioService;
 

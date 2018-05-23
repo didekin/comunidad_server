@@ -8,6 +8,5 @@ package com.didekin.common.mail;
 public enum MailKey {
     SUBJECT,
     SALUDO,
-    BYE,
-    ;
+    BYE,;
 }

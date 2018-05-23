@@ -19,7 +19,7 @@ import static java.lang.System.getenv;
  * Time: 15:59
  */
 @Configuration
-@PropertySource({"classpath:/application.properties"})
+@PropertySource({"classpath:/application.properties"})  // TODO: testar si hace falta esta anotación aquí.
 public class RepositoryConfig {
 
     private static final String JDBC_URL_DEFAULT_PORT = "3306";

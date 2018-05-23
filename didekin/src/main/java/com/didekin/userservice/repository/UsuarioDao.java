@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -71,14 +70,41 @@ public class UsuarioDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    JdbcTemplate getJdbcTemplate()
+    private static UsuarioComunidad doUsuarioComunidadFull(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
     {
-        return jdbcTemplate;
+        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
+                .portal(rs.getString("portal"))
+                .escalera(rs.getString("escalera"))
+                .planta(rs.getString("planta"))
+                .puerta(rs.getString("puerta"))
+                .roles(rs.getString("roles"))
+                .build();
     }
 
     //    ============================================================
     //    ..........................  METHODS ........................
     //    ============================================================
+
+    private static UsuarioComunidad doUserComuOnlyRoles(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
+    {
+        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
+                .roles(rs.getString("roles"))
+                .build();
+    }
+
+    private static Usuario doUsuarioNoPswd(ResultSet rs) throws SQLException
+    {
+        return new Usuario.UsuarioBuilder()
+                .uId(rs.getLong("u_id"))
+                .userName(rs.getString("user_name"))
+                .alias(rs.getString("alias"))
+                .build();
+    }
+
+    JdbcTemplate getJdbcTemplate()
+    {
+        return jdbcTemplate;
+    }
 
     int deleteGcmToken(String originalGcmTk)
     {
@@ -86,20 +112,20 @@ public class UsuarioDao {
         return jdbcTemplate.update(DELETE_GCM_TOKEN.toString(), originalGcmTk);
     }
 
-    boolean deleteUser(String userName) throws EntityException
+    boolean deleteUser(String userName) throws ServiceException
     {
         logger.info("deleteUser()");
 
         int rowsDeleted = jdbcTemplate.update(DELETE_BY_NAME.toString(), userName);
         if (!(rowsDeleted == 1)) {
-            throw new EntityException(USER_NAME_NOT_FOUND);
+            throw new ServiceException(USER_NAME_NOT_FOUND);
         }
         return Boolean.TRUE;
     }
 
-    int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws EntityException
+    int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws ServiceException
     {
-        logger.info("deleteUserComunidad(),jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("deleteUserComunidad(),jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Comunidad comunidad = usuarioComunidad.getComunidad();
 
@@ -108,14 +134,14 @@ public class UsuarioDao {
                 usuarioComunidad.getUsuario().getuId());
 
         if (!(rowsDeleted == 1)) {
-            throw new EntityException(USER_COMU_NOT_FOUND);
+            throw new ServiceException(USER_COMU_NOT_FOUND);
         }
         return rowsDeleted;
     }
 
     List<String> getAllRolesFunctionalUser(String userName)
     {
-        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         List<String> roles = jdbcTemplate.queryForList(
                 ROLES_ALL_FUNC.toString(), String.class, userName);
@@ -137,14 +163,14 @@ public class UsuarioDao {
 
     List<Comunidad> getComusByUser(String userName)
     {
-        logger.info("getComusByUser() ,jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("getComusByUser() ,jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.query(COMUS_BY_USER.toString(), new Object[]{userName},
                 new ComunidadDao.ComunidadMapper());
     }
 
     List<String> getGcmTokensByComunidad(long comunidadId)
     {
-        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.queryForList(GCM_TOKENS_BY_COMUNIDAD.toString(), String.class, comunidadId);
     }
 
@@ -156,7 +182,7 @@ public class UsuarioDao {
 
     long getOldestUserComuId(long comunidadId)
     {
-        logger.debug("getOldestUserComuId(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("getOldestUserComuId(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.queryForObject(
                 OLDEST_USER_COMU.toString(),
@@ -165,23 +191,23 @@ public class UsuarioDao {
         );
     }
 
-    Usuario getUserByUserName(String userName) throws UsernameNotFoundException
+    Usuario getUserByUserName(String userName)
     {
-        logger.info("getUserByUserName(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserByUserName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
             usuario = jdbcTemplate.queryForObject(
                     USUARIO_BY_EMAIL.toString(), new UsuarioMapper(), userName);
-        } catch (EmptyResultDataAccessException | UsernameNotFoundException e) {
-            throw new EntityException(USER_NAME_NOT_FOUND);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ServiceException(USER_NAME_NOT_FOUND);
         }
         return usuario;
     }
 
-    Usuario getUsuarioById(long idUsuario) throws EntityException
+    Usuario getUsuarioById(long idUsuario) throws ServiceException
     {
-        logger.info("getUsuarioById(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("getUsuarioById(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
@@ -189,7 +215,7 @@ public class UsuarioDao {
                     new UsuarioMapper(), idUsuario);
         } catch (EmptyResultDataAccessException e) {
             logger.error(e.getMessage());
-            throw new EntityException(USER_NAME_NOT_FOUND);
+            throw new ServiceException(USER_NAME_NOT_FOUND);
         }
         return usuario;
     }
@@ -197,9 +223,9 @@ public class UsuarioDao {
     /**
      * @return a fully initialized UsuarioComuidad instance or null if the pair usuario-comunidad is not in DB.
      */
-    UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws EntityException
+    UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws ServiceException
     {
-        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         try {
             return jdbcTemplate.queryForObject(USERCOMU_BY_COMU.toString(),
                     new UsuarioFullComunidadMapper(), userName, comunidadId);
@@ -222,13 +248,13 @@ public class UsuarioDao {
                     )
             );
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityException(USERCOMU_WRONG_INIT);
+            throw new ServiceException(USERCOMU_WRONG_INIT);
         }
     }
 
     Usuario getUsuarioWithGcmToken(long usuarioId)
     {
-        logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.queryForObject(USER_WITH_GCMTOKEN.toString(), new UsuarioMapperForGcm(), usuarioId);
     }
 
@@ -252,7 +278,7 @@ public class UsuarioDao {
     @SuppressWarnings("Duplicates")
     long insertUsuario(final Usuario usuario, Connection conn) throws SQLException
     {
-        logger.info("insertUsuario(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("insertUsuario(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         ResultSet rs;
         long usuarioId;
 
@@ -287,7 +313,7 @@ public class UsuarioDao {
      */
     int modifyUser(Usuario usuario)
     {
-        logger.debug("modifyUser(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("modifyUser(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(MODIFY_USER.toString(),
                 usuario.getAlias(),
@@ -307,7 +333,7 @@ public class UsuarioDao {
 
     int modifyUserGcmToken(Usuario usuario)
     {
-        logger.debug("modifyUserGcmToken(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.debug("modifyUserGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
                 usuario.getGcmToken(), usuario.getuId());
     }
@@ -317,9 +343,11 @@ public class UsuarioDao {
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
 
+    // .................. MAPPER CLASSES ......................
+
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
-        logger.info("seeUserComusByComu(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("seeUserComusByComu(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(), new
                 Object[]{idComunidad}, new UsuarioComunidadMapper());
         logger.debug("seeUserComusByComu(); usuariosComunidad.size = " + usuariosComunidad.size());
@@ -328,7 +356,7 @@ public class UsuarioDao {
 
     int passwordChange(Usuario usuario)
     {
-        logger.info("passwordChangeWithName(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("passwordChangeWithName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(NEW_PASSWORD.toString(),
                 usuario.getPassword(),
@@ -337,15 +365,13 @@ public class UsuarioDao {
 
     List<UsuarioComunidad> seeUserComusByUser(String userName)
     {
-        logger.info("seeUserComusByUser(), jdbcUrl: " + ( jdbcTemplate.getDataSource()).toString());
+        logger.info("seeUserComusByUser(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.query(
                 USERCOMUS_BY_USER.toString(),
                 new Object[]{userName},
                 new UsuarioFullComunidadMapper());
     }
-
-    // .................. MAPPER CLASSES ......................
 
     private static final class UsuarioMapper implements RowMapper<Usuario> {
 
@@ -357,6 +383,8 @@ public class UsuarioDao {
                     .build();
         }
     }
+
+    // .................. HELPER CLASSES ......................
 
     private static final class UsuarioFullComunidadMapper implements RowMapper<UsuarioComunidad> {
 
@@ -405,34 +433,5 @@ public class UsuarioDao {
                     .gcmToken(rs.getString("gcm_token"))
                     .build();
         }
-    }
-
-    // .................. HELPER CLASSES ......................
-
-    private static UsuarioComunidad doUsuarioComunidadFull(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
-    {
-        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
-                .portal(rs.getString("portal"))
-                .escalera(rs.getString("escalera"))
-                .planta(rs.getString("planta"))
-                .puerta(rs.getString("puerta"))
-                .roles(rs.getString("roles"))
-                .build();
-    }
-
-    private static UsuarioComunidad doUserComuOnlyRoles(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
-    {
-        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
-                .roles(rs.getString("roles"))
-                .build();
-    }
-
-    private static Usuario doUsuarioNoPswd(ResultSet rs) throws SQLException
-    {
-        return new Usuario.UsuarioBuilder()
-                .uId(rs.getLong("u_id"))
-                .userName(rs.getString("user_name"))
-                .alias(rs.getString("alias"))
-                .build();
     }
 }

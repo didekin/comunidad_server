@@ -1,23 +1,8 @@
 package com.didekin.userservice.repository;
 
 
-import com.didekin.common.repository.EntityException;
-import com.didekinlib.model.usuario.Usuario;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.ROLES_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 
 /**
  * User: pedro@didekin
@@ -26,7 +11,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUN
  * <p>
  * Dao class used exclusively by Spring Oauth2.
  */
-public class UsuarioAuthService implements UserDetailsService {
+public class UsuarioAuthService /*implements UserDetailsService*/ {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioAuthService.class.getCanonicalName());
 
@@ -35,9 +20,9 @@ public class UsuarioAuthService implements UserDetailsService {
     public UsuarioAuthService(UsuarioManagerIf sujetosService)
     {
         this.sujetosService = sujetosService;
-    }
+    }   // TODO: descomentar y revisar.
 
-    @Override
+    /*@Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException
     {
         logger.info("loadUserByUsername()");
@@ -45,7 +30,7 @@ public class UsuarioAuthService implements UserDetailsService {
         Usuario usuario;
         try {
             usuario = sujetosService.getUserByUserName(email);
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             throw new UsernameNotFoundException(USER_NAME_NOT_FOUND.toString());
         }
         List<String> securityRoles = sujetosService.getRolesSecurity(usuario);
@@ -59,5 +44,5 @@ public class UsuarioAuthService implements UserDetailsService {
         }
         logger.error("loadUserByUsername(), roles not found");
         throw new UsernameNotFoundException(ROLES_NOT_FOUND.toString());
-    }
+    }*/
 }

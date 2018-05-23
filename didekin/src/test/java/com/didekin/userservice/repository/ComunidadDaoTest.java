@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -56,8 +56,8 @@ public abstract class ComunidadDaoTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test(expected = EntityException.class)
-    public void testDeleteComunidadOk() throws EntityException
+    @Test(expected = ServiceException.class)
+    public void testDeleteComunidadOk() throws ServiceException
     {
         Comunidad comunidad = comunidadDao.getComunidadById(3L);
         boolean isDeleted = comunidadDao.deleteComunidad(comunidad);
@@ -77,7 +77,7 @@ public abstract class ComunidadDaoTest {
         try {
             comunidadDao.deleteComunidad(comunidad);
             fail();
-        } catch (EntityException e) {
+        } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
     }
@@ -97,7 +97,7 @@ public abstract class ComunidadDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComunidadByPk() throws EntityException
+    public void testGetComunidadByPk() throws ServiceException
     {
         Comunidad comunidad = comunidadDao.getComunidadById(3L);
         assertThat(comunidad.getNombreVia(), is("de El Escorial"));
@@ -162,7 +162,7 @@ public abstract class ComunidadDaoTest {
             comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
             fail();
         } catch (Exception e) {
-            assertThat(e.getMessage(), allOf(containsString(EntityException.DUPLICATE_ENTRY), containsString(EntityException.COMUNIDAD_UNIQUE_KEY)));
+            assertThat(e.getMessage(), allOf(containsString(ServiceException.DUPLICATE_ENTRY), containsString(ServiceException.COMUNIDAD_UNIQUE_KEY)));
         } finally {
             if (conn != null) {
                 conn.close();
@@ -174,7 +174,7 @@ public abstract class ComunidadDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testInsertUsuarioComunidad() throws EntityException
+    public void testInsertUsuarioComunidad() throws ServiceException
     {
         // Necesito userName, no sólo uId, como en el caso de la comunidad.
 
@@ -205,7 +205,7 @@ public abstract class ComunidadDaoTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testInsertUsuarioComunidad_3() throws EntityException
+    public void testInsertUsuarioComunidad_3() throws ServiceException
     {
         boolean insertedRow = sujetosService.regComuAndUserAndUserComu(COMU_REAL_PEPE, oneComponent_local_ES);
         assertThat(insertedRow, is(true));
@@ -219,14 +219,14 @@ public abstract class ComunidadDaoTest {
             comunidadDao.insertUsuarioComunidad(userComu);
             fail();
         } catch (Exception e) {
-            assertThat(e.getMessage(), allOf(containsString(EntityException.DUPLICATE_ENTRY), containsString(EntityException.USER_COMU_PK)));
+            assertThat(e.getMessage(), allOf(containsString(ServiceException.DUPLICATE_ENTRY), containsString(ServiceException.USER_COMU_PK)));
         }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyComuData() throws EntityException
+    public void testModifyComuData() throws ServiceException
     {
         Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(4L).tipoVia("nuevo_tipo").nombreVia
                 ("nuevo_nombre_via").numero((short) 22).municipio(new Municipio((short) 2, new Provincia((short) 13)))
@@ -406,7 +406,7 @@ public abstract class ComunidadDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSearchComunidad_9() throws EntityException
+    public void testSearchComunidad_9() throws ServiceException
     {
         /*select name from metal where name = RIGHT('xxxname',length(name));*/
         // Diferencia con test_7: datos de password encriptados en DB.

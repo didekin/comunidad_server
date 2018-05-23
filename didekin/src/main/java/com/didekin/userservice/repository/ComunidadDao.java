@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.ComunidadAutonoma;
 import com.didekinlib.model.comunidad.Municipio;
@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.didekin.common.repository.EntityException.GENERATED_KEY;
+import static com.didekin.common.repository.ServiceException.GENERATED_KEY;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
@@ -61,13 +61,13 @@ public class ComunidadDao {
     //    ............Package-local methods ..........................
     //    ============================================================
 
-    boolean deleteComunidad(Comunidad comunidad) throws EntityException
+    boolean deleteComunidad(Comunidad comunidad) throws ServiceException
     {
         logger.info("::deleteComunidad()");
 
         int rowsDeleted = jdbcTemplate.update(ComunidadSql.DELETE_BY_ID.toString(), comunidad.getC_Id());
         if (!(rowsDeleted == 1)) {
-            throw new EntityException(COMUNIDAD_NOT_FOUND);
+            throw new ServiceException(COMUNIDAD_NOT_FOUND);
         }
         return Boolean.TRUE;
     }
@@ -79,7 +79,7 @@ public class ComunidadDao {
         return (rowsCount > 0);
     }
 
-    Comunidad getComunidadById(long idComunidad) throws EntityException
+    Comunidad getComunidadById(long idComunidad) throws ServiceException
     {
         logger.info("::getComunidadById");
         Comunidad comunidad;
@@ -88,7 +88,7 @@ public class ComunidadDao {
                     new ComunidadMapperWithCA(), idComunidad);
         } catch (EmptyResultDataAccessException e) {
             logger.info("::getComunidadById(); the comunidad does not exist.");
-            throw new EntityException(COMUNIDAD_NOT_FOUND);
+            throw new ServiceException(COMUNIDAD_NOT_FOUND);
         }
         return comunidad;
     }

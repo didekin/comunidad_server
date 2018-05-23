@@ -1,7 +1,7 @@
 package com.didekin.incidservice.repository;
 
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
 import com.didekinlib.gcm.model.incidservice.GcmIncidRequestData;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -72,19 +72,19 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 2. The incidencia and all its incidenciaUsers are deleted.
      *
      * @return number of registers accessed and, perhaps, modified.
-     * @throws EntityException INCIDENCIA_NOT_FOUND,
+     * @throws ServiceException INCIDENCIA_NOT_FOUND,
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         UNAUTHORIZED_TX_TO_USER.
      */
     @Override
-    public int closeIncidencia(final String userName, Resolucion resolucion) throws EntityException
+    public int closeIncidencia(final String userName, Resolucion resolucion) throws ServiceException
     {
         logger.debug("closeIncidencia()");
 
         Resolucion resolucionFull = of(seeIncidenciaById(resolucion.getIncidencia().getIncidenciaId()))
                 .map(incidencia -> new Resolucion.ResolucionBuilder(incidencia).copyResolucion(resolucion).buildAsFk())
                 .filter(resolucionStr -> usuarioConnector.checkAuthorityInComunidad(userName, resolucionStr.getComunidadId()))
-                .findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
+                .findFirst().orElseThrow(() -> new ServiceException(UNAUTHORIZED_TX_TO_USER));
 
         int rowsUpdated =
                 modifyResolucion(userName, resolucion) + incidenciaDao.closeIncidencia(resolucion.getIncidencia().getIncidenciaId());
@@ -105,18 +105,18 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 2. The incidencia and all its incidenciaUsers are deleted.
      *
      * @return number of rows deleted (1).
-     * @throws EntityException INCIDENCIA_NOT_FOUND,
+     * @throws ServiceException INCIDENCIA_NOT_FOUND,
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         UNAUTHORIZED_TX_TO_USER.
      */
     @Override
-    public int deleteIncidencia(String userNameInSession, long incidenciaId) throws EntityException
+    public int deleteIncidencia(String userNameInSession, long incidenciaId) throws ServiceException
     {
         logger.debug("deleteIncidencia()");
         return of(seeIncidenciaById(incidenciaId))
                 .filter(incidencia -> usuarioConnector.checkIncidModificationPower(userNameInSession, incidencia))
                 .map(incidencia -> incidenciaDao.deleteIncidencia(incidencia.getIncidenciaId()))
-                .findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
+                .findFirst().orElseThrow(() -> new ServiceException(UNAUTHORIZED_TX_TO_USER));
     }
 
     /**
@@ -129,16 +129,16 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * @param userNameInSession : user trying the modification.
      * @param incidencia        : an Incidencia instance with incidenciaId, descripcion and ambitoId.
      * @return number of rows modified in DB (0 or 1).
-     * @throws EntityException INCIDENCIA_NOT_FOUND (or closed),
+     * @throws ServiceException INCIDENCIA_NOT_FOUND (or closed),
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         INCIDENCIA_USER_WRONG_INIT.
      */
-    int modifyIncidencia(String userNameInSession, final Incidencia incidencia) throws EntityException
+    int modifyIncidencia(String userNameInSession, final Incidencia incidencia) throws ServiceException
     {
         logger.debug("modifyIncidencia()");
 
         if (incidencia == null || incidencia.getIncidenciaId() <= 0 || incidencia.getUserName() == null) {
-            throw new EntityException(INCIDENCIA_USER_WRONG_INIT);
+            throw new ServiceException(INCIDENCIA_USER_WRONG_INIT);
         }
         return of(incidencia)
                 .filter(incidenciaIn ->
@@ -158,11 +158,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *
      * @param incidImportancia : an IncidImportancia instance with incidencia and importancia fields fulfilled (importancia default initialization == 0).
      * @return number of rows modified in DB: 1 or 2 if incidImportancia.importancia is also updated.
-     * @throws EntityException USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
+     * @throws ServiceException USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist),
      *                         INCIDENCIA_NOT_FOUND (if the incidencia is closed or it doesn't exist).
      */
     @Override
-    public int modifyIncidImportancia(String userNameInSession, IncidImportancia incidImportancia) throws EntityException
+    public int modifyIncidImportancia(String userNameInSession, IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("modifyIncidImportancia()");
 
@@ -206,19 +206,19 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Postconditions:
      * 1. The resolución is updated and a new avance is inserted in the DB, if that is the case.
      *
-     * @throws EntityException INCIDENCIA_NOT_FOUND,
+     * @throws ServiceException INCIDENCIA_NOT_FOUND,
      *                         UNAUTHORIZED_TX_TO_USER,
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
      */
     @Override
-    public int modifyResolucion(String userName, Resolucion resolucion) throws EntityException
+    public int modifyResolucion(String userName, Resolucion resolucion) throws ServiceException
     {
         logger.debug("modifyResolucion()");
 
         return of(resolucion)
                 .filter(resolucion1 -> usuarioConnector.checkAuthorityInComunidad(userName, resolucion1.getComunidadId()))
                 .map(resolucion1 -> doResolucionModifiedWithNewAvance(resolucion1, userName))
-                .map(incidenciaDao::modifyResolucion).findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
+                .map(incidenciaDao::modifyResolucion).findFirst().orElseThrow(() -> new ServiceException(UNAUTHORIZED_TX_TO_USER));
     }
 
     /**
@@ -228,11 +228,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * Postconditions:
      * 1. The comment is inserted in the DB.
      *
-     * @throws EntityException USER_NAME_NOT_FOUND,
+     * @throws ServiceException USER_NAME_NOT_FOUND,
      *                         INCIDENCIA_NOT_FOUND.
      */
     @Override
-    public int regIncidComment(String userName, final IncidComment comment) throws EntityException
+    public int regIncidComment(String userName, final IncidComment comment) throws ServiceException
     {
         logger.debug("regIncidComment()");
         return of(comment)
@@ -257,10 +257,10 @@ class IncidenciaManager implements IncidenciaManagerIf {
      *
      * @param incidencia : an Incidencia instance with userName.
      * @return Incidencia: the incidencia inserted or the one already in BD.
-     * @throws EntityException INCIDENCIA_NOT_REGISTERED (if a SQLException is thrown).
+     * @throws ServiceException INCIDENCIA_NOT_REGISTERED (if a SQLException is thrown).
      *                         INCIDENCIA_NOT_FOUND if the incidencia is closed.
      */
-    Incidencia regIncidencia(Incidencia incidencia) throws EntityException
+    Incidencia regIncidencia(Incidencia incidencia) throws ServiceException
     {
         logger.debug("regIncidencia()");
 
@@ -271,7 +271,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
                     try {
                         pK = incidenciaDao.regIncidencia(incidencia1);
                     } catch (SQLException e) {
-                        throw new EntityException(INCIDENCIA_NOT_REGISTERED);
+                        throw new ServiceException(INCIDENCIA_NOT_REGISTERED);
                     }
                     return new Incidencia.IncidenciaBuilder()
                             .copyIncidencia(incidencia1)
@@ -297,11 +297,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * not provided an explicit one.
      *
      * @return number of rows inserted: it should be 2.
-     * @throws EntityException USER_NAME_NOT_FOUND,
+     * @throws ServiceException USER_NAME_NOT_FOUND,
      *                         INCIDENCIA_NOT_REGISTERED (see regIncidencia() below),
      *                         USERCOMU_WRONG_INIT.
      */
-    public int regIncidImportancia(String userName, IncidImportancia incidImportancia) throws EntityException
+    public int regIncidImportancia(String userName, IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("regIncidImportancia()");
 
@@ -339,12 +339,12 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. The resolucion is persisted in DB.
      * 2. A notification is sent to the users in the comunidad.
      *
-     * @throws EntityException INCIDENCIA_NOT_FOUND if the incidencia doesn't exist or is closed.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND if the incidencia doesn't exist or is closed.
      *                         USERCOMU_WRONG_INIT (if the FK restriction incidencia.usuarioComunidad is violated).
      *                         RESOLUCION_DUPLICATE.
      */
     @Override
-    public int regResolucion(String userName, Resolucion resolucion) throws EntityException
+    public int regResolucion(String userName, Resolucion resolucion) throws ServiceException
     {
         logger.debug("regResolucion()");
 
@@ -357,7 +357,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
                         .userName(userName)
                         .build())
                 .map(incidenciaDao::regResolucion)
-                .findFirst().orElseThrow(() -> new EntityException(UNAUTHORIZED_TX_TO_USER));
+                .findFirst().orElseThrow(() -> new ServiceException(UNAUTHORIZED_TX_TO_USER));
 
         // Asynchronous GCM notification.
         GcmIncidRequestData requestData = new GcmIncidRequestData(resolucion_open_type, resolucion.getComunidadId());
@@ -367,7 +367,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
     }
 
     @Override
-    public List<IncidComment> seeCommentsByIncid(long incidenciaId) throws EntityException
+    public List<IncidComment> seeCommentsByIncid(long incidenciaId) throws ServiceException
     {
         logger.debug("seeCommentsByIncid()");
         List<IncidComment> comments = incidenciaDao.SeeCommentsByIncid(incidenciaId);
@@ -379,7 +379,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
     }
 
     @Override
-    public Incidencia seeIncidenciaById(long incidenciaId) throws EntityException
+    public Incidencia seeIncidenciaById(long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidenciaById()");
         return incidenciaDao.seeIncidenciaById(incidenciaId);
@@ -399,11 +399,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * - incidImportancia.fechaAlta == null.
      * - hasResolucion = state in table of resolucion.
      *
-     * @throws EntityException INCIDENCIA_NOT_FOUND (or not open)
+     * @throws ServiceException INCIDENCIA_NOT_FOUND (or not open)
      *                         USERCOMU_WRONG_INIT (if the relationship usuario_comunidad doesn't exist).
      */
     @Override
-    public IncidAndResolBundle seeIncidImportanciaByUser(final String userNameInSession, final long incidenciaId) throws EntityException
+    public IncidAndResolBundle seeIncidImportanciaByUser(final String userNameInSession, final long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidImportanciaByUser()");
 
@@ -441,7 +441,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. A list of the closed incidencias in the comunidad, as produced by
      * {@link IncidenciaDao#seeIncidsClosedByComu(long comunidadId) IncidenciaDao.seeIncidsClosedByComu method}
      *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
+     * @throws ServiceException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
      *                         the incidencia doesn't exist.
      */
     @Override
@@ -461,7 +461,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. A list of the open incidencias in the comunidad, as produced by
      * {@link IncidenciaDao#seeIncidsOpenByComu(long comunidadId) IncidenciaDao.seeIncidsOpenByComu method}
      *
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
+     * @throws ServiceException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad or
      *                         the incidencia doesn't exist.
      */
     @Override
@@ -484,11 +484,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * plus:
      * - incidencia.comunidad.c_Id
      * 2. null, there does not exists the resolucion.
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
-     * @throws EntityException INCIDENCIA_NOT_FOUND if the incidenciaId (same as resolucionId) doesn't exist.
+     * @throws ServiceException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND if the incidenciaId (same as resolucionId) doesn't exist.
      */
     @Override
-    public Resolucion seeResolucion(String userName, long incidenciaId) throws EntityException
+    public Resolucion seeResolucion(String userName, long incidenciaId) throws ServiceException
     {
         logger.debug("seeResolucion()");
 
@@ -519,11 +519,11 @@ class IncidenciaManager implements IncidenciaManagerIf {
      * 1. A list as produced by
      * {@link IncidenciaDao#seeUserComusImportancia(long incidenciaId) IncidenciaDao.seeUserComusImportancia method}
      *
-     * @throws EntityException INCIDENCIA_NOT_FOUND, if the incidenciaId doesn't exist.
-     * @throws EntityException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
+     * @throws ServiceException INCIDENCIA_NOT_FOUND, if the incidenciaId doesn't exist.
+     * @throws ServiceException USERCOMU_WRONG_INIT, if the user is not associated to the comunidad.
      */
     @Override
-    public List<ImportanciaUser> seeUserComusImportancia(final String userName, long incidenciaId) throws EntityException
+    public List<ImportanciaUser> seeUserComusImportancia(final String userName, long incidenciaId) throws ServiceException
     {
         logger.debug("seeUserComusImportancia()");
         return of(incidenciaId)
@@ -545,7 +545,7 @@ class IncidenciaManager implements IncidenciaManagerIf {
     {
         logger.debug("checkIncidenciaOpen()");
         if (!incidenciaDao.isIncidenciaOpen(incidenciaId)) {
-            throw new EntityException(INCIDENCIA_NOT_FOUND);
+            throw new ServiceException(INCIDENCIA_NOT_FOUND);
         }
         return true;
     }

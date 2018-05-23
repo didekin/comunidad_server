@@ -7,6 +7,5 @@ package com.didekin.userservice.mail;
  */
 public enum UsuarioMailKey {
     TXT_Password,
-    TXT_CHANGE_Password,
-    ;
+    TXT_CHANGE_Password,;
 }

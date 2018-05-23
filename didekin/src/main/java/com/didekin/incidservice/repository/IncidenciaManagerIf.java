@@ -1,6 +1,6 @@
 package com.didekin.incidservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
@@ -18,33 +18,33 @@ import java.util.List;
  */
 public interface IncidenciaManagerIf {
 
-    int closeIncidencia(String userName, Resolucion resolucion) throws EntityException;
+    int closeIncidencia(String userName, Resolucion resolucion) throws ServiceException;
 
-    int deleteIncidencia(String userNameInSession, long incidenciaId) throws EntityException;
+    int deleteIncidencia(String userNameInSession, long incidenciaId) throws ServiceException;
 
-    int modifyIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws EntityException;
+    int modifyIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws ServiceException;
 
-    int regIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws EntityException;
+    int regIncidImportancia(String userNameFromAuthentication, IncidImportancia incidImportancia) throws ServiceException;
 
-    int regIncidComment(String userNameFromAuthentication, IncidComment build) throws EntityException;
+    int regIncidComment(String userNameFromAuthentication, IncidComment build) throws ServiceException;
 
-    int regResolucion(String userNameFromAuthentication, Resolucion resolucion) throws EntityException;
+    int regResolucion(String userNameFromAuthentication, Resolucion resolucion) throws ServiceException;
 
-    List<IncidComment> seeCommentsByIncid(long incidenciaId) throws EntityException;
+    List<IncidComment> seeCommentsByIncid(long incidenciaId) throws ServiceException;
 
-    Incidencia seeIncidenciaById(long incidenciaId) throws EntityException;
+    Incidencia seeIncidenciaById(long incidenciaId) throws ServiceException;
 
-    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws EntityException;
+    IncidAndResolBundle seeIncidImportanciaByUser(String userName, long incidenciaId) throws ServiceException;
 
     List<IncidenciaUser> seeIncidsOpenByComu(String userNameFromAuthentication, long comunidadId);
 
-    Resolucion seeResolucion(String userNameFromAuthentication, long incidenciaId) throws EntityException;
+    Resolucion seeResolucion(String userNameFromAuthentication, long incidenciaId) throws ServiceException;
 
-    int modifyResolucion(String userName, Resolucion resolucion) throws EntityException;
+    int modifyResolucion(String userName, Resolucion resolucion) throws ServiceException;
 
     List<IncidenciaUser> seeIncidsClosedByComu(String userNameFromAuthentication, long comunidadId);
 
-    List<ImportanciaUser> seeUserComusImportancia(String userNameFromAuthentication, long incidenciaId) throws EntityException;
+    List<ImportanciaUser> seeUserComusImportancia(String userNameFromAuthentication, long incidenciaId) throws ServiceException;
 
     UserManagerConnector getUsuarioConnector();
 

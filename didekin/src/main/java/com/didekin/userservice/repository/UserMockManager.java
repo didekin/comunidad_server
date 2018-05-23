@@ -1,6 +1,6 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.repository.EntityException;
+import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -38,6 +38,7 @@ public class UserMockManager {
 
     @Autowired
     Environment env;
+
     @Autowired
     UserMockManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
     {
@@ -45,7 +46,7 @@ public class UserMockManager {
         this.usuarioDao = usuarioDao;
     }
 
-    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws EntityException
+    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
     {
         logger.info("regComuAndUserAndUserComu()");
         checkActiveProfiles(env);
@@ -81,7 +82,7 @@ public class UserMockManager {
         return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
     }
 
-    public boolean regUserAndUserComu(final UsuarioComunidad userComu) throws EntityException
+    public boolean regUserAndUserComu(final UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("regUserAndUserComu()");
         checkActiveProfiles(env);
