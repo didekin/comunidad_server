@@ -1,6 +1,5 @@
 package com.didekin.auth;
 
-import com.didekin.auth.EncryptedTkConsumer.EncrypTkConsumerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.http.usuario.AuthHeader;
 import com.google.gson.JsonSyntaxException;
@@ -14,7 +13,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.didekin.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
+import static com.didekinlib.http.usuario.TkParamNames.audience;
+import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
@@ -28,12 +30,12 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.AUTH_HEADER;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    private final EncrypTkConsumerBuilder builder;
+    private final EncrypTkConsumerBuilder consumerBuilder;
 
+    @Autowired
     public AuthInterceptor(EncrypTkConsumerBuilder builderIn)
     {
-       builder = builderIn;
+        consumerBuilder = builderIn;
     }
 
     @Override
@@ -50,15 +52,20 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         try {
             AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
-            JwtClaims claims = builder.defaultInit(headerIn.getToken()).build().getClaims();
-            return (headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))) && headerIn.getUserName().equals(claims.getSubject());
+            JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
+
+            return headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
+                    && headerIn.getUserName().equals(claims.getSubject())
+                    && claims.getAudience().equals(getDefaultClaim(audience))
+                    && claims.getIssuer().equals(getDefaultClaim(issuer));
+
         } catch (JsonSyntaxException | MalformedClaimException e) {
             throw new ServiceException(TOKEN_ENCRYP_DECRYP_ERROR);
         }
     }
 
-    EncrypTkConsumerBuilder getBuilder()
+    EncrypTkConsumerBuilder getConsumerBuilder()
     {
-        return builder;
+        return consumerBuilder;
     }
 }

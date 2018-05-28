@@ -1,7 +1,11 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.auth.TkConfiguration;
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
+import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
@@ -12,8 +16,13 @@ import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -22,10 +31,13 @@ import java.util.List;
 
 import javax.mail.MessagingException;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
+import static com.didekin.userservice.repository.UsuarioDaoTest.checkBeanUsuario;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
@@ -33,7 +45,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
@@ -49,6 +60,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pepe;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
@@ -86,7 +98,7 @@ import static org.mindrot.jbcrypt.BCrypt.checkpw;
 public abstract class UsuarioManagerTest {
 
     @Autowired
-    private UsuarioManagerIf usuarioManager;
+    private UsuarioManager usuarioManager;
     @Autowired
     private JavaMailMonitor javaMailMonitor;
     @Autowired
@@ -99,46 +111,9 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testCompleteUser_1() throws ServiceException
-    {
-        Usuario usuario = usuarioManager.completeUser(USER_PACO.getUserName());
-        assertThat(usuario, allOf(
-                hasProperty("uId", is(11L)),
-                hasProperty("userName", is(USER_PACO.getUserName())),
-                hasProperty("alias", is(USER_PACO.getAlias())),
-                hasProperty("password", nullValue())
-        ));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testCompleteUser_2() throws ServiceException
-    {
-        try {
-            usuarioManager.completeUser("no_existo");
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void test_CompleteWithUserComuRoles()
     {
         assertThat(usuarioManager.completeWithUserComuRoles(luis.getUserName(), 1L).getRoles(), is("adm,pro"));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_deleteAccessTokenByUserName()    // TODO: descomentar y revisar.
-    {
-        // No token in database: no delete.
-//        assertThat(usuarioManager.getAccessTokenByUserName(luis.getUserName()).isPresent(), is(false));
-        assertThat(usuarioManager.deleteAccessTokenByUserName(luis.getUserName()), is(false));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -253,7 +228,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
         try {
-            assertThat(usuarioManager.getUserByUserName(pedro.getUserName()), notNullValue());
+            assertThat(usuarioManager.getUserDataByName(pedro.getUserName()), notNullValue());
         } catch (ServiceException e) {
             fail();
         }
@@ -272,7 +247,7 @@ public abstract class UsuarioManagerTest {
         // Check.
         assertThat(usuarioManager.getComunidadById(ronda_plazuela_10bis.getC_Id()), is(ronda_plazuela_10bis));
         try {
-            usuarioManager.getUserByUserName(luis.getUserName());
+            usuarioManager.getUserDataByName(luis.getUserName());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -307,30 +282,12 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_GetGcmToken()
-    {
-        // Insertamos token en usuario.
-        Usuario usuario = doUsuario(pedro.getUserName(), "pedro_gcm_token");
-        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
-        // Exec and check.
-        assertThat(usuarioManager.getGcmToken(pedro.getuId()), is("pedro_gcm_token"));
-
-        // Caso null.
-        assertThat(usuarioManager.getGcmToken(luis.getuId()), nullValue());
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void testGetGcmTokensByComunidad() throws ServiceException
     {
         // Insertamos tokens en tres usuarios.
-        Usuario usuario = doUsuario(pedro.getUserName(), "pedro_gcm_token");
-        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
-        usuario = doUsuario(luis.getUserName(), "luis_gcm_token");
-        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
-        usuario = doUsuario(juan.getUserName(), "juan_gcm_token");
-        assertThat(usuarioManager.modifyUserGcmToken(usuario), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), "pedro_gcm_token"), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), "luis_gcm_token"), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), "juan_gcm_token"), is(1));
 
         List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getC_Id());
         assertThat(tokens.size(), is(2));
@@ -388,15 +345,11 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserByUserName_1() throws ServiceException
+    public void test_getUserDataByName_1() throws ServiceException
     {
         usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(
                 COMU_LA_PLAZUELA_5, pedro, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
-        Usuario usuario = usuarioManager.getUserByUserName(pedro.getUserName());
-        assertThat(usuario.getUserName(), is(pedro.getUserName()));
-        assertThat(usuario.getuId() > 0L, is(true));
-        assertThat(usuario.getAlias(), is(pedro.getAlias()));
-        assertThat(usuario.getPassword().isEmpty(), is(false));
+        checkBeanUsuario(usuarioManager.getUserDataByName(pedro.getUserName()), pedro, true);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -433,11 +386,11 @@ public abstract class UsuarioManagerTest {
         Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("passwordWrong")
                 .build();
 
-        assertThat(usuarioManager.login(pedroOk), is(true));
-        assertThat(usuarioManager.login(pedroWrongPassword), is(false));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(pedroOk)), is(true));
+        assertThat(usuarioManager.login(pedroWrongPassword), nullValue());
 
         try {
-            assertThat(usuarioManager.login(pedroWrongUserName), is(true));
+            usuarioManager.login(pedroWrongUserName);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -496,12 +449,12 @@ public abstract class UsuarioManagerTest {
                 .password(juan.getPassword())
                 .alias("new_juan_alias")
                 .build();
-        assertThat(usuarioManager.login(usuarioIn), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(usuarioIn)), is(true));
         // We change alias ONLY.
         assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com", twoComponent_local_ES), is(1));
-        assertThat(usuarioManager.getUserByUserName("juan@noauth.com").getAlias(), is("new_juan_alias"));
+        assertThat(usuarioManager.getUserDataByName("juan@noauth.com").getAlias(), is("new_juan_alias"));
         // Login has not changed.
-        assertThat(usuarioManager.login(usuarioIn), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(usuarioIn)), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -509,7 +462,7 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testModifyUser_2() throws ServiceException, IOException, MessagingException
     {
-        Usuario oldUser = usuarioManager.getUserByUserName("juan@noauth.com");
+        Usuario oldUser = usuarioManager.getUserDataByName("juan@noauth.com");
         // We change userName.
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
                 .uId(7L)
@@ -518,7 +471,7 @@ public abstract class UsuarioManagerTest {
 
         assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
         // Check new data in DB.
-        assertThat(usuarioManager.getUserByUserName(TO), allOf(
+        assertThat(usuarioManager.getUserDataByName(TO), allOf(
                 hasProperty("uId", equalTo(7L)),
                 hasProperty("alias", is("juan_no_auth")))
         );
@@ -554,13 +507,15 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_ModifyUserGcmToken_1() throws ServiceException
     {
-        Usuario usuario = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.completeUser("juan@noauth.com")).gcmToken("GCMtoKen1234X").build();
+        Usuario usuario = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName("juan@noauth.com"))
+                .gcmToken("GCMtoKen1234X")
+                .build();
         // Verificamos la premisa.
-        assertThat(usuarioManager.getGcmToken(usuario.getuId()), nullValue());
+        assertThat(usuarioManager.getUserDataByName(usuario.getUserName()).getGcmToken(), nullValue());
         // Insertamos token.
         assertThat(usuarioManager.modifyUserGcmToken(usuario.getUserName(), usuario.getGcmToken()), is(1));
         // Verificamos.
-        assertThat(usuarioManager.getGcmToken(usuario.getuId()), is("GCMtoKen1234X"));
+        assertThat(usuarioManager.getUserDataByName(usuario.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -582,9 +537,9 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_ModifyUserGcmTokens()
     {
-        assertThat(usuarioManager.modifyUserGcmToken(pedro), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(luis), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(juan), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), pedro.getGcmToken()), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), luis.getGcmToken()), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), juan.getGcmToken()), is(1));
 
         List<GcmTokensHolder> holders = new ArrayList<>(3);
         holders.add(new GcmTokensHolder(null, luis.getGcmToken()));
@@ -592,30 +547,34 @@ public abstract class UsuarioManagerTest {
         holders.add(new GcmTokensHolder("new_juan_token", juan.getGcmToken()));
         assertThat(usuarioManager.modifyUserGcmTokens(holders), is(3));
 
-        assertThat(usuarioDao.getUsuarioWithGcmToken(luis.getuId()).getGcmToken(), nullValue());
-        assertThat(usuarioDao.getUsuarioWithGcmToken(pedro.getuId()).getGcmToken(), nullValue());
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
+        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithName_1() throws ServiceException
+    public void test_passwordChange_1() throws ServiceException
     {
-        assertThat(usuarioManager.passwordChangeWithName(luis.getUserName(), "new_luis_password"), is(1));
-        assertThat(checkpw("new_luis_password", usuarioDao.getUsuarioById(luis.getuId()).getPassword()),
+        assertThat(usuarioManager.passwordChange(luis.getUserName(), "new_luis_password"), is(1));
+        assertThat(checkpw("new_luis_password", usuarioDao.getUserDataById(luis.getuId()).getPassword()),
                 is(true));
-        assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk
+                        (usuarioManager.login(
+                                new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build())
+                        ),
+                is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordChangeWithName_2() throws ServiceException
+    public void test_passwordChange_2() throws ServiceException
     {
         // Precondition: no existe usuario.
         Usuario newPepe = new Usuario.UsuarioBuilder().copyUsuario(pepe).uId(999L).build();
         try {
-            usuarioManager.passwordChangeWithName(newPepe.getUserName(), "newPassword");
+            usuarioManager.passwordChange(newPepe.getUserName(), "newPassword");
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -634,20 +593,20 @@ public abstract class UsuarioManagerTest {
         javaMailMonitor.extSetUp();
         String password = javaMailMonitor.getPswdFromMsg();
         // Check login.
-        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserByUserName(TO)).password(password).build();
-        assertThat(usuarioManager.login(userReg), is(true));
+        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName(TO)).password(password).build();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userReg)), is(true));
 
         // Exec test.
         assertThat(usuarioManager.passwordSend(userReg.getUserName(), oneComponent_local_ES), is(true));
-        assertThat(usuarioManager.login(userReg), is(false));
+        assertThat(usuarioManager.login(userReg), nullValue()); // Login no válido una vez generado el nuevo password.
 
         // Check password generated and sent.
         javaMailMonitor.expungeFolder();
         password = javaMailMonitor.getPswdFromMsg();
         checkGeneratedPassword(password, default_password_length);
-        // Check login.
+        // Check login with new password.
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(userReg).password(password).build();
-        assertThat(usuarioManager.login(userIn), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userIn)), is(true));
         // Cleaning and closing.
         javaMailMonitor.closeStoreAndFolder();
     }
@@ -659,7 +618,7 @@ public abstract class UsuarioManagerTest {
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioManager.getUserByUserName(pedro.getUserName()))
+                .copyUsuario(usuarioManager.getUserDataByName(pedro.getUserName()))
                 .password(pedro.getPassword()).build();
         // Exec
         try {
@@ -669,7 +628,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(PASSWORD_NOT_SENT));
         }
         // Login not changed.
-        assertThat(usuarioManager.login(usuarioIn), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(usuarioIn)), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -845,7 +804,7 @@ public abstract class UsuarioManagerTest {
         final UsuarioComunidad usuarioComunidad_1 = makeUsuarioComunidad(comunidad1, USER_JUAN, "portal", "esc",
                 "plantaX", "door12", PROPIETARIO.function);
         usuarioManager.regComuAndUserAndUserComu(usuarioComunidad_1, oneComponent_local_ES);
-        Usuario userWithPk = usuarioManager.getUserByUserName(USER_JUAN.getUserName());
+        Usuario userWithPk = usuarioManager.getUserDataByName(USER_JUAN.getUserName());
 
         // Primera búsqueda.
         List<Comunidad> comunidades = usuarioManager.searchComunidades(comunidad);
@@ -899,12 +858,6 @@ public abstract class UsuarioManagerTest {
 
     // ======================================== HELPERS ========================================
 
-    private Usuario doUsuario(String userName, String gcmToken) throws ServiceException
-    {
-        return new Usuario.UsuarioBuilder().uId(usuarioManager.completeUser(userName).getuId()).gcmToken
-                (gcmToken).build();
-    }
-
     private void checkPswdSentAndLogin(Usuario newUsuario) throws MessagingException, IOException
     {
         // Check password generated and sent.
@@ -915,7 +868,35 @@ public abstract class UsuarioManagerTest {
         javaMailMonitor.closeStoreAndFolder();
         // Check login.
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(newUsuario).password(password).build();
-        assertThat(usuarioManager.login(userIn), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userIn)), is(true));
+    }
+
+    // ================================= INNER CLASSES ======================================
+
+    /**
+     * User: pedro@didekin
+     * Date: 20/04/15
+     * Time: 16:23
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class,
+            UsuarioMailConfigurationPre.class,
+            TkConfiguration.class})
+    @Category({LocalDev.class})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
+    public static class UsuarioManagerDevTest extends UsuarioManagerTest {
+    }
+
+    /**
+     * User: pedro@didekin
+     * Date: 20/04/15
+     * Time: 16:23
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+    @Category({DbPre.class})
+    @ActiveProfiles(value = {MAIL_PRE})
+    public static class UsuarioManagerPreTest extends UsuarioManagerTest {
     }
 }
 

@@ -13,10 +13,13 @@ import static com.didekin.userservice.mail.UsuarioMailKey.TXT_Password;
  */
 public class UsuarioMailBundle_en extends ListResourceBundle {
 
+    static final String new_data = "New data";
+    static final String new_password_tag = "Your new password is: ";
+    static final String change_password_in_tag = "You can change it in: Your user -> Renew password.";
     private static final Object[][] contents = new Object[][]{
-            {SUBJECT.name(), "New data"},
-            {TXT_Password.name(), "Your new password is: "},
-            {TXT_CHANGE_Password.name(), "You can change it in: Your user -> Renew password."}
+            {SUBJECT.name(), new_data},
+            {TXT_Password.name(), new_password_tag},
+            {TXT_CHANGE_Password.name(), change_password_in_tag}
     };
 
     @Override

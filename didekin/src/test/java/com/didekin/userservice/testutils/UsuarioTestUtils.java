@@ -1,21 +1,25 @@
 package com.didekin.userservice.testutils;
 
 
+import com.didekin.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
-import com.didekin.userservice.repository.UsuarioManagerIf;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuario.UsuarioEndPoints;
+import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.TkParamNames;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
+import static com.didekinlib.http.usuario.TkParamNames.appId;
+import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
@@ -231,6 +235,22 @@ public final class UsuarioTestUtils {
     public static final UsuarioComunidad COMU_TRAV_PLAZUELA_PEPE = makeUsuarioComunidad(COMU_TRAV_PLAZUELA_11, USER_PEPE,
             "portalA", null, "planta2", null, INQUILINO.function);
 
+    // ============================  Authorization ====================================
+
+    public static Map<TkParamNames, Object> getDefaultTestClaims(String userName)
+    {
+        Map<TkParamNames, Object> claimsIn = new HashMap<>(2);
+        claimsIn.putIfAbsent(subject, userName);
+        claimsIn.putIfAbsent(appId, "appId_mock");
+        return claimsIn;
+    }
+
+    public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
+    {
+        String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
+        return new AuthHeader.AuthHeaderBuilder().userName(usuario.getUserName()).appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
+    }
+
     // ========================================== Métodos ========================================
 
     public static UsuarioComunidad makeUsuarioComunidad(Comunidad comunidad, Usuario usuario, String portal, String escalera,
@@ -243,38 +263,8 @@ public final class UsuarioTestUtils {
                 .puerta(puerta)
                 .roles(roles).build();
     }
-    // TODO: descomentar y revisar.
-    public static Usuario getUserData(Usuario usuario, UsuarioEndPoints usuarioEndPoints, HttpHandler retrofitHandler) throws IOException
-    {
-        /*return usuarioEndPoints.getUserData(new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(usuario.getUserName(),
-                usuario.getPassword())).execute().body();*/
-        return null;
-    }
 
-    public static String tokenPedro(HttpHandler retrofitHandler) throws IOException    // TODO: descomentar y revisar.
-    {
-//        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
-        return null;
-    }
-
-    public static String tokenLuis(HttpHandler retrofitHandler) throws IOException  // TODO: descomentar y revisar.
-    {
-        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());*/
-        return null;
-    }
-
-    public static String tokenPaco(HttpHandler retrofitHandler) throws IOException   // TODO: descomentar y revisar.
-    {
-        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(paco.getUserName(), paco.getPassword());*/
-        return null;
-    }
-
-    @SuppressWarnings("unused")
-    public static String tokenPepe(HttpHandler retrofitHandler) throws IOException    // TODO: descomentar y revisar.
-    {
-        /*return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(USER_PEPE.getUserName(), USER_PEPE.getPassword());*/
-        return null;
-    }
+    // ============================  Checks ====================================
 
     public static void checkGeneratedPassword(String password, int passwordLength) throws UnsupportedEncodingException
     {
@@ -296,10 +286,10 @@ public final class UsuarioTestUtils {
         assertThat(PASSWORD.isPatternOk(password), is(true));
     }
 
-    public static void checkUserNotFound(String userName, UsuarioManagerIf usuarioManager)
+    public static void checkUserNotFound(String userName, UsuarioManager usuarioManager)
     {
         try {
-            usuarioManager.getUserByUserName(userName);
+            usuarioManager.getUserDataByName(userName);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));

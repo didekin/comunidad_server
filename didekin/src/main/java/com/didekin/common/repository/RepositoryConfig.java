@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -19,7 +18,6 @@ import static java.lang.System.getenv;
  * Time: 15:59
  */
 @Configuration
-@PropertySource({"classpath:/application.properties"})  // TODO: testar si hace falta esta anotación aquí.
 public class RepositoryConfig {
 
     private static final String JDBC_URL_DEFAULT_PORT = "3306";

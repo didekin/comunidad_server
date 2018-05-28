@@ -3,7 +3,7 @@ package com.didekin.userservice.controller;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UserMockManager;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
@@ -54,13 +54,13 @@ public class UserComuMockController extends AppControllerAbstract {
     public static final String OPEN_AREA_MSG = "IS_OPEN";
 
     private final UserMockManager userMockManager;
-    private final UsuarioManagerIf usuarioManager;
+    private final UsuarioManager usuarioManager;
 
     @Autowired
     Environment env;
 
     @Autowired
-    public UserComuMockController(UserMockManager userMockManager, UsuarioManagerIf usuarioManager)
+    public UserComuMockController(UserMockManager userMockManager, UsuarioManager usuarioManager)
     {
         this.userMockManager = userMockManager;
         this.usuarioManager = usuarioManager;

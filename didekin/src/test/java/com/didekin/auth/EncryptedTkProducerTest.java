@@ -2,7 +2,6 @@ package com.didekin.auth;
 
 
 import com.didekin.Application;
-import com.didekin.auth.EncryptedTkProducer.JweTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
 import com.didekinlib.http.usuario.TkParamNames;
@@ -19,9 +18,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static com.didekin.auth.TkAuthClaimsTest.checkMap;
 import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekin.auth.TkHeadersTest.checkMap;
-import static com.didekin.auth.TkTestUtil.getDefaultTestClaims;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.common.dominio.BeanBuilder.error_message_bean_building;
@@ -38,14 +38,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public abstract class EncryptedTkProducerTest {
 
     @Autowired
-    private JweTkProducerBuilder producerBuilder;
+    private EncrypTkProducerBuilder producerBuilder;
 
     @Test
     public void test_getEncryptedTkStr_1()
     {
         String encryptedTkStr = producerBuilder
                 .headers(doHeadersSymmetricKey())
-                .claims(getDefaultTestClaims()) // default data test.
+                .claims(getDefaultTestClaims(pedro.getUserName())) // default data test.
                 .build()
                 .getEncryptedTkStr();
 
@@ -62,21 +62,32 @@ public abstract class EncryptedTkProducerTest {
     @Test
     public void test_getEncryptedTkStr_2()
     {
+        EncrypTkProducerBuilder builder = producerBuilder
+                .headers(doHeadersSymmetricKey())
+                .claims(getDefaultTestClaims(pedro.getUserName()));
+
+        // The same builder produces different tokens.
+        assertThat(builder.build().getEncryptedTkStr().equals(builder.build().getEncryptedTkStr()), is(false));
+    }
+
+    @Test
+    public void test_getEncryptedTkStr_3()
+    {
         try {
             producerBuilder.headers(null)
-                    .claims(getDefaultTestClaims())
+                    .claims(getDefaultTestClaims(pedro.getUserName()))
                     .build();
             fail();
         } catch (Exception e) {
             assertThat(e instanceof IllegalStateException, is(true));
-            assertThat(e.getMessage(), is(error_message_bean_building + JweTkProducerBuilder.class.getName()));
+            assertThat(e.getMessage(), is(error_message_bean_building + EncrypTkProducerBuilder.class.getName()));
         }
     }
 
     @Test
     public void test_defaultHeadersClaims_1() throws MalformedClaimException
     {
-        JweTkProducerBuilder builder = producerBuilder.defaultHeadersClaims("user@name.com", "appId_1234");
+        EncrypTkProducerBuilder builder = producerBuilder.defaultHeadersClaims("user@name.com", "appId_1234");
         TkHeaders headers = builder.getHeaders();
         checkMap(headers);
         TkAuthClaims claims = builder.getClaims();

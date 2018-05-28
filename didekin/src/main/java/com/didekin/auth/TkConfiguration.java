@@ -1,6 +1,6 @@
 package com.didekin.auth;
 
-import com.didekin.auth.EncryptedTkConsumer.EncrypTkConsumerBuilder;
+import com.didekin.auth.api.TkKeyServerProviderIf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,17 +32,28 @@ public class TkConfiguration {
     private static final AtomicReference<KeyStore> encryptKeyStore = new AtomicReference<>();
 
     @Bean
-    public AuthInterceptor authInterceptor(EncrypTkConsumerBuilder builderIn)
-    {
-        return new AuthInterceptor(builderIn);
-    }
-
-    @Bean
     public KeyStore keyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException
     {
         KeyStore keyStore = KeyStore.getInstance(PKCS12_keystore_type);
         keyStore.load(getClass().getResourceAsStream(keystore_path), storePswd.toCharArray());
         encryptKeyStore.compareAndSet(null, keyStore);
         return encryptKeyStore.get();
+    }
+
+    @Bean
+    public TkKeyServerProvider tkKeyServerProvider(KeyStore keyStoreIn)
+    {
+        return new TkKeyServerProvider(keyStoreIn);
+    }
+
+    @Bean
+    public EncrypTkProducerBuilder encrypTkProducerBuilder(TkKeyServerProviderIf keyProviderIn)
+    {
+        return new EncrypTkProducerBuilder(keyProviderIn);
+    }
+
+    @Bean
+    public EncrypTkConsumerBuilder encrypTkConsumerBuilder(TkKeyServerProviderIf keyProvider){
+        return new EncrypTkConsumerBuilder(keyProvider);
     }
 }

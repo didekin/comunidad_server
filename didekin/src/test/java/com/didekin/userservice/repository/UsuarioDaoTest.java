@@ -1,6 +1,8 @@
 package com.didekin.userservice.repository;
 
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -9,8 +11,12 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Connection;
 import java.util.List;
@@ -22,17 +28,20 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -56,9 +65,9 @@ public abstract class UsuarioDaoTest {
     public void testDeleteGcmToken()
     {
         assertThat(usuarioDao.modifyUserGcmToken(UsuarioTestUtils.paco), is(1));
-        assertThat(usuarioDao.getUsuarioWithGcmToken(11L).getGcmToken(), CoreMatchers.is(UsuarioTestUtils.paco.getGcmToken()));
+        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), CoreMatchers.is(UsuarioTestUtils.paco.getGcmToken()));
         assertThat(usuarioDao.deleteGcmToken(UsuarioTestUtils.paco.getGcmToken()), is(1));
-        assertThat(usuarioDao.getUsuarioWithGcmToken(11L).getGcmToken(), nullValue());
+        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -71,7 +80,7 @@ public abstract class UsuarioDaoTest {
         boolean isDeleted = usuarioDao.deleteUser(pedro.getUserName());
         assertThat(isDeleted, is(true));
         try {
-            usuarioDao.getUserByUserName(pedro.getUserName());
+            usuarioDao.getUserDataByName(pedro.getUserName());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -189,17 +198,17 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUsuarioById_1() throws ServiceException
+    public void testGetUserDataById_1() throws ServiceException
     {
-        Usuario usuario = usuarioDao.getUsuarioById(5L);
-        assertThat(usuario.getUserName(), equalTo("luis@luis.com"));
+        Usuario usuario = usuarioDao.getUserDataById(luis.getuId());
+        checkBeanUsuario(usuario, luis, false);
     }
 
-    @Test(/*expected = ServiceException.class*/)
-    public void testGetUsuarioById_2()
+    @Test()
+    public void testGetUserDataById_2()
     {
         try {
-            usuarioDao.getUsuarioById(11L);
+            usuarioDao.getUserDataById(11L);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -209,19 +218,17 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserByUserName_1()
+    public void testGetUserByName_1()
     {
-        Usuario usuario = usuarioDao.getUserByUserName("luis@luis.com");
-        assertThat(usuario.getUserName(), is("luis@luis.com"));
-        assertThat(usuario.getPassword(), is("$2a$10$km0D4Uc5cFV1Gv6aAnoeeu03XNk1i686uqlB2A0BClNtB5A8LucLK"));
-        assertThat(usuario.getuId(), is(5L));
+        Usuario usuario = usuarioDao.getUserDataByName("luis@luis.com");
+        checkBeanUsuario(usuario, luis, true);
     }
 
     @Test
-    public void testGetUserByUserName_2()
+    public void testGetUserByName_2()
     {
         try {
-            usuarioDao.getUserByUserName("noexisto@no.com");
+            usuarioDao.getUserDataByName("noexisto@no.com");
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
@@ -349,7 +356,7 @@ public abstract class UsuarioDaoTest {
     public void testModifyUser() throws ServiceException
     {
         // We change username.
-        Usuario usuarioDB = usuarioDao.getUserByUserName("juan@noauth.com");
+        Usuario usuarioDB = usuarioDao.getUserDataByName("juan@noauth.com");
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .alias(usuarioDB.getAlias())
                 .userName("new_juan@juan.com")
@@ -359,7 +366,7 @@ public abstract class UsuarioDaoTest {
 
         int updatedRow = usuarioDao.modifyUser(usuarioIn);
         assertThat(updatedRow, is(1));
-        Usuario usuarioDBOut = usuarioDao.getUsuarioById(usuarioIn.getuId());
+        Usuario usuarioDBOut = usuarioDao.getUserDataById(usuarioIn.getuId());
         assertThat(usuarioDBOut.getUserName(), is(usuarioIn.getUserName()));
         assertThat(checkpw("new_password", usuarioDBOut.getPassword()), is(true));
     }
@@ -370,7 +377,7 @@ public abstract class UsuarioDaoTest {
     public void testModifyUserAlias() throws ServiceException
     {
         // We change alias.
-        Usuario usuarioDB = usuarioDao.getUserByUserName("juan@noauth.com");
+        Usuario usuarioDB = usuarioDao.getUserDataByName("juan@noauth.com");
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .alias("new_alias_juan")
                 .uId(usuarioDB.getuId())
@@ -378,7 +385,7 @@ public abstract class UsuarioDaoTest {
 
         int updatedRow = usuarioDao.modifyUserAlias(usuarioIn);
         assertThat(updatedRow, is(1));
-        Usuario usuarioDB_2 = usuarioDao.getUsuarioById(usuarioIn.getuId());
+        Usuario usuarioDB_2 = usuarioDao.getUserDataById(usuarioIn.getuId());
         assertThat(usuarioDB_2.getUserName(), is(usuarioDB.getUserName()));
         assertThat(usuarioDB_2.getAlias(), is(usuarioIn.getAlias()));
     }
@@ -407,13 +414,13 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testPasswordChange()
     {
-        Usuario usuarioDb = usuarioDao.getUserByUserName("luis@luis.com");
+        Usuario usuarioDb = usuarioDao.getUserDataByName("luis@luis.com");
         Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .uId(usuarioDb.getuId())
                 .password("new_luis_password")
                 .build();
         assertThat(usuarioDao.passwordChange(usuarioIn), is(1));
-        assertThat(usuarioDao.getUserByUserName("luis@luis.com").getPassword(), is("new_luis_password"));
+        assertThat(usuarioDao.getUserDataByName("luis@luis.com").getPassword(), is("new_luis_password"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -487,5 +494,47 @@ public abstract class UsuarioDaoTest {
                         hasProperty("roles", is(juan_plazuela23.getRoles()))
                 )
         );
+    }
+
+    // ======================================  Helpers ======================================
+
+    static void checkBeanUsuario(Usuario usuario, Usuario expectedUser, boolean isHashed)
+    {
+        assertThat(usuario, allOf(
+                hasProperty("uId", anyOf(
+                        equalTo(expectedUser.getuId()),
+                        greaterThan(0L)
+                )),
+                hasProperty("userName", equalTo(expectedUser.getUserName())),
+                hasProperty("alias", equalTo(expectedUser.getAlias())),
+                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken()))
+        ));
+        if (!isHashed) {
+            assertThat(expectedUser.getPassword(), is(usuario.getPassword()));
+        }
+    }
+
+    // ======================================  INNER CLASSES ======================================
+
+    /**
+     * User: pedro
+     * Date: 31/03/15
+     * Time: 15:16
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+    @Category({LocalDev.class})
+    public static class UsuarioDaoDevTest extends UsuarioDaoTest {
+    }
+
+    /**
+     * User: pedro
+     * Date: 31/03/15
+     * Time: 15:16
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+    @Category({DbPre.class})
+    public static class UsuarioDaoPreTest extends UsuarioDaoTest {
     }
 }

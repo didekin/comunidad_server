@@ -4,8 +4,8 @@ import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
 import com.didekin.userservice.mail.UsuarioMailService;
-import com.didekin.userservice.repository.UsuarioManagerIf;
-import com.didekinlib.model.usuario.GcmTokenWrapper;
+import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.http.usuario.AuthHeader.AuthHeaderBuilder;
 import com.didekinlib.model.usuario.Usuario;
 
 import org.slf4j.Logger;
@@ -29,7 +29,6 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.PSWD_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_DELETE;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_READ;
-import static com.didekinlib.http.usuario.UsuarioServConstant.USER_READ_GCM_TOKEN;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_WRITE;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_WRITE_GCM_TOKEN;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -49,10 +48,10 @@ public class UsuarioController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class.getCanonicalName());
 
-    private final UsuarioManagerIf usuarioManager;
+    private final UsuarioManager usuarioManager;
 
     @Autowired
-    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioManagerIf usuarioManager)
+    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioManager usuarioManager)
     {
         this.usuarioManager = usuarioManager;
     }
@@ -61,33 +60,28 @@ public class UsuarioController extends AppControllerAbstract {
     public boolean deleteUser(@RequestHeader("Authorization") String accessToken) throws ServiceException
     {
         logger.debug("deleteUser()");
-        return usuarioManager.deleteUser(getUserNameFromAuthentication());
-    }
-
-    @RequestMapping(value = USER_READ_GCM_TOKEN, method = GET, produces = MIME_JSON)
-    public GcmTokenWrapper getGcmToken(@RequestHeader("Authorization") String accessToken) throws ServiceException
-    {
-        logger.debug("getGcmToken()");
-        return new GcmTokenWrapper(usuarioManager.getGcmToken(getUserFromDb(usuarioManager).getuId()));
+        return usuarioManager.deleteUser(new AuthHeaderBuilder(accessToken).build().getUserName());
     }
 
     @RequestMapping(value = USER_READ, method = GET, produces = MIME_JSON)
     public Usuario getUserData(@RequestHeader("Authorization") String accessToken) throws ServiceException
     {
         logger.debug("getUserData()");
-        Usuario usuarioDb = getUserFromDb(usuarioManager);
+        Usuario usuarioDb = usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessToken).build().getUserName());
         return new Usuario.UsuarioBuilder()
                 .userName(usuarioDb.getUserName())
                 .alias(usuarioDb.getAlias())
+                .gcmToken(usuarioDb.getGcmToken())
                 .uId(usuarioDb.getuId()).build();
     }
 
     @RequestMapping(value = LOGIN, method = POST, consumes = FORM_URLENCODED)
-    public boolean login(@RequestParam(USER_PARAM) String userName, @RequestParam(PSWD_PARAM) String password)
-            throws ServiceException
+    public String login(@RequestParam(USER_PARAM) String userName,
+                        @RequestParam(PSWD_PARAM) String password,
+                        @RequestParam(APP_ID_PARAM) String appID) throws ServiceException
     {
         logger.debug("login()");
-        return usuarioManager.login(new Usuario.UsuarioBuilder().userName(userName).password(password).build());
+        return usuarioManager.login(new Usuario.UsuarioBuilder().userName(userName).password(password).gcmToken(appID).build());
     }
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
@@ -95,7 +89,7 @@ public class UsuarioController extends AppControllerAbstract {
                                    @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken()");
-        return usuarioManager.modifyUserGcmToken(getUserNameFromAuthentication(), gcmToken);
+        return usuarioManager.modifyUserGcmToken(new AuthHeaderBuilder(accessToken).build().getUserName(), gcmToken);
     }
 
     @RequestMapping(value = USER_WRITE, method = PUT, consumes = MIME_JSON)
@@ -105,15 +99,15 @@ public class UsuarioController extends AppControllerAbstract {
             throws ServiceException
     {
         logger.debug("modifyUser()");
-        return usuarioManager.modifyUser(newUsuario, getUserNameFromAuthentication(), localeToStr);
+        return usuarioManager.modifyUser(newUsuario, new AuthHeaderBuilder(accessToken).build().getUserName(), localeToStr);
     }
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
     public int passwordChange(@RequestHeader("Authorization") String accessToken,
                               @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
-        logger.debug("passwordChangeWithName()");
-        return usuarioManager.passwordChangeWithName(getUserNameFromAuthentication(), newPassword);
+        logger.debug("passwordChange()");
+        return usuarioManager.passwordChange(new AuthHeaderBuilder(accessToken).build().getUserName(), newPassword);
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)

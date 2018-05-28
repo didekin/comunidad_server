@@ -52,7 +52,7 @@ public class UserManagerConnector {
     public boolean checkUserInComunidad(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("checkUserInComunidad()");
-        if (!usuarioManager.getUsuarioDao().isUserInComunidad(userName, comunidadId)) {
+        if (!usuarioManager.isUserInComunidad(userName, comunidadId)) {
             throw new ServiceException(USERCOMU_WRONG_INIT);
         }
         return true;
@@ -61,7 +61,10 @@ public class UserManagerConnector {
     Usuario completeUser(String userName)
     {
         logger.debug("completeUser()");
-        return usuarioManager.completeUser(userName);
+        return new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioManager.getUserDataByName(userName))
+                .password(null)
+                .build();
     }
 
     UsuarioComunidad completeUserAndComuRoles(String userName, long comunidadId)

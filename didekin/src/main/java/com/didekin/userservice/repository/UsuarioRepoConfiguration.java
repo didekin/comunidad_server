@@ -1,5 +1,7 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.auth.EncrypTkProducerBuilder;
+import com.didekin.auth.TkConfiguration;
 import com.didekin.common.repository.RepositoryConfig;
 import com.didekin.userservice.mail.UsuarioMailConfiguration;
 import com.didekin.userservice.mail.UsuarioMailService;
@@ -10,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-
 /**
  * User: pedro
  * Date: 26/03/15
@@ -20,50 +20,42 @@ import javax.sql.DataSource;
  * UsuarioMailConfiguration is used by UsuarioService to send emails.
  */
 @Configuration
-@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class})
+@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class, TkConfiguration.class})
 public class UsuarioRepoConfiguration {
 
-    private final DataSource dataSource;
     private final JdbcTemplate jdbcTemplate;
     private final UsuarioMailService mailService;
+    private final EncrypTkProducerBuilder producerBuilder;
 
     @Autowired
-    public UsuarioRepoConfiguration(DataSource dataSource, JdbcTemplate jdbcTemplate, UsuarioMailService mailService)
+    public UsuarioRepoConfiguration(JdbcTemplate jdbcTemplate, UsuarioMailService mailService, EncrypTkProducerBuilder producerBuilderIn)
     {
-        this.dataSource = dataSource;
         this.jdbcTemplate = jdbcTemplate;
         this.mailService = mailService;
+        this.producerBuilder = producerBuilderIn;
     }
 
-    // TODO: descomentar y revisar.
-    /*@Bean
-    public JdbcTokenStore tokenStore()
-    {
-        return new JdbcTokenStore(dataSource);
-    }*/
-
     @Bean
-    public MunicipioDao municipioDao(JdbcTemplate jdbcTemplate)
+    public MunicipioDao municipioDao()
     {
         return new MunicipioDao(jdbcTemplate);
     }
 
     @Bean
-    public UsuarioDao usuarioDao(JdbcTemplate jdbcTemplate)
+    public UsuarioDao usuarioDao()
     {
         return new UsuarioDao(jdbcTemplate);
     }
 
     @Bean
-    public ComunidadDao comunidadDao(JdbcTemplate jdbcTemplate)
+    public ComunidadDao comunidadDao()
     {
         return new ComunidadDao(jdbcTemplate);
     }
 
-    // TODO: descomentar y revisar.
-    /*@Bean
-    public UsuarioManagerIf usuarioManager()
+    @Bean
+    public UsuarioManager usuarioManager()
     {
-        return new UsuarioManager(comunidadDao(jdbcTemplate), usuarioDao(jdbcTemplate), tokenStore(), mailService);
-    }*/
+        return new UsuarioManager(comunidadDao(), usuarioDao(), mailService, producerBuilder);
+    }
 }

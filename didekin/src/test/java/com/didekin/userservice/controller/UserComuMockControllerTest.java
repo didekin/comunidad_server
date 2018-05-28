@@ -8,7 +8,7 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.model.usuario.Usuario;
@@ -52,7 +52,7 @@ public abstract class UserComuMockControllerTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    private UsuarioManagerIf usuarioManager;
+    private UsuarioManager usuarioManager;
 
     @Before
     public void setUp()

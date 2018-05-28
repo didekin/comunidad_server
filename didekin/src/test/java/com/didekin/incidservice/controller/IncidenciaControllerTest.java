@@ -1,5 +1,6 @@
 package com.didekin.incidservice.controller;
 
+import com.didekin.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekin.incidservice.repository.UserManagerConnector;
@@ -35,6 +36,7 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenci
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
@@ -42,7 +44,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
@@ -79,6 +81,8 @@ abstract class IncidenciaControllerTest {
     private HttpHandler retrofitHandler;
     @Autowired
     private UserManagerConnector connector;
+    @Autowired
+    private EncrypTkProducerBuilder producerBuilder;
 
     @Before
     public void setUp()
@@ -96,8 +100,8 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
-        Incidencia incidencia = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia().getIncidencia();
+        Resolucion resolucion = ENDPOINT.seeResolucion(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body();
+        Incidencia incidencia = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body().getIncidImportancia().getIncidencia();
         assertThat(incidencia.getFechaCierre(), nullValue());
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
@@ -105,7 +109,7 @@ abstract class IncidenciaControllerTest {
                 .avances(null)
                 .build();
         // Devuelve 2: no modifica avances.
-        assertThat(ENDPOINT.closeIncidencia(tokenLuis(), resolucion).execute().body(), is(2));
+        assertThat(ENDPOINT.closeIncidencia(doHttpAuthHeader(luis, producerBuilder), resolucion).execute().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -115,18 +119,18 @@ abstract class IncidenciaControllerTest {
     public void testDeleteIncidencia_1() throws IOException
     {
         // Caso OK: existe incidencia.
-        assertThat(ENDPOINT.deleteIncidencia(tokenPedro(), 2L).execute().body(), is(1));
+        assertThat(ENDPOINT.deleteIncidencia(doHttpAuthHeader(pedro, producerBuilder), 2L).execute().body(), is(1));
         /* Caso: no existe incidencia (es la incidencia borrada).*/
-        assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(tokenLuis(), 2L).execute()), is(false));
+        assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(doHttpAuthHeader(luis, producerBuilder), 2L).execute()), is(false));
     }
 
     @Test
     public void testDeleteIncidencia_2() throws IOException
     {
-        // Caso: no existe token.
+        // Caso: token inválido.
         Response<Integer> response = ENDPOINT.deleteIncidencia("token_faked", 2L).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -136,7 +140,7 @@ abstract class IncidenciaControllerTest {
     public void testDeleteIncidencia_3() throws IOException
     {
         // Caso: incidencia con resolución abierta.
-        assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(tokenLuis(), 3L).execute()), is(false));
+        assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(doHttpAuthHeader(luis, producerBuilder), 3L).execute()), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -148,7 +152,7 @@ abstract class IncidenciaControllerTest {
         // Caso OK: usuario 'adm', con incidImportancia NO registrada, modifica incidencia e inserta importancia.
         // Premisas.
         assertThat(luis_plazuelas_10bis.hasAdministradorAuthority(), is(true));
-        IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia();
+        IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body().getIncidImportancia();
         // No hay registro: fechaAlta == null.
         assertThat(incidImportancia0.getFechaAlta(), nullValue());
         assertThat(incidImportancia0.getImportancia(), is((short) 0));
@@ -159,7 +163,7 @@ abstract class IncidenciaControllerTest {
                 .importancia((short) 1)
                 .build();
 
-        assertThat(ENDPOINT.modifyIncidImportancia(tokenLuis(), incidImportancia0).execute().body(), is(2));
+        assertThat(ENDPOINT.modifyIncidImportancia(doHttpAuthHeader(luis, producerBuilder), incidImportancia0).execute().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -168,14 +172,14 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testModifyIncidImportancia_2() throws ServiceException, IOException
     {
-        /* Caso NOT OK: no existe token.*/
+        /* Caso NOT OK: token inválido.*/
         Incidencia incidencia = doIncidenciaWithIdDescUsername("luis@luis.com", 2L, "new_description", 2L, (short) 21);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 0).build();
 
         Response<Integer> response = ENDPOINT.modifyIncidImportancia("token_faked", incidImportancia).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -185,7 +189,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_1() throws ServiceException, IOException
     {
         // Caso OK: modifica resolucion y añade un avance: devuelve 2.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body();
         // Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
         avances.add(new Avance.AvanceBuilder()
@@ -199,7 +203,7 @@ abstract class IncidenciaControllerTest {
                 .costeEstimado(1111)
                 .avances(avances)
                 .build();
-        assertThat(ENDPOINT.modifyResolucion(tokenLuis(), resolucion).execute().body(), is(2));
+        assertThat(ENDPOINT.modifyResolucion(doHttpAuthHeader(luis, producerBuilder), resolucion).execute().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -209,7 +213,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_2() throws IOException
     {
         // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 4L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(doHttpAuthHeader(luis, producerBuilder), 4L).execute().body();
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
@@ -217,7 +221,7 @@ abstract class IncidenciaControllerTest {
                 .costeEstimado(1111)
                 .build();
 
-        Response<Integer> response = ENDPOINT.modifyResolucion(tokenLuis(), resolucion).execute();
+        Response<Integer> response = ENDPOINT.modifyResolucion(doHttpAuthHeader(luis, producerBuilder), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
@@ -229,7 +233,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_3() throws IOException
     {
         // Caso USERCOMU_WRONG_INIT: el usuario no está asociado a la comunidad.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body();
         try {
             incidenciaManager.getUsuarioConnector().checkUserInComunidad(paco.getUserName(), resolucion.getComunidadId());
             fail();
@@ -243,7 +247,7 @@ abstract class IncidenciaControllerTest {
                 .costeEstimado(1111)
                 .build();
         // Check.
-        Response<Integer> response = ENDPOINT.modifyResolucion(tokenPaco(), resolucion).execute();
+        Response<Integer> response = ENDPOINT.modifyResolucion(doHttpAuthHeader(paco, producerBuilder), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -255,7 +259,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_4() throws ServiceException, IOException
     {
         // Caso OK: avance con descripción vacía; devuelve 1.
-        Resolucion resolucion = ENDPOINT.seeResolucion(tokenLuis(), 3L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body();
 
         // Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
@@ -266,7 +270,7 @@ abstract class IncidenciaControllerTest {
                 .copyResolucion(resolucion)
                 .avances(avances)
                 .build();
-        assertThat(ENDPOINT.modifyResolucion(tokenLuis(), resolucion).execute().body(), is(1));
+        assertThat(ENDPOINT.modifyResolucion(doHttpAuthHeader(luis, producerBuilder), resolucion).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -280,7 +284,7 @@ abstract class IncidenciaControllerTest {
                 doIncidenciaWithId(pedro.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 24), pedro);
 
         IncidComment comment = IncidenciaTestUtils.doComment("newComment", incidUserComu.getIncidencia(), pedro);
-        assertThat(ENDPOINT.regIncidComment(tokenPedro(), comment).execute().body(), is(1));
+        assertThat(ENDPOINT.regIncidComment(doHttpAuthHeader(pedro, producerBuilder), comment).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -293,7 +297,7 @@ abstract class IncidenciaControllerTest {
                 doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 24), luis);
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidUserComu.getIncidencia(), pedro);
 
-        Response<Integer> response = ENDPOINT.regIncidComment(tokenPedro(), comment).execute();
+        Response<Integer> response = ENDPOINT.regIncidComment(doHttpAuthHeader(pedro, producerBuilder), comment).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -308,7 +312,7 @@ abstract class IncidenciaControllerTest {
         IncidenciaUser incidUserComu = IncidenciaTestUtils.doIncidenciaUser(
                 doIncidenciaWithId(luis.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 24), luis);
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidUserComu.getIncidencia(), luis);
-        Response<Integer> response = ENDPOINT.regIncidComment(tokenLuis(), comment).execute();
+        Response<Integer> response = ENDPOINT.regIncidComment(doHttpAuthHeader(luis, producerBuilder), comment).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
@@ -320,9 +324,9 @@ abstract class IncidenciaControllerTest {
     public void testRegIncidComment_4() throws ServiceException, IOException
     {
         // Caso: incidencia está cerrada.
-        Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), 6L).execute().body().get(0).getIncidencia();
+        Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(doHttpAuthHeader(paco, producerBuilder), 6L).execute().body().get(0).getIncidencia();
         IncidComment comment = IncidenciaTestUtils.doComment("Comment_DESC", incidencia, pedro);
-        assertThat(ENDPOINT.regIncidComment(tokenPaco(), comment).execute().body(), is(1));
+        assertThat(ENDPOINT.regIncidComment(doHttpAuthHeader(paco, producerBuilder), comment).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -339,7 +343,7 @@ abstract class IncidenciaControllerTest {
                 .importancia((short) 3)
                 .build();
         // Exec and check: inserta incidencia e incidenciImportancia.
-        assertThat(ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute().body(), is(2));
+        assertThat(ENDPOINT.regIncidImportancia(doHttpAuthHeader(luis, producerBuilder), incidImportancia).execute().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -354,7 +358,7 @@ abstract class IncidenciaControllerTest {
                 .importancia((short) 1)
                 .build();
 
-        Response<Integer> response = ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute();
+        Response<Integer> response = ENDPOINT.regIncidImportancia(doHttpAuthHeader(luis, producerBuilder), incidImportancia).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -366,11 +370,11 @@ abstract class IncidenciaControllerTest {
     public void testRegIncidImportancia_3() throws ServiceException, IOException
     {
         // Caso: incidencia ya dada de alta en BD. Registro devuelve '1', en lugar de '2'.
-        Incidencia incidencia = ENDPOINT.seeIncidImportancia(tokenLuis(), 3L).execute().body().getIncidImportancia().getIncidencia();
+        Incidencia incidencia = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body().getIncidImportancia().getIncidencia();
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .usuarioComunidad(luis_plazuelas_10bis)
                 .importancia((short) 2).build();
-        assertThat(ENDPOINT.regIncidImportancia(tokenLuis(), incidImportancia).execute().body(), is(1));
+        assertThat(ENDPOINT.regIncidImportancia(doHttpAuthHeader(luis, producerBuilder), incidImportancia).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -382,7 +386,7 @@ abstract class IncidenciaControllerTest {
         // Caso OK.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 2L, pedro_lafuente.getComunidad().getC_Id(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia, pedro.getUserName(), "resol_incid_2_2", 1111, now().plus(12, DAYS));
-        assertThat(ENDPOINT.regResolucion(tokenPedro(), resolucion).execute().body(), is(1));
+        assertThat(ENDPOINT.regResolucion(doHttpAuthHeader(pedro, producerBuilder), resolucion).execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -396,7 +400,7 @@ abstract class IncidenciaControllerTest {
         assertThat(connector.checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getC_Id()), is(false));
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
-        Response<Integer> response = ENDPOINT.regResolucion(tokenLuis(), resolucion).execute();
+        Response<Integer> response = ENDPOINT.regResolucion(doHttpAuthHeader(luis, producerBuilder), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
@@ -410,7 +414,7 @@ abstract class IncidenciaControllerTest {
         // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
-        Response<Integer> response = ENDPOINT.regResolucion(tokenPedro(), resolucion).execute();
+        Response<Integer> response = ENDPOINT.regResolucion(doHttpAuthHeader(pedro, producerBuilder), resolucion).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -422,13 +426,13 @@ abstract class IncidenciaControllerTest {
     public void testSeeCommentsByIncid_1() throws IOException
     {
         // Caso OK.
-        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(tokenLuis(), 1L).execute().body();
+        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(luis, producerBuilder), 1L).execute().body();
         assertThat(comments.size(), is(2));
         // Diferente usuario misma comunidad.
-        comments = ENDPOINT.seeCommentsByIncid(tokenPedro(), 1L).execute().body();
+        comments = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(pedro, producerBuilder), 1L).execute().body();
         assertThat(comments.size(), is(2));
         // Diferente incidencia.
-        comments = ENDPOINT.seeCommentsByIncid(tokenLuis(), 5L).execute().body();
+        comments = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(luis, producerBuilder), 5L).execute().body();
         assertThat(comments.size(), is(1));
     }
 
@@ -439,7 +443,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeCommentsByIncid_2() throws IOException
     {
         // Usuario no asociado a la comunidad de la incidencia.
-        Response<List<IncidComment>> response = ENDPOINT.seeCommentsByIncid(tokenPedro(), 5L).execute();
+        Response<List<IncidComment>> response = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(pedro, producerBuilder), 5L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -451,7 +455,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeCommentsByIncid_3() throws IOException
     {
         // No existe la incidencia; existe la comunidad.
-        Response<List<IncidComment>> response = ENDPOINT.seeCommentsByIncid(tokenLuis(), 999L).execute();
+        Response<List<IncidComment>> response = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(luis, producerBuilder), 999L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
@@ -463,7 +467,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeCommentsByIncid_4() throws IOException
     {
         // Existe la incidencia; no tiene comentarios.
-        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(tokenLuis(), 3L).execute().body();
+        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(doHttpAuthHeader(luis, producerBuilder), 3L).execute().body();
         assertThat(comments, notNullValue());
         assertThat(comments.size(), is(0));
     }
@@ -475,7 +479,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidImportancia_1() throws IOException
     {
         /* Caso Ok.*/
-        IncidAndResolBundle bundle = ENDPOINT.seeIncidImportancia(tokenPedro(), ronda_plazuela_10bis.getC_Id()).execute().body();
+        IncidAndResolBundle bundle = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(pedro, producerBuilder), ronda_plazuela_10bis.getC_Id()).execute().body();
         IncidImportancia incidImportancia = bundle.getIncidImportancia();
         assertThat(incidImportancia, hasProperty("importancia", is((short) 2)));
         assertThat(bundle.hasResolucion(), is(false));
@@ -488,12 +492,12 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidImportancia_2() throws IOException
     {
         // 1. No existe incidencia en BD, existe usuario. Es irrelevante la relación usuario_comunidad.
-        Response<IncidAndResolBundle> response = ENDPOINT.seeIncidImportancia(tokenPedro(), 999L).execute();
+        Response<IncidAndResolBundle> response = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(pedro, producerBuilder), 999L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
 
         // 2. Existe incidencia, existe usuario, no existe relación usuario_comunidad, ni, por lo tanto, usuario_incidencia.
-        response = ENDPOINT.seeIncidImportancia(tokenPedro(), 5L).execute();
+        response = ENDPOINT.seeIncidImportancia(doHttpAuthHeader(pedro, producerBuilder), 5L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -504,7 +508,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testSeeIncidsClosedByComu_1() throws ServiceException, IOException
     {
-        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(tokenPaco(), UsuarioTestUtils.calle_olmo_55.getC_Id()).execute().body();
+        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsClosedByComu(doHttpAuthHeader(paco, producerBuilder), UsuarioTestUtils.calle_olmo_55.getC_Id()).execute().body();
         assertThat(incidencias.size(), is(1));
     }
 
@@ -515,7 +519,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidsOpenByComu_1() throws ServiceException, IOException
     {
         // Caso OK: comunidad con 2 incidencias abiertas.
-        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), ronda_plazuela_10bis.getC_Id()).execute().body();
+        List<IncidenciaUser> incidencias = ENDPOINT.seeIncidsOpenByComu(doHttpAuthHeader(pedro, producerBuilder), ronda_plazuela_10bis.getC_Id()).execute().body();
         assertThat(incidencias.size(), is(2));
     }
 
@@ -526,7 +530,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidsOpenByComu_3() throws ServiceException, IOException
     {
         // ComunidadId no existe.
-        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), 999L).execute();
+        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(doHttpAuthHeader(pedro, producerBuilder), 999L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -538,7 +542,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidsOpenByComu_4() throws IOException
     {
         // Caso: usuario no relacionado con la comunidad.
-        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(tokenPedro(), calle_plazuela_23.getC_Id()).execute();
+        Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(doHttpAuthHeader(pedro, producerBuilder), calle_plazuela_23.getC_Id()).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -550,7 +554,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeResolucion_1() throws IOException
     {
         // Caso OK: resolución con avances.
-        assertThat(ENDPOINT.seeResolucion(tokenPedro(), 3L).execute().body().getAvances().size(), is(2));
+        assertThat(ENDPOINT.seeResolucion(doHttpAuthHeader(pedro, producerBuilder), 3L).execute().body().getAvances().size(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -560,7 +564,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeResolucion_2() throws IOException
     {
         // Caso: usuario no asociado a la comunidad.
-        Response<Resolucion> response = ENDPOINT.seeResolucion(tokenPaco(), 3L).execute();
+        Response<Resolucion> response = ENDPOINT.seeResolucion(doHttpAuthHeader(paco, producerBuilder), 3L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -572,7 +576,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeUserComusImportancia_1() throws IOException
     {
         // Caso OK.
-        assertThat(ENDPOINT.seeUserComusImportancia(tokenPedro(), 4L).execute().body().size(), is(2));
+        assertThat(ENDPOINT.seeUserComusImportancia(doHttpAuthHeader(pedro, producerBuilder), 4L).execute().body().size(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -582,35 +586,16 @@ abstract class IncidenciaControllerTest {
     public void testSeeUserComusImportancia_2() throws IOException
     {
         // Caso: usuario no pertenece a la comunidad.
-        Response<List<ImportanciaUser>> response = ENDPOINT.seeUserComusImportancia(tokenPaco(), 4L).execute();
+        Response<List<ImportanciaUser>> response = ENDPOINT.seeUserComusImportancia(doHttpAuthHeader(paco, producerBuilder), 4L).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
 //    ================================== HELPER METHODS ==================================
 
-    private String tokenPedro() throws IOException   // TODO: descomentar y revisar.
-    {
-//        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(pedro.getUserName(), pedro.getPassword());
-        return null;
-    }
-
-    private String tokenLuis() throws IOException     // TODO: descomentar y revisar.
-    {
-//        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(luis.getUserName(), luis.getPassword());
-        return null;
-    }
-
-    private String tokenPaco() throws IOException      // TODO: descomentar y revisar.
-    {
-//        return new SecurityTestUtils(retrofitHandler).doAuthHeaderFromRemoteToken(UsuarioTestUtils.paco.getUserName(), UsuarioTestUtils.paco.getPassword());
-        return null;
-    }
-
     private boolean isIncidenciaFound(Response<?> responseEndPoint) throws IOException
     {
         assertThat(responseEndPoint.isSuccessful(), is(false));
-        return false;
-//        return !retrofitHandler.getErrorBean(responseEndPoint).getMessage().equals(INCIDENCIA_NOT_FOUND.getHttpMessage());
+        return !retrofitHandler.getErrorBean(responseEndPoint).getMessage().equals(INCIDENCIA_NOT_FOUND.getHttpMessage());
     }
 }

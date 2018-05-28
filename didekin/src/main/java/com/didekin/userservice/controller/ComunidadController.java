@@ -2,7 +2,8 @@ package com.didekin.userservice.controller;
 
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 
 import org.slf4j.Logger;
@@ -32,10 +33,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class ComunidadController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(ComunidadController.class.getCanonicalName());
-    private final UsuarioManagerIf usuarioService;
+    private final UsuarioManager usuarioService;
 
     @Autowired
-    public ComunidadController(UsuarioManagerIf usuarioService)
+    public ComunidadController(UsuarioManager usuarioService)
     {
         this.usuarioService = usuarioService;
     }
@@ -45,7 +46,9 @@ public class ComunidadController extends AppControllerAbstract {
             throws ServiceException
     {
         logger.debug("getComunidadById()");
-        return usuarioService.getComunidadById(getUserFromDb(usuarioService), comunidadId);
+        return usuarioService.getComunidadById(
+                usuarioService.getUserDataByName(new AuthHeader.AuthHeaderBuilder(accessToken).build().getUserName()),
+                comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_SEARCH, method = POST, consumes = MIME_JSON, produces = MIME_JSON)

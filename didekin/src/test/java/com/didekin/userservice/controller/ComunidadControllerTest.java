@@ -9,7 +9,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.testutils.LocaleConstant;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.comunidad.ComunidadEndPoints;
@@ -55,7 +55,7 @@ public abstract class ComunidadControllerTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    UsuarioManagerIf sujetosService;
+    UsuarioManager sujetosService;
 
     @Before
     public void setUp()

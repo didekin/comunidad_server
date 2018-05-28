@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.SecretKey;
 
+import static com.didekin.auth.TkConfiguration.PKCS12_keystore_type;
 import static com.didekin.auth.TkConfiguration.default_alg_for_symmetric_keys;
 import static com.didekin.auth.TkConfiguration.default_key_size;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
@@ -37,6 +38,12 @@ public abstract class TkKeyServerProviderTest {
 
     @Autowired
     private TkKeyServerProvider provider;
+
+    @Test
+    public void test_KeyStore()
+    {
+        assertThat(provider.getKeyStore().getType(), is(PKCS12_keystore_type));
+    }
 
     @Test
     public void test_GetCurrentKeyForTk()

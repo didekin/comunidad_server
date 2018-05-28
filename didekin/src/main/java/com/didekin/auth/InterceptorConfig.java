@@ -16,11 +16,11 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
-    private AuthInterceptor authInterceptor;
+    EncrypTkConsumerBuilder builder;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry)
     {
-        registry.addInterceptor(authInterceptor).addPathPatterns("/**").excludePathPatterns(OPEN + "/**");
+        registry.addInterceptor(new AuthInterceptor(builder)).addPathPatterns("/**").excludePathPatterns(OPEN + "/**");
     }
 }

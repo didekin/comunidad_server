@@ -1,14 +1,12 @@
 package com.didekin.auth;
 
 import com.didekin.Application;
-import com.didekin.auth.EncryptedTkProducer.JweTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.controller.UserComuMockEndPoints;
 import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuario.AuthHeader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +25,7 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.controller.UserComuMockController.CLOSED_AREA_MSG;
 import static com.didekin.userservice.controller.UserComuMockController.OPEN_AREA_MSG;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
@@ -50,7 +49,7 @@ public abstract class AuthInterceptorTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    private JweTkProducerBuilder producerBuilder;
+    private EncrypTkProducerBuilder producerBuilder;
 
     private UserComuMockEndPoints userComuMockEndPoint;
 
@@ -63,7 +62,7 @@ public abstract class AuthInterceptorTest {
     @Test
     public void test_GetBuilder()
     {
-        assertThat(interceptor.getBuilder(), notNullValue());
+        assertThat(interceptor.getConsumerBuilder(), notNullValue());
     }
 
     @Test
@@ -104,9 +103,7 @@ public abstract class AuthInterceptorTest {
     public void test_PreHandle_5() throws IOException
     {
         // Path in closed area and header OK.
-        String tokenInLocal = producerBuilder.defaultHeadersClaims(pedro.getUserName(), pedro.getGcmToken()).build().getEncryptedTkStr();
-        String httpAuthHeader = new AuthHeader.AuthHeaderBuilder().userName(pedro.getUserName()).appId(pedro.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
-        assertThat(userComuMockEndPoint.tryTokenInterceptor(httpAuthHeader, USER_PATH.substring(1), "hola").execute().body(), is(CLOSED_AREA_MSG));
+        assertThat(userComuMockEndPoint.tryTokenInterceptor(doHttpAuthHeader(pedro, producerBuilder), USER_PATH.substring(1), "hola").execute().body(), is(CLOSED_AREA_MSG));
     }
 
     /*  ==============================================  INNER CLASSES =============================================*/

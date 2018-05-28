@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.didekin.userservice.repository.UsuarioSql.BY_ID;
 import static com.didekin.userservice.repository.UsuarioSql.COMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_GCM_TOKEN;
@@ -45,8 +43,8 @@ import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
-import static com.didekin.userservice.repository.UsuarioSql.USER_WITH_GCMTOKEN;
-import static com.didekin.userservice.repository.UsuarioSql.USUARIO_BY_EMAIL;
+import static com.didekin.userservice.repository.UsuarioSql.USER_BY_EMAIL;
+import static com.didekin.userservice.repository.UsuarioSql.USER_BY_ID;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
@@ -57,7 +55,6 @@ import static java.sql.JDBCType.INTEGER;
  * Date: 31/03/15
  * Time: 09:37
  */
-@Repository
 public class UsuarioDao {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioDao.class.getCanonicalName());
@@ -68,17 +65,6 @@ public class UsuarioDao {
     public UsuarioDao(JdbcTemplate jdbcTemplate)
     {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    private static UsuarioComunidad doUsuarioComunidadFull(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
-    {
-        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
-                .portal(rs.getString("portal"))
-                .escalera(rs.getString("escalera"))
-                .planta(rs.getString("planta"))
-                .puerta(rs.getString("puerta"))
-                .roles(rs.getString("roles"))
-                .build();
     }
 
     //    ============================================================
@@ -191,27 +177,27 @@ public class UsuarioDao {
         );
     }
 
-    Usuario getUserByUserName(String userName)
+    Usuario getUserDataByName(String userName)
     {
-        logger.info("getUserByUserName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserDataByName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
             usuario = jdbcTemplate.queryForObject(
-                    USUARIO_BY_EMAIL.toString(), new UsuarioMapper(), userName);
+                    USER_BY_EMAIL.toString(), new UsuarioMapper(), userName);
         } catch (EmptyResultDataAccessException e) {
             throw new ServiceException(USER_NAME_NOT_FOUND);
         }
         return usuario;
     }
 
-    Usuario getUsuarioById(long idUsuario) throws ServiceException
+    Usuario getUserDataById(long idUsuario) throws ServiceException
     {
-        logger.info("getUsuarioById(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserDataById(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {
-            usuario = jdbcTemplate.queryForObject(BY_ID.toString(),
+            usuario = jdbcTemplate.queryForObject(USER_BY_ID.toString(),
                     new UsuarioMapper(), idUsuario);
         } catch (EmptyResultDataAccessException e) {
             logger.error(e.getMessage());
@@ -250,12 +236,6 @@ public class UsuarioDao {
         } catch (EmptyResultDataAccessException e) {
             throw new ServiceException(USERCOMU_WRONG_INIT);
         }
-    }
-
-    Usuario getUsuarioWithGcmToken(long usuarioId)
-    {
-        logger.debug("getUsuarioWithGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
-        return jdbcTemplate.queryForObject(USER_WITH_GCMTOKEN.toString(), new UsuarioMapperForGcm(), usuarioId);
     }
 
     int modifyUserComu(UsuarioComunidad userComu)
@@ -299,7 +279,7 @@ public class UsuarioDao {
         return usuarioId;
     }
 
-    public boolean isUserInComunidad(String userName, long comunidadId)
+    boolean isUserInComunidad(String userName, long comunidadId)
     {
         logger.debug("isUserInComunidad()");
         return jdbcTemplate.queryForObject(
@@ -356,7 +336,7 @@ public class UsuarioDao {
 
     int passwordChange(Usuario usuario)
     {
-        logger.info("passwordChangeWithName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("passwordChange(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(NEW_PASSWORD.toString(),
                 usuario.getPassword(),
@@ -373,18 +353,33 @@ public class UsuarioDao {
                 new UsuarioFullComunidadMapper());
     }
 
+    // .................. HELPER CLASSES ......................
+
+    private static UsuarioComunidad doUsuarioComunidadFull(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
+    {
+        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
+                .portal(rs.getString("portal"))
+                .escalera(rs.getString("escalera"))
+                .planta(rs.getString("planta"))
+                .puerta(rs.getString("puerta"))
+                .roles(rs.getString("roles"))
+                .build();
+    }
+
     private static final class UsuarioMapper implements RowMapper<Usuario> {
 
         @Override
         public Usuario mapRow(ResultSet rs, int i) throws SQLException
         {
-            return new Usuario.UsuarioBuilder().copyUsuario(doUsuarioNoPswd(rs))
+            return new Usuario.UsuarioBuilder()
+                    .uId(rs.getLong("u_id"))
+                    .userName(rs.getString("user_name"))
+                    .alias(rs.getString("alias"))
                     .password(rs.getString("password"))
+                    .gcmToken(rs.getString("gcm_token"))
                     .build();
         }
     }
-
-    // .................. HELPER CLASSES ......................
 
     private static final class UsuarioFullComunidadMapper implements RowMapper<UsuarioComunidad> {
 
@@ -422,16 +417,6 @@ public class UsuarioDao {
                     .c_id(rs.getLong("c_id"))
                     .build();
             return doUsuarioComunidadFull(rs, usuario, comunidad);
-        }
-    }
-
-    private static class UsuarioMapperForGcm implements RowMapper<Usuario> {
-        @Override
-        public Usuario mapRow(ResultSet rs, int i) throws SQLException
-        {
-            return new Usuario.UsuarioBuilder().copyUsuario(doUsuarioNoPswd(rs))
-                    .gcmToken(rs.getString("gcm_token"))
-                    .build();
         }
     }
 }

@@ -46,6 +46,7 @@ dependencies {
     implementation rootProject.ext.json_4_j
     implementation rootProject.ext.jbcrypt
 
+    testImplementation rootProject.ext.rxjava
     testImplementation rootProject.ext.mock_server
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation rootProject.ext.awaitility

@@ -6,7 +6,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS comunidad;
 DROP TABLE IF EXISTS usuario_comunidad;
-DROP TABLE IF EXISTS oauth_client_token;
 DROP TABLE IF EXISTS oauth_access_token;
 DROP TABLE IF EXISTS oauth_refresh_token;
 DROP TABLE IF EXISTS usuario;
@@ -53,32 +52,6 @@ CREATE TABLE municipio
     ON DELETE RESTRICT
 );
 
-CREATE TABLE oauth_access_token (
-  token_id          VARCHAR(100),
-  token             BLOB,
-  authentication_id VARCHAR(100) PRIMARY KEY,
-  user_name         VARCHAR(100) NOT NULL,
-  client_id         VARCHAR(100),
-  authentication    BLOB,
-  refresh_token     VARCHAR(100) NOT NULL,
-  fecha_alta        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (user_name),
-  INDEX refresh_token_index (refresh_token),
-  FOREIGN KEY (user_name) REFERENCES usuario (user_name)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
-);
-
-CREATE TABLE oauth_refresh_token (
-  token_id       VARCHAR(100) NOT NULL,
-  token          BLOB,
-  authentication BLOB,
-  PRIMARY KEY (token_id),
-  FOREIGN KEY (token_id) REFERENCES oauth_access_token (refresh_token)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
-);
-
 CREATE TABLE provincia
 (
   pr_id  SMALLINT UNSIGNED NOT NULL, -- código INE de la provincia
@@ -90,7 +63,6 @@ CREATE TABLE provincia
     ON UPDATE CASCADE
     ON DELETE RESTRICT
 );
-
 
 CREATE TABLE usuario
 (

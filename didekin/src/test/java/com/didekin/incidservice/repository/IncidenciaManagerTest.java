@@ -49,6 +49,7 @@ import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
@@ -475,24 +476,37 @@ public abstract class IncidenciaManagerTest {
     /**
      * Precondition: gcmToken is NOT NULL and NOT valid in database.
      * Postcondition:
-     * - Notification is sent to the GCM server and the following message is received:
-     * {"multicast_id":5687883094401283275,"success":0,"failure":1,"canonical_ids":0,"results":[{"error":"NotRegistered"}]}.
+     * - Notification is sent to the GCM server:
+     * {
+     * "registration_ids":["luis_gcm_token","pedro_gcm_token"],
+     * "priority":"normal",
+     * "delay_while_idle":true,
+     * "time_to_live":1724,
+     * "restricted_package_name":"com.didekindroid",
+     * "collapse_key":"incidencia_open","data":{"comunidadId":1,"typeMsg":"incidencia_open"}
+     * }
+     * - And the following message is received:
+     * {
+     * "multicast_id":9137010189728467367,"success":0,"failure":2,"canonical_ids":0,"results":[{"error":"InvalidRegistration"},{"error":"InvalidRegistration"}]
+     * }
      * - GcmToken is written to null in database after insertion and communication con GCM service.
      */
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidencia_3() throws Exception
+    public void testRegIncidencia_3()
     {
-        // Premisas: gcmToken is NOT NULL.
+        // Premisas: gcmTokens for pedro and luis are NOT NULL.
         assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1), is(1));
-        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(2));
+        assertThat(usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken(), notNullValue());
+        assertThat(usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken(), is(tokenId_1));
 
         Incidencia incidencia = doIncidencia(pedro.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
         assertThat(((IncidenciaManager) incidenciaManager).regIncidencia(incidencia).getDescripcion(), is("incid_test"));
-        SECONDS.sleep(10);
-        assertThat(usuarioManager.getGcmToken(pedro.getuId()), nullValue());
+        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken() == null);
+        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken() == null);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})

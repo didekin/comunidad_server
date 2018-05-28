@@ -1,6 +1,6 @@
 package com.didekin.userservice.gcm;
 
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.gcm.retrofit.GcmEndPointImp;
 import com.didekinlib.gcm.retrofit.GcmRetrofitHandler;
@@ -23,7 +23,7 @@ public class GcmConfiguration {
     private static final String FCM_HOST_PORT = "https://fcm.googleapis.com";
 
     @Autowired
-    private UsuarioManagerIf usuarioService;
+    private UsuarioManager usuarioService;
 
     @Bean
     public GcmRetrofitHandler gcmRetrofitHandler()

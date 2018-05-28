@@ -2,7 +2,8 @@ package com.didekin.userservice.controller;
 
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.http.usuario.AuthHeader.AuthHeaderBuilder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -48,10 +49,10 @@ public class UserComuController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UserComuController.class.getCanonicalName());
 
-    private final UsuarioManagerIf usuarioManager;
+    private final UsuarioManager usuarioManager;
 
     @Autowired
-    public UserComuController(UsuarioManagerIf usuarioManager)
+    public UserComuController(UsuarioManager usuarioManager)
     {
         this.usuarioManager = usuarioManager;
     }
@@ -65,7 +66,7 @@ public class UserComuController extends AppControllerAbstract {
                 new UsuarioComunidad
                         .UserComuBuilder(
                         new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                        getUserFromDb(usuarioManager))
+                        usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessToken).build().getUserName()))
                         .build()
         );
     }
@@ -74,7 +75,7 @@ public class UserComuController extends AppControllerAbstract {
     public List<Comunidad> getComusByUser(@RequestHeader("Authorization") String accessToken)
     {
         logger.debug("getComusByUser()");
-        return usuarioManager.getComusByUser(getUserNameFromAuthentication());
+        return usuarioManager.getComusByUser(new AuthHeaderBuilder(accessToken).build().getUserName());
     }
 
 
@@ -83,7 +84,7 @@ public class UserComuController extends AppControllerAbstract {
             comunidadId) throws ServiceException
     {
         logger.debug("getUserComuByUserAndComu");
-        return usuarioManager.getUserComuByUserAndComu(getUserNameFromAuthentication(), comunidadId);
+        return usuarioManager.getUserComuByUserAndComu(new AuthHeaderBuilder(accessToken).build().getUserName(), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_OLDEST_USER + "/{comunidadId}", method = GET)
@@ -91,8 +92,10 @@ public class UserComuController extends AppControllerAbstract {
                                            @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("isOldestOrAdmonUserComu()");
-        return usuarioManager.checkComuDataModificationPower(getUserFromDb(usuarioManager),
-                new Comunidad.ComunidadBuilder().c_id(comunidadId).build());
+        return usuarioManager.checkComuDataModificationPower(
+                usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessToken).build().getUserName()),
+                new Comunidad.ComunidadBuilder().c_id(comunidadId).build()
+        );
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)
@@ -101,7 +104,7 @@ public class UserComuController extends AppControllerAbstract {
             throws ServiceException
     {
         logger.info("modifyComuData()");
-        return usuarioManager.modifyComuData(getUserFromDb(usuarioManager), comunidad);
+        return usuarioManager.modifyComuData(usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessToken).build().getUserName()), comunidad);
     }
 
     @RequestMapping(value = USERCOMU_MODIFY, method = PUT, consumes = MIME_JSON)
@@ -109,11 +112,14 @@ public class UserComuController extends AppControllerAbstract {
                               @RequestBody final UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("modifyUserComu()");
-        return usuarioManager.modifyUserComu(new UsuarioComunidad
-                .UserComuBuilder(userComu.getComunidad(), getUserFromDb(usuarioManager)) // agika
-                .userComuRest(userComu)
-                .build()
-        );
+        return usuarioManager.modifyUserComu
+                (
+                        new UsuarioComunidad.UserComuBuilder(
+                                userComu.getComunidad(),
+                                usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessToken).build().getUserName())
+                        ).userComuRest(userComu)
+                                .build()
+                );
     }
 
     @RequestMapping(value = REG_COMU_AND_USER_AND_USERCOMU, method = POST, consumes = MIME_JSON)
@@ -126,12 +132,12 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = REG_COMU_USERCOMU, method = POST, consumes = MIME_JSON)
-    public boolean regComuAndUserComu(@RequestHeader("Authorization") String headerAccessToken,
+    public boolean regComuAndUserComu(@RequestHeader("Authorization") String accessTk,
                                       @RequestBody UsuarioComunidad usuarioCom) throws ServiceException
     {
         logger.debug("regComuAndUserComu()");
 
-        Usuario usuario = getUserFromDb(usuarioManager);
+        Usuario usuario = usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessTk).build().getUserName());
         UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuario)
                 .userComuRest(usuarioCom).build();
         return usuarioManager.regComuAndUserComu(usuarioComBis);
@@ -146,11 +152,11 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = REG_USERCOMU, method = POST, consumes = MIME_JSON)
-    public int regUserComu(@RequestHeader("Authorization") String headerAccessToken,
+    public int regUserComu(@RequestHeader("Authorization") String accessTk,
                            @RequestBody UsuarioComunidad usuarioComunidad) throws ServiceException
     {
         logger.debug("regUserComu()");
-        Usuario usuario = getUserFromDb(usuarioManager);
+        Usuario usuario = usuarioManager.getUserDataByName(new AuthHeaderBuilder(accessTk).build().getUserName());
         UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioComunidad.getComunidad(), usuario)
                 .userComuRest(usuarioComunidad).build();
         return usuarioManager.regUserComu(usuarioComBis);
@@ -169,6 +175,6 @@ public class UserComuController extends AppControllerAbstract {
             throws ServiceException
     {
         logger.debug("seeUserComusByUser()");
-        return usuarioManager.seeUserComusByUser(getUserFromDb(usuarioManager).getUserName());
+        return usuarioManager.seeUserComusByUser(new AuthHeaderBuilder(accessToken).build().getUserName());
     }
 }

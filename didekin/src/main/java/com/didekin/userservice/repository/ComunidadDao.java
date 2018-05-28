@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -35,8 +34,6 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
  * Date: 18/04/15
  * Time: 10:55
  */
-@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
-@Repository
 public class ComunidadDao {
 
     private static final Logger logger = LoggerFactory.getLogger(ComunidadDao.class.getCanonicalName());

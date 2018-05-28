@@ -10,8 +10,6 @@ import static com.didekin.userservice.repository.UsuarioTables.USUARIO_TB;
  */
 enum UsuarioSql {
 
-    BY_ID("SELECT * FROM usuario WHERE usuario.u_id = ?"),
-
     COMUS_BY_USER("select c_id, tipo_via, nombre_via, numero, sufijo_numero, fecha_alta," +
             " portal, escalera, planta, puerta, roles," +
             " m_cd, m_nombre, " +
@@ -90,6 +88,12 @@ enum UsuarioSql {
             " ON u.u_id = cu.u_id " +
             " WHERE u.user_name = ?"),
 
+    USER_BY_EMAIL("SELECT u_id, alias, user_name, gcm_token, password " +
+            " FROM usuario as u WHERE u.user_name = ?"),
+
+    USER_BY_ID("SELECT u_id, alias, user_name, gcm_token, password " +
+            " FROM usuario WHERE u_id = ?"),
+
     USERCOMU_BY_COMU("select * from usuarios_comunidades_view" +
             " where user_name = ? AND c_id = ? "),
 
@@ -99,9 +103,6 @@ enum UsuarioSql {
             " where c_id = ? " +
             " ORDER BY alias"),
 
-    USUARIO_BY_EMAIL("SELECT u_id, alias, user_name, password " +
-            " FROM usuario as u WHERE u.user_name = ?"),
-
     USERCOMU_BY_EMAIL("SELECT u.u_id, u.alias, u.user_name, cu.c_id, cu.roles " +
             " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
             " USING (u_id) " +
@@ -110,9 +111,7 @@ enum UsuarioSql {
     USERCOMUS_BY_USER("select * from usuarios_comunidades_view" +
             " where user_name = ? " +
             " ORDER BY pr_id, m_cd, nombre_via, tipo_via"),
-
-    USER_WITH_GCMTOKEN("SELECT u_id, alias, user_name, gcm_token " +
-            " FROM usuario WHERE u_id = ?"),;
+    ;
 
     String sqlText;
 

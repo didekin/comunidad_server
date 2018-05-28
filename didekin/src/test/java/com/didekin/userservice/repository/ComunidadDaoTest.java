@@ -1,5 +1,7 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
@@ -8,8 +10,12 @@ import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Connection;
 import java.util.List;
@@ -52,7 +58,7 @@ public abstract class ComunidadDaoTest {
     @Autowired
     private UsuarioDao usuarioDao;
     @Autowired
-    private UsuarioManagerIf sujetosService;
+    private UsuarioManager sujetosService;
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -211,7 +217,7 @@ public abstract class ComunidadDaoTest {
         assertThat(insertedRow, is(true));
 
         Comunidad comunidad = usuarioDao.getComusByUser(USER_PEPE.getUserName()).get(0);
-        Usuario usuario = usuarioDao.getUserByUserName(USER_PEPE.getUserName());
+        Usuario usuario = usuarioDao.getUserDataByName(USER_PEPE.getUserName());
         UsuarioComunidad userComu = new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
                 .userComuRest(COMU_REAL_PEPE)
                 .build();
@@ -438,5 +444,29 @@ public abstract class ComunidadDaoTest {
         assertThat(comunidades.get(0).getNombreVia(), is("de la Mujer de la Plazuela"));
         assertThat(comunidades.get(1).getTipoVia(), is("Ronda"));
         assertThat(comunidades.get(1).getNombreVia(), is("de la Plazuela"));
+    }
+
+    // ======================================  INNER CLASSES ======================================
+
+    /**
+     * User: pedro@didekin
+     * Date: 19/04/15
+     * Time: 11:18
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+    @Category({LocalDev.class})
+    public static class ComunidadDaoDevTest extends ComunidadDaoTest {
+    }
+
+    /**
+     * User: pedro@didekin
+     * Date: 19/04/15
+     * Time: 11:18
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+    @Category({DbPre.class})
+    public static class ComunidadDaoPreTest extends ComunidadDaoTest {
     }
 }

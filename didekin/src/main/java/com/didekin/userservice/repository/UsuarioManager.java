@@ -1,20 +1,22 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
+import com.didekinlib.http.exception.ErrorBean;
 import com.didekinlib.model.common.dominio.ValidDataPatterns;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
+import com.google.gson.Gson;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.MailException;
-import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -28,12 +30,15 @@ import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
+import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
+import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
@@ -44,9 +49,7 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * Date: 20/04/15
  * Time: 15:41
  */
-@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
-@Service
-public class UsuarioManager implements UsuarioManagerIf {
+public class UsuarioManager {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioManager.class.getCanonicalName());
     private static final int BCRYPT_LOG_ROUNDS = 12;
@@ -55,119 +58,38 @@ public class UsuarioManager implements UsuarioManagerIf {
     private final ComunidadDao comunidadDao;
     private final UsuarioDao usuarioDao;
     private final UsuarioMailService usuarioMailService;
-//    private final KeyStore tokenStore;     // TODO: revisar.
+    private final EncrypTkProducerBuilder producerBuilder;
 
     @Autowired
-    UsuarioManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao, UsuarioMailService usuarioMailService)
+    UsuarioManager(ComunidadDao comunidadDao,
+                   UsuarioDao usuarioDao,
+                   UsuarioMailService usuarioMailService,
+                   EncrypTkProducerBuilder producerBuilderIn)
     {
         this.comunidadDao = comunidadDao;
         this.usuarioDao = usuarioDao;
         this.usuarioMailService = usuarioMailService;
-    }
-
-    static Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
-    {
-        // Password encryption.
-        return new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioPswdRaw)
-                .password(hashpw(usuarioPswdRaw.getPassword(), BCRYPT_SALT))
-                .build();
+        producerBuilder = producerBuilderIn;
     }
 
     //    ============================================================
-    //    .......... UsuarioManagerIf .......
+    //    ................... Methods ................
     //    ============================================================
 
-    static void doFinallyJdbc(Connection conn, String msg)
-    {
-        try {
-            if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
-            }
-        } catch (SQLException e) {
-            logger.error(msg + e.getMessage());
-        }
-    }
 
-    static void doCatchSqlException(Connection conn, SQLException se)
-    {
-        try {
-            if (conn != null) {
-                conn.rollback();
-            }
-            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(USER_NAME)) {
-                throw new ServiceException(USER_NAME_DUPLICATE);
-            }
-            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(COMUNIDAD_UNIQUE_KEY)) {
-                throw new ServiceException(COMUNIDAD_DUPLICATE);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(se.getMessage(), se);
-        }
-    }
-
-    @Override
-    public UsuarioDao getUsuarioDao()
-    {
-        return usuarioDao;
-    }
-
-    @Override
-    public Usuario completeUser(String userName) throws ServiceException
-    {
-        logger.debug("completeUser()");
-        return new Usuario.UsuarioBuilder()
-                .copyUsuario(getUserByUserName(userName))
-                .password(null)
-                .build();
-    }
-
-    @Override
     public UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("completeWithUserComuRoles()");
         return usuarioDao.getUserComuRolesByUserName(userName, comunidadId);
     }
 
-    @Override     // TODO: descomentar y revisar.
-    public boolean deleteAccessTokenByUserName(String userName) throws ServiceException
-    {
-        logger.debug("deleteAccessTokenByUserName()");
-        /*checkArgument(userName != null);
-        Optional<OAuth2AccessToken> oAuthTkOptional = getAccessTokenByUserName(userName);
-        return oAuthTkOptional.isPresent() && deleteAccessToken(oAuthTkOptional.get().getValue());*/
-        return false;
-    }
-
-    // TODO: descomentar y revisar.
-    /*@Override
-    public OAuth2AccessToken getAccessToken(String accesTkValue)
-    {
-        logger.debug("getAccessToken()");
-        return tokenStore.readAccessToken(accesTkValue);
-    }*/
-
-    // TODO: descomentar y revisar.
-    /*@Override
-    public Optional<OAuth2AccessToken> getAccessTokenByUserName(String userName)
-    {
-        logger.debug("getAccessTokenByUserName()");
-        return tokenStore.findTokensByUserName(userName)
-                .stream()
-                .filter(oAuth2Token -> oAuth2Token.getValue() != null)
-                .findFirst();
-    }*/
-
-    @Override
     public boolean deleteUser(String userName) throws ServiceException
     {
         logger.info("deleteUser()");
         return deleteUserAndComunidades(userName) >= 1;
     }
 
-    @Override
-    public int deleteUserAndComunidades(String userName) throws ServiceException
+    int deleteUserAndComunidades(String userName) throws ServiceException
     {
         logger.info("deleteUserAndComunidades()");
         List<UsuarioComunidad> comunidades = usuarioDao.seeUserComusByUser(userName);
@@ -180,7 +102,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         return contador;
     }
 
-    @Override
     public int deleteUserComunidad(final UsuarioComunidad usuarioComunidad) throws ServiceException
     {
         logger.info("deleteUserComunidad()");
@@ -202,14 +123,12 @@ public class UsuarioManager implements UsuarioManagerIf {
         return rowsDeleted;
     }
 
-    @Override
     public Comunidad getComunidadById(long comunidadId) throws ServiceException
     {
         logger.info("getComunidadById()");
         return comunidadDao.getComunidadById(comunidadId);
     }
 
-    @Override
     public Comunidad getComunidadById(Usuario user, long comunidadId) throws ServiceException
     {
         logger.debug("getComunidadById()");
@@ -220,21 +139,12 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
     }
 
-    @Override
     public List<Comunidad> getComusByUser(String userName)
     {
         logger.debug("getComusByUser()");
         return usuarioDao.getComusByUser(userName);
     }
 
-    @Override
-    public String getGcmToken(long usuarioId)
-    {
-        String token = usuarioDao.getUsuarioWithGcmToken(usuarioId).getGcmToken();
-        return token != null ? token.trim() : token;
-    }
-
-    @Override
     public List<String> getGcmTokensByComunidad(long comunidadId)
     {
         logger.debug("getGcmTokensByComunidad()");
@@ -243,8 +153,7 @@ public class UsuarioManager implements UsuarioManagerIf {
                 .findFirst().get();
     }
 
-    @Override
-    public List<String> getRolesSecurity(Usuario usuario)
+    List<String> getRolesSecurity(Usuario usuario)
     {
         logger.info("getRolesSecurity()");
 
@@ -263,22 +172,19 @@ public class UsuarioManager implements UsuarioManagerIf {
     /**
      * @return null if the pair usuarioComunidad doesn't exist.
      */
-    @Override
     public UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("getUserComuFullByUserAndComu()");
         return usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
     }
 
-    @Override
-    public Usuario getUserByUserName(String email) throws ServiceException
+    public Usuario getUserDataByName(String email) throws ServiceException
     {
-        logger.info("getUserByUserName()");
-        return usuarioDao.getUserByUserName(email);
+        logger.info("getUserDataByName()");
+        return usuarioDao.getUserDataByName(email);
     }
 
-    @Override
-    public boolean isOldestUserComu(Usuario user, long comunidadId) throws ServiceException
+    boolean isOldestUserComu(Usuario user, long comunidadId) throws ServiceException
     {
         logger.debug("isOldestOrAdmonUserComu()");
         long idOldestUser;
@@ -290,25 +196,32 @@ public class UsuarioManager implements UsuarioManagerIf {
         return user.getuId() == idOldestUser;
     }
 
+    public boolean isUserInComunidad(String userName, long comunidadId)
+    {
+        return usuarioDao.isUserInComunidad(userName, comunidadId);
+    }
+
     /**
-     * @return false if the userName exists but the password doesn't match that in the data base.
+     * @return null if the userName exists but the password doesn't match that in the data base; otherwise
+     * it returns a new security token.
      * @throws ServiceException if  USER_WRONG_INIT or USER_NAME_NOT_FOUND.
      */
-    @Override
-    public boolean login(Usuario usuario) throws ServiceException
+    public String login(Usuario usuario) throws ServiceException
     {
         logger.debug("login()");
 
-        if (!ValidDataPatterns.EMAIL.isPatternOk(usuario.getUserName())) {
+        if (!EMAIL.isPatternOk(usuario.getUserName()) || !PASSWORD.isPatternOk(usuario.getPassword())) {
             throw new ServiceException(USER_WRONG_INIT);
         }
 
-        Usuario usuarioDb = getUserByUserName(usuario.getUserName());
-        return checkpw(usuario.getPassword(), usuarioDb.getPassword());
+        Usuario usuarioDb = getUserDataByName(usuario.getUserName());
+        if (checkpw(usuario.getPassword(), usuarioDb.getPassword())) {
+            return producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
+        }
+        return new Gson().toJson(new ErrorBean(PASSWORD_WRONG));
     }
 
-    @Override
-    public String makeNewPassword() throws ServiceException
+    String makeNewPassword() throws ServiceException
     {
         logger.debug("makeNewPassword()");
         String newPasssword = new PswdGenerator().makePassword();
@@ -318,7 +231,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         return newPasssword;
     }
 
-    @Override
     public int modifyComuData(Usuario user, Comunidad comunidad) throws ServiceException
     {
         logger.info("modifyComuData()");
@@ -334,16 +246,15 @@ public class UsuarioManager implements UsuarioManagerIf {
      * 2. UsuarioId cannot be null.
      * Postconditions:
      * 1. the userName and/or alias have been modified.
-     * 2. if userName has been modified, user's accessToken has been deleted and a new password sent to the user.
+     * 2. if userName has been modified, a new password is sent to the user.
      *
      * @return number of rows afected in user table (it should be 1).
      * @throws ServiceException if both newUserName and newAlias are both null.
      */
-    @Override
     public int modifyUser(final Usuario userNew, String oldUserName, String localeToStr) throws ServiceException
     {
         logger.info("modifyUser()");
-        Usuario userInDB = usuarioDao.getUsuarioById(userNew.getuId());
+        Usuario userInDB = usuarioDao.getUserDataById(userNew.getuId());
         boolean isAliasNew = userNew.getAlias() != null && !userNew.getAlias().isEmpty();
         boolean isUserNameNew = userNew.getUserName() != null && !userNew.getUserName().isEmpty() && !userNew.getUserName().equals(oldUserName);
 
@@ -355,7 +266,6 @@ public class UsuarioManager implements UsuarioManagerIf {
             Usuario userToDB = isAliasNew ? userToDbBuilder.alias(userNew.getAlias()).build() : userToDbBuilder.build();
             int userModified = usuarioDao.modifyUser(doUserEncryptPswd(userToDB));
             if (userModified > 0) {
-                deleteAccessTokenByUserName(userNew.getUserName());
                 chooseMailService(null).sendMessage(userToDB, localeToStr);
             }
             return userModified;
@@ -366,29 +276,23 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
     }
 
-    @Override
     public int modifyUserComu(UsuarioComunidad userComu)
     {
         logger.info("modifyUserComu()");
         return usuarioDao.modifyUserComu(userComu);
     }
 
-    @Override
-    public int modifyUserGcmToken(Usuario usuario)
-    {
-        logger.info("modifyUserGcmToken(Usuario usuario)");
-        return usuarioDao.modifyUserGcmToken(usuario);
-    }
-
-    @Override
     public int modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken(String userName, String gcmToken)");
-        Usuario usuario = new Usuario.UsuarioBuilder().uId(completeUser(userName).getuId()).gcmToken(gcmToken).build();
-        return modifyUserGcmToken(usuario);
+        Usuario usuario = new Usuario.UsuarioBuilder()
+                .copyUsuario(getUserDataByName(userName))
+                .password(null)
+                .gcmToken(gcmToken)
+                .build();
+        return usuarioDao.modifyUserGcmToken(usuario);
     }
 
-    @Override
     public int modifyUserGcmTokens(List<GcmTokensHolder> holdersList)
     {
         logger.debug("modifyUserGcmToken(List<GcmTokensHolder> holdersList)");
@@ -403,45 +307,40 @@ public class UsuarioManager implements UsuarioManagerIf {
      * 1. userName and password must be not null and valid.
      * Postconditions:
      * 1. the password has been modified.
-     * 2. if password has been modified, user's accessToken has been deleted.
      *
      * @return number of rows afected in user table: 1.
      * @throws ServiceException if rows affected != 1.
      */
-    @Override
-    public int passwordChangeWithName(String userName, final String newPassword) throws ServiceException
+    public int passwordChange(String userName, final String newPassword) throws ServiceException
     {
-        logger.info("passwordChangeWithName()");
+        logger.info("passwordChange()");
 
-        if (!ValidDataPatterns.EMAIL.isPatternOk(userName) || !ValidDataPatterns.PASSWORD.isPatternOk(newPassword)) {
+        if (!EMAIL.isPatternOk(userName) || !ValidDataPatterns.PASSWORD.isPatternOk(newPassword)) {
             throw new ServiceException(USER_WRONG_INIT);
         }
 
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioDao.getUserByUserName(userName))
+                .copyUsuario(usuarioDao.getUserDataByName(userName))
                 .password(hashpw(newPassword, gensalt(12)))
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
-            deleteAccessTokenByUserName(usuarioNew.getUserName());
             return 1;
         } else {
             throw new ServiceException(USER_DATA_NOT_MODIFIED);
         }
     }
 
-    @Override
     public boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... mailService) throws ServiceException
     {
         logger.debug("passwordSend()");
 
-        final Usuario oldUsuario = getUserByUserName(userName);
+        final Usuario oldUsuario = getUserDataByName(userName);
         final Usuario usuarioPswdRaw = doUserRawPswd(oldUsuario);
         final Usuario usuarioPswdEncr = doUserEncryptPswd(usuarioPswdRaw);
 
         try {
             if (usuarioDao.passwordChange(usuarioPswdEncr) == 1) {
-                deleteAccessTokenByUserName(usuarioPswdEncr.getUserName());
                 chooseMailService(mailService).sendMessage(usuarioPswdRaw, localeToStr);
                 return true;
             } else {
@@ -454,7 +353,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         }
     }
 
-    @Override
     public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom, String localeToStr,
                                              UsuarioMailServiceIf... mailServTest) throws ServiceException
     {
@@ -495,7 +393,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
     }
 
-    @Override
     public boolean regComuAndUserComu(UsuarioComunidad usuarioCom) throws ServiceException
     {
         logger.info("regComuAndUserComu()");
@@ -523,7 +420,6 @@ public class UsuarioManager implements UsuarioManagerIf {
         return pkComunidad > 0L && userComuInserted == 1;
     }
 
-    @Override
     public boolean regUserAndUserComu(final UsuarioComunidad userComu, String localeToStr,
                                       UsuarioMailServiceIf... mailServTest) throws ServiceException
     {
@@ -561,16 +457,66 @@ public class UsuarioManager implements UsuarioManagerIf {
         return pkUsuario > 0L && userComuInserted == 1;
     }
 
-    @Override
     public int regUserComu(UsuarioComunidad usuarioComunidad)
     {
         logger.info("regUserComu()");
         return comunidadDao.insertUsuarioComunidad(usuarioComunidad);
     }
 
+    // =================================  CHECKERS ======================================
+
+    /**
+     * The method checks if a user is the oldest one in the comunidad or has the authority 'adm'.
+     *
+     * @param user      : user in session.
+     * @param comunidad : comunidad to be modified.
+     */
+    public boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws ServiceException
+    {
+        logger.debug("checkIncidModificationPower()");
+        return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
+    }
+
     // =================================  HELPERS ======================================
 
-    @Override
+    static Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
+    {
+        // Password encryption.
+        return new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioPswdRaw)
+                .password(hashpw(usuarioPswdRaw.getPassword(), BCRYPT_SALT))
+                .build();
+    }
+
+    static void doFinallyJdbc(Connection conn, String msg)
+    {
+        try {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        } catch (SQLException e) {
+            logger.error(msg + e.getMessage());
+        }
+    }
+
+    static void doCatchSqlException(Connection conn, SQLException se)
+    {
+        try {
+            if (conn != null) {
+                conn.rollback();
+            }
+            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(USER_NAME)) {
+                throw new ServiceException(USER_NAME_DUPLICATE);
+            }
+            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(COMUNIDAD_UNIQUE_KEY)) {
+                throw new ServiceException(COMUNIDAD_DUPLICATE);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(se.getMessage(), se);
+        }
+    }
+
     public List<Comunidad> searchComunidades(Comunidad comunidad)
     {
         logger.info("searchComunidades()");
@@ -587,14 +533,12 @@ public class UsuarioManager implements UsuarioManagerIf {
         return comunidadDao.searchComunidadThree(comunidad);
     }
 
-    @Override
     public List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
         logger.debug("seeUserComusByComu()");
         return usuarioDao.seeUserComusByComu(idComunidad);
     }
 
-    @Override
     public List<UsuarioComunidad> seeUserComusByUser(String userName)
     {
         logger.info("seeUserComusByUser()");
@@ -624,20 +568,5 @@ public class UsuarioManager implements UsuarioManagerIf {
             }
         }
         throw new ServiceException(PASSWORD_NOT_SENT);
-    }
-
-    // =================================  CHECKERS ======================================
-
-    /**
-     * The method checks if a user is the oldest one in the comunidad or has the authority 'adm'.
-     *
-     * @param user      : user in session.
-     * @param comunidad : comunidad to be modified.
-     */
-    @Override
-    public boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws ServiceException
-    {
-        logger.debug("checkIncidModificationPower()");
-        return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
     }
 }

@@ -2,6 +2,7 @@ package com.didekin.userservice.controller;
 
 
 import com.didekin.Application;
+import com.didekin.auth.EncrypTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
@@ -9,7 +10,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.common.springprofile.Profiles;
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
@@ -49,14 +50,13 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escori
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenLuis;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPaco;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.tokenPedro;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
@@ -84,7 +84,8 @@ public abstract class UserComuControllerTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    private UsuarioManagerIf sujetosService;
+    private UsuarioManager sujetosService;
+    EncrypTkProducerBuilder producerBuilder;
 
     @Before
     public void setUp()
@@ -106,7 +107,7 @@ public abstract class UserComuControllerTest {
     {
         /* Usuario con una comunidad y comunidad con un usuario: paco en comunidad 6.*/
         // Exec
-        assertThat(USERCOMU_ENDPOINT.deleteUserComu(tokenPaco(retrofitHandler), calle_olmo_55.getC_Id()).execute().body(), is(IS_USER_DELETED));
+        assertThat(USERCOMU_ENDPOINT.deleteUserComu(doHttpAuthHeader(paco, producerBuilder), calle_olmo_55.getC_Id()).execute().body(), is(IS_USER_DELETED));
         // Check comunidad deleted
         try {
             sujetosService.getComunidadById(calle_olmo_55.getC_Id());
@@ -132,7 +133,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testGetComusByUser_1() throws IOException
     {
-        List<Comunidad> comunidades = USERCOMU_ENDPOINT.getComusByUser(tokenPedro(retrofitHandler))
+        List<Comunidad> comunidades = USERCOMU_ENDPOINT.getComusByUser(doHttpAuthHeader(pedro, producerBuilder))
                 .execute().body();
         assertThat(comunidades, hasItems(COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, COMU_EL_ESCORIAL));
     }
@@ -156,14 +157,14 @@ public abstract class UserComuControllerTest {
     {
         // No existe la comunidad.
         try {
-            USERCOMU_ENDPOINT.getUserComuByUserAndComu(tokenPedro(retrofitHandler), 99L).execute();
+            USERCOMU_ENDPOINT.getUserComuByUserAndComu(doHttpAuthHeader(pedro, producerBuilder), 99L).execute();
             fail();
         } catch (Exception e) {
             assertThat(e instanceof EOFException, is(true));
         }
 
         // Comunidad asociada a usuario.
-        UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(tokenPedro(retrofitHandler), 2L).execute().body();
+        UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(doHttpAuthHeader(pedro, producerBuilder), 2L).execute().body();
         assertThat(userComu.getComunidad(), is(COMU_LA_FUENTE));
         assertThat(userComu.getUsuario().getAlias(), is("pedronevado"));
         assertThat(userComu.getRoles(), is("adm"));
@@ -180,9 +181,9 @@ public abstract class UserComuControllerTest {
                 .planta("planta2")
                 .puerta("puertaB")
                 .roles(PROPIETARIO.function).build();
-        int isInserted = USERCOMU_ENDPOINT.regUserComu(tokenLuis(retrofitHandler), usuarioComunidad).execute().body();
+        int isInserted = USERCOMU_ENDPOINT.regUserComu(doHttpAuthHeader(luis, producerBuilder), usuarioComunidad).execute().body();
         assertThat(isInserted, is(1));
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(tokenLuis(retrofitHandler), calle_el_escorial.getC_Id()).execute().body(), is(false));
+        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(doHttpAuthHeader(luis, producerBuilder), calle_el_escorial.getC_Id()).execute().body(), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -201,7 +202,7 @@ public abstract class UserComuControllerTest {
     @Test
     public void testModifyComuData() throws IOException
     {
-        assertThat(USERCOMU_ENDPOINT.modifyComuData(tokenPedro(retrofitHandler), calle_el_escorial).execute().body(),
+        assertThat(USERCOMU_ENDPOINT.modifyComuData(doHttpAuthHeader(pedro, producerBuilder), calle_el_escorial).execute().body(),
                 is(1));
     }
 
@@ -214,7 +215,7 @@ public abstract class UserComuControllerTest {
         assertThat(sujetosService.getUserComuByUserAndComu(pedro_plazuelas_10bis.getUsuario().getUserName(), pedro_plazuelas_10bis.getComunidad().getC_Id()).getEscalera(), is(nullValue()));
         UsuarioComunidad userComuMod = new UsuarioComunidad.UserComuBuilder(ronda_plazuela_10bis, pedro).userComuRest(pedro_plazuelas_10bis).escalera("MOD").build();
         // Exec.
-        assertThat(USERCOMU_ENDPOINT.modifyUserComu(tokenPedro(retrofitHandler), userComuMod).execute().body(), is(1));
+        assertThat(USERCOMU_ENDPOINT.modifyUserComu(doHttpAuthHeader(pedro, producerBuilder), userComuMod).execute().body(), is(1));
         assertThat(sujetosService.getUserComuByUserAndComu(pedro_plazuelas_10bis.getUsuario().getUserName(), pedro_plazuelas_10bis.getComunidad().getC_Id()).getEscalera(), is("MOD"));
     }
 
@@ -227,7 +228,7 @@ public abstract class UserComuControllerTest {
         UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(COMU_OTRA, null).portal("B").escalera
                 ("ESC").planta("11").puerta("puerta").roles(ADMINISTRADOR.function).build();
         // Exec.
-        boolean isRegOk = USERCOMU_ENDPOINT.regComuAndUserComu(tokenLuis(retrofitHandler), usuarioCom).execute().body();
+        boolean isRegOk = USERCOMU_ENDPOINT.regComuAndUserComu(doHttpAuthHeader(luis, producerBuilder), usuarioCom).execute().body();
         // Check.
         assertThat(isRegOk, is(true));
     }
@@ -262,7 +263,7 @@ public abstract class UserComuControllerTest {
     {
         // Duplicate user (and comunidad).
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
-        Usuario usuario = sujetosService.getUserByUserName(USER_JUAN.getUserName());
+        Usuario usuario = sujetosService.getUserDataByName(USER_JUAN.getUserName());
         Comunidad comunidad = sujetosService.getComusByUser(USER_JUAN.getUserName()).get(0);
 
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, usuario, "portal", "esc",
@@ -281,7 +282,7 @@ public abstract class UserComuControllerTest {
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, null).portal("portal")
                 .planta("planta2").puerta("puertaB").roles(PROPIETARIO.function).build();
         // Exec.
-        int rowInserted = USERCOMU_ENDPOINT.regUserComu(tokenLuis(retrofitHandler), usuarioComunidad).execute().body();
+        int rowInserted = USERCOMU_ENDPOINT.regUserComu(doHttpAuthHeader(luis, producerBuilder), usuarioComunidad).execute().body();
         // Check.
         assertThat(rowInserted, is(1));
     }
@@ -292,7 +293,7 @@ public abstract class UserComuControllerTest {
     public void testSeeUserComuByComu() throws IOException
     {
         // This is a registered user not asssociated to the comunidad 1 used in the tesst.
-        List<UsuarioComunidad> usuarioComus = USERCOMU_ENDPOINT.seeUserComusByComu(tokenLuis(retrofitHandler), calle_la_fuente_11.getC_Id()).execute().body();
+        List<UsuarioComunidad> usuarioComus = USERCOMU_ENDPOINT.seeUserComusByComu(doHttpAuthHeader(luis, producerBuilder), calle_la_fuente_11.getC_Id()).execute().body();
         assertThat(usuarioComus.size(), is(2));
         assertThat(usuarioComus.get(1).getUsuario(), is(pedro));
         assertThat(usuarioComus.get(0).getUsuario(), is(luis));
@@ -304,7 +305,7 @@ public abstract class UserComuControllerTest {
     public void testSeeUserComusByUser() throws IOException
     {
         // The password in data base is encrypted.
-        List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT.seeUserComusByUser(tokenLuis(retrofitHandler)).execute().body();
+        List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT.seeUserComusByUser(doHttpAuthHeader(luis, producerBuilder)).execute().body();
         assertThat(comunidades.size(), is(3));
         assertThat(comunidades.get(0).getUsuario(), is(luis));
         assertThat(comunidades.get(0).getComunidad(), is(calle_plazuela_23));

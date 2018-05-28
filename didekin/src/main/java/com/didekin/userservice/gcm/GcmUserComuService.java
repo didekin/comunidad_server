@@ -1,6 +1,6 @@
 package com.didekin.userservice.gcm;
 
-import com.didekin.userservice.repository.UsuarioManagerIf;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.gcm.model.common.GcmException;
 import com.didekinlib.gcm.model.common.GcmMulticastRequest;
 import com.didekinlib.gcm.model.common.GcmRequest;
@@ -43,7 +43,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 @Service
 class GcmUserComuService implements
-        GcmUserComuServiceIf {     // TODO: Migrate to RX_JAVA; test it: it is untested in server, only on the android app client.
+        GcmUserComuServiceIf {
 
     private static final Logger logger = LoggerFactory.getLogger(GcmUserComuService.class.getCanonicalName());
     /**
@@ -61,7 +61,7 @@ class GcmUserComuService implements
             "AAAADknoTJQ:APA91bGRihWJup9TYYtKl6LV7d01f5DZJDr5edlwh8KV4fLzq8S20OYyxnqP7Hsj2b4B4zDU0G_jzDH8bOwXGlz77XMFzcPWnEZ8EcDqTbiNTSjDHxuegT2eE8Dsn9YvozF4GIbIHFaJ";
     private String didekin_api_key_header = "key=" + didekin_firebase_project_key;
     private GcmEndPointImp gcmEndPoint;
-    private UsuarioManagerIf usuarioService;
+    private UsuarioManager usuarioService;
 
     private GcmUserComuService()
     {
@@ -79,7 +79,7 @@ class GcmUserComuService implements
     }
 
     @Autowired
-    public GcmUserComuService(GcmEndPointImp gcmEndPoint, UsuarioManagerIf usuarioService)
+    public GcmUserComuService(GcmEndPointImp gcmEndPoint, UsuarioManager usuarioService)
     {
         this();
         this.gcmEndPoint = gcmEndPoint;

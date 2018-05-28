@@ -8,7 +8,6 @@ import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -36,7 +35,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  * <p>
  * TkKeyServerProviderIf implementation based on a keyStore as key repository.
  */
-@Service
 public class TkKeyServerProvider implements TkKeyServerProviderIf {
 
     private static final Logger logger = getLogger(TkKeyServerProvider.class.getCanonicalName());
@@ -57,6 +55,11 @@ public class TkKeyServerProvider implements TkKeyServerProviderIf {
             logger.error(e.getMessage());
             throw new ServiceException(TOKEN_ENCRYP_DECRYP_ERROR);
         }
+    }
+
+    KeyStore getKeyStore()
+    {
+        return keyStore;
     }
 
     /**

@@ -1,8 +1,6 @@
 package com.didekin.auth;
 
 import com.didekin.Application;
-import com.didekin.auth.EncryptedTkConsumer.EncrypTkConsumerBuilder;
-import com.didekin.auth.EncryptedTkProducer.JweTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
 import com.didekinlib.http.usuario.TkParamNames;
@@ -23,9 +21,10 @@ import java.util.List;
 import static com.didekin.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekin.auth.TkHeaders.getDefaultHeader;
-import static com.didekin.auth.TkTestUtil.getDefaultTestClaims;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
@@ -44,7 +43,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public abstract class EncryptedTkConsumerTest {
 
     @Autowired
-    private JweTkProducerBuilder producerBuilder;
+    private EncrypTkProducerBuilder producerBuilder;
     @Autowired
     private EncrypTkConsumerBuilder consumerBuilder;
 
@@ -55,7 +54,7 @@ public abstract class EncryptedTkConsumerTest {
     {
         encryptedTkStr = producerBuilder
                 .headers(doHeadersSymmetricKey())
-                .claims(getDefaultTestClaims())  // default data test for subject and appId.
+                .claims(getDefaultTestClaims(pedro.getUserName()))  // default data test for subject and appId.
                 .build()
                 .getEncryptedTkStr();
     }
@@ -90,8 +89,8 @@ public abstract class EncryptedTkConsumerTest {
         /*{"exp":1531916447000,"aud":["didekin_web"],"sub":"pedro@didekin.es","appId":"appId_mock","iss":"didekin_auth"}*/
         assertThat(claimsDesEnc.getAudience(), is(getDefaultClaim(audience)));
         assertThat(claimsDesEnc.getIssuer(), is(getDefaultClaim(issuer)));
-        assertThat(claimsDesEnc.getClaimsMap().get(appId.getName()), is(getDefaultTestClaims().get(appId)));
-        assertThat(claimsDesEnc.getSubject(), is(getDefaultTestClaims().get(subject)));
+        assertThat(claimsDesEnc.getClaimsMap().get(appId.getName()), is(getDefaultTestClaims(pedro.getUserName()).get(appId)));
+        assertThat(claimsDesEnc.getSubject(), is(getDefaultTestClaims(pedro.getUserName()).get(subject)));
     }
 
     /*  ==============================================  INNER CLASSES =============================================*/
