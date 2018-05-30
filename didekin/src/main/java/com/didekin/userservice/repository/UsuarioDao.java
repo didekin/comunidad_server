@@ -39,6 +39,8 @@ import static com.didekin.userservice.repository.UsuarioSql.NEW_PASSWORD;
 import static com.didekin.userservice.repository.UsuarioSql.OLDEST_USER_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.PK;
 import static com.didekin.userservice.repository.UsuarioSql.ROLES_ALL_FUNC;
+import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY_ID;
+import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
@@ -48,6 +50,7 @@ import static com.didekin.userservice.repository.UsuarioSql.USER_BY_ID;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static java.lang.Boolean.TRUE;
 import static java.sql.JDBCType.INTEGER;
 
 /**
@@ -106,7 +109,7 @@ public class UsuarioDao {
         if (!(rowsDeleted == 1)) {
             throw new ServiceException(USER_NAME_NOT_FOUND);
         }
-        return Boolean.TRUE;
+        return TRUE;
     }
 
     int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws ServiceException
@@ -320,16 +323,16 @@ public class UsuarioDao {
 
     int modifyUserGcmToken(GcmTokensHolder holder)
     {
+        logger.debug("modifyUserGcmToken()");
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
-
-    // .................. MAPPER CLASSES ......................
 
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
         logger.info("seeUserComusByComu(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
-        List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(), new
-                Object[]{idComunidad}, new UsuarioComunidadMapper());
+        List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(),
+                new Object[]{idComunidad},
+                new UsuarioComunidadMapper());
         logger.debug("seeUserComusByComu(); usuariosComunidad.size = " + usuariosComunidad.size());
         return usuariosComunidad;
     }
@@ -353,6 +356,30 @@ public class UsuarioDao {
                 new UsuarioFullComunidadMapper());
     }
 
+    /**
+     * It updates the DB field token_auth with a new BCcripted authorization token.
+     *
+     * @return true if the data is updated.
+     * @throws ServiceException (USER_NAME_NOT_FOUND) if the update does not return 1.
+     */
+    boolean updateTokenAuthById(long userId, String tokenAuthBCrypted)
+    {
+        logger.debug("updateTokenAuthById()");
+        if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_ID.toString(), tokenAuthBCrypted, userId) == 1) {
+            return TRUE;
+        }
+        throw new ServiceException(USER_NAME_NOT_FOUND);
+    }
+
+    boolean updateTokenAuthByUserName(String userName, String tokenAuthBCrypted)
+    {
+        logger.debug("updateTokenAuthById()");
+        if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_NAME.toString(), tokenAuthBCrypted, userName) == 1) {
+            return TRUE;
+        }
+        throw new ServiceException(USER_NAME_NOT_FOUND);
+    }
+
     // .................. HELPER CLASSES ......................
 
     private static UsuarioComunidad doUsuarioComunidadFull(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
@@ -366,6 +393,8 @@ public class UsuarioDao {
                 .build();
     }
 
+    // .................. MAPPER CLASSES ......................
+
     private static final class UsuarioMapper implements RowMapper<Usuario> {
 
         @Override
@@ -377,6 +406,7 @@ public class UsuarioDao {
                     .alias(rs.getString("alias"))
                     .password(rs.getString("password"))
                     .gcmToken(rs.getString("gcm_token"))
+                    .tokenAuth(rs.getString("token_auth"))
                     .build();
         }
     }

@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
@@ -13,7 +13,7 @@ import org.junit.experimental.categories.Category;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
+import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
 import static com.didekinlib.http.usuario.TkParamNames.jwkey;
@@ -67,7 +67,7 @@ public class TkHeadersTest {
 
     // ===========================  Help methods ========================
 
-    static void checkMap(TkHeaders headersFinal)
+    public static void checkMap(TkHeaders headersFinal)
     {
         assertThat(headersFinal.getTokenHeader(algorithm_cek), is(DIRECT));
         assertThat(headersFinal.getTokenHeader(algorithm_ce), is(AES_128_CBC_HMAC_SHA_256));

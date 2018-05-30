@@ -1,7 +1,7 @@
 package com.didekin.userservice.testutils;
 
 
-import com.didekin.auth.EncrypTkProducerBuilder;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManager;
@@ -56,7 +56,8 @@ public final class UsuarioTestUtils {
             .alias("luis_gomez")
             .password("password5")
             .gcmToken("luis_gcm_token")
-            .userName("luis@luis.com").build();
+            .userName("luis@luis.com")
+            .tokenAuth("luis_token_auth").build();
 
     public static final Usuario juan = new Usuario.UsuarioBuilder()
             .uId(7L)
@@ -245,10 +246,15 @@ public final class UsuarioTestUtils {
         return claimsIn;
     }
 
-    public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
+    public static AuthHeader doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
         String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
-        return new AuthHeader.AuthHeaderBuilder().userName(usuario.getUserName()).appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
+        return new AuthHeader.AuthHeaderBuilder().userName(usuario.getUserName()).appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build();
+    }
+
+    public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
+    {
+        return doAuthHeader(usuario, producerBuilder).getBase64Str();
     }
 
     // ========================================== Métodos ========================================

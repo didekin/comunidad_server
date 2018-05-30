@@ -9,6 +9,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.testutils.LocaleConstant;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
@@ -34,8 +35,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.util.List;
 
+import retrofit2.Response;
+
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -55,7 +63,9 @@ public abstract class ComunidadControllerTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    UsuarioManager sujetosService;
+    UsuarioManager usuarioManager;
+    @Autowired
+    private EncrypTkProducerBuilder producerBuilder;
 
     @Before
     public void setUp()
@@ -74,25 +84,19 @@ public abstract class ComunidadControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComuData() throws IOException    // TODO: descomentar y revisar.
+    public void testGetComuData() throws IOException
     {
-        /*Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(3L).tipoVia("tipoV1").nombreVia("nombreV1")
-                .municipio(new Municipio((short) 13, new Provincia((short) 3))).build();
-        SpringOauthToken token = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                "luis@luis.com",
-                "password5",
-                PASSWORD_GRANT).execute().body();
-        // NO existe el par (comunidad, usuario).
-        Response<Comunidad> response = COMU_ENDPOINT.getComuData(doBearerAccessTkHeader(token), comunidad.getC_Id()).execute();
+        // Premisa: NO existe el par (comunidad, usuario).
+        assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_el_escorial.getC_Id()), is(false));
+        // Run, check.
+        Response<Comunidad> response = COMU_ENDPOINT.getComuData(doHttpAuthHeader(luis, producerBuilder),calle_el_escorial.getC_Id()).execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
 
-        token = OAUTH_ENDPOINT.getPasswordUserToken(new SecurityTestUtils(retrofitHandler).doAuthBasicHeader(CL_USER),
-                pedro.getUserName(),
-                "password3",
-                PASSWORD_GRANT).execute().body();
-        assertThat(COMU_ENDPOINT.getComuData(doBearerAccessTkHeader(token), comunidad.getC_Id()).execute().body(),
-                is(comunidad));*/
+        // Premisa: usuario en comunidad.
+        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
+        assertThat(COMU_ENDPOINT.getComuData(doHttpAuthHeader(pedro, producerBuilder), calle_el_escorial.getC_Id()).execute().body(),
+                is(calle_el_escorial));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

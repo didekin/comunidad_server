@@ -1,4 +1,4 @@
-package com.didekin.auth.api;
+package com.didekin.common.auth;
 
 import org.jose4j.lang.JoseException;
 

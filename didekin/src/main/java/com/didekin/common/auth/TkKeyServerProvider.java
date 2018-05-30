@@ -1,6 +1,5 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
-import com.didekin.auth.api.TkKeyServerProviderIf;
 import com.didekin.common.repository.ServiceException;
 
 import org.jose4j.jwk.EcJwkGenerator;
@@ -20,10 +19,10 @@ import java.security.spec.ECParameterSpec;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import static com.didekin.auth.TkConfiguration.aliasKey;
-import static com.didekin.auth.TkConfiguration.default_alg_for_symmetric_keys;
-import static com.didekin.auth.TkConfiguration.default_key_size;
-import static com.didekin.auth.TkConfiguration.storePswd;
+import static com.didekin.common.auth.TkCommonConfig.aliasKey;
+import static com.didekin.common.auth.TkCommonConfig.default_alg_for_symmetric_keys;
+import static com.didekin.common.auth.TkCommonConfig.default_key_size;
+import static com.didekin.common.auth.TkCommonConfig.storePswd;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static javax.crypto.KeyGenerator.getInstance;
 import static org.slf4j.LoggerFactory.getLogger;

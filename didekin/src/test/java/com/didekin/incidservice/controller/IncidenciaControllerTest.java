@@ -1,6 +1,6 @@
 package com.didekin.incidservice.controller;
 
-import com.didekin.auth.EncrypTkProducerBuilder;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.incidservice.repository.IncidenciaManagerIf;
 import com.didekin.incidservice.repository.UserManagerConnector;

@@ -1,12 +1,14 @@
-package com.didekin.auth;
+package com.didekin.userservice.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
+import com.didekin.common.auth.AuthInterceptor;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.controller.UserComuMockEndPoints;
 import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.usuario.AuthHeader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
@@ -26,6 +29,7 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.controller.UserComuMockController.CLOSED_AREA_MSG;
 import static com.didekin.userservice.controller.UserComuMockController.OPEN_AREA_MSG;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
@@ -49,7 +53,7 @@ public abstract class AuthInterceptorTest {
     @Autowired
     private HttpHandler retrofitHandler;
     @Autowired
-    private EncrypTkProducerBuilder producerBuilder;
+    private EncrypTkProducerBuilder builder;
 
     private UserComuMockEndPoints userComuMockEndPoint;
 
@@ -70,19 +74,14 @@ public abstract class AuthInterceptorTest {
     {
         // Path in open area and header empty.
         assertThat(userComuMockEndPoint.tryTokenInterceptor("", OPEN.substring(1), "login").execute().body(), is(OPEN_AREA_MSG));
+        // Path in open area and header not empty: since it is excluded from the interceptor, it goes OK.
+        Response<String> response = userComuMockEndPoint.tryTokenInterceptor("HEADER_NOT_EMPTY", OPEN.substring(1), "login").execute();
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.body(), is(OPEN_AREA_MSG));
     }
 
     @Test
     public void test_PreHandle_2() throws IOException
-    {
-        // Path in open area and header not empty.
-        Response<String> response = userComuMockEndPoint.tryTokenInterceptor("HEADER", OPEN.substring(1), "login").execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
-    }
-
-    @Test
-    public void test_PreHandle_3() throws IOException
     {
         // Path in closed area and header empty.
         Response<String> response = userComuMockEndPoint.tryTokenInterceptor("", USER_PATH.substring(1), "read").execute();
@@ -90,11 +89,25 @@ public abstract class AuthInterceptorTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(BAD_REQUEST.getHttpMessage()));
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_PreHandle_3() throws IOException
+    {
+        // Path in closed area and token well formed but with cross-validation errors.
+        String tokenInLocal = builder.defaultHeadersClaims(pedro.getUserName(), pedro.getGcmToken()).build().getEncryptedTkStr();
+        String headerStr = new AuthHeader.AuthHeaderBuilder().userName(luis.getUserName()).appId(luis.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
+        // Check.
+        Response<String> response = userComuMockEndPoint.tryTokenInterceptor(headerStr, USER_PATH.substring(1), "read").execute();
+        assertThat(response.isSuccessful(), is(false));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
+    }
+
     @Test
     public void test_PreHandle_4() throws IOException
     {
-        // Path in closed area and header wrong.
-        Response<String> response = userComuMockEndPoint.tryTokenInterceptor("HEADER", USER_PATH.substring(1), "read").execute();
+        // Path in closed area and header faked.
+        Response<String> response = userComuMockEndPoint.tryTokenInterceptor("HEADER_FAKED", USER_PATH.substring(1), "read").execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
@@ -103,7 +116,8 @@ public abstract class AuthInterceptorTest {
     public void test_PreHandle_5() throws IOException
     {
         // Path in closed area and header OK.
-        assertThat(userComuMockEndPoint.tryTokenInterceptor(doHttpAuthHeader(pedro, producerBuilder), USER_PATH.substring(1), "hola").execute().body(), is(CLOSED_AREA_MSG));
+        assertThat(userComuMockEndPoint.tryTokenInterceptor(doHttpAuthHeader(pedro, builder), USER_PATH.substring(1), "hola")
+                .execute().body(), is(CLOSED_AREA_MSG));
     }
 
     /*  ==============================================  INNER CLASSES =============================================*/

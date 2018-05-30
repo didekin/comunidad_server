@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
@@ -18,9 +18,9 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.SecretKey;
 
-import static com.didekin.auth.TkConfiguration.PKCS12_keystore_type;
-import static com.didekin.auth.TkConfiguration.default_alg_for_symmetric_keys;
-import static com.didekin.auth.TkConfiguration.default_key_size;
+import static com.didekin.common.auth.TkCommonConfig.PKCS12_keystore_type;
+import static com.didekin.common.auth.TkCommonConfig.default_alg_for_symmetric_keys;
+import static com.didekin.common.auth.TkCommonConfig.default_key_size;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static org.hamcrest.CoreMatchers.is;

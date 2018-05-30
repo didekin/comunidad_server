@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.http.usuario.AuthHeader;
@@ -13,13 +13,14 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.didekin.auth.TkAuthClaims.getDefaultClaim;
+import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
 import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioServConstant.AUTH_HEADER;
 
 /**
@@ -42,9 +43,11 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
     {
         String authHeader = request.getHeader(AUTH_HEADER);
+
         if (authHeader == null || authHeader.isEmpty()) {
             // We exclude initial '/' in path.
             if (closed_paths_REGEX.isPatternOk(request.getRequestURI().substring(1))) {
+                // Requests with paths in the 'closed' area should have authHeader.
                 throw new ServiceException(BAD_REQUEST);
             }
             return true;
@@ -53,18 +56,19 @@ public class AuthInterceptor implements HandlerInterceptor {
         try {
             AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
-
-            return headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
-                    && headerIn.getUserName().equals(claims.getSubject())
-                    && claims.getAudience().equals(getDefaultClaim(audience))
-                    && claims.getIssuer().equals(getDefaultClaim(issuer));
-
-        } catch (JsonSyntaxException | MalformedClaimException e) {
+            if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
+                    || !headerIn.getUserName().equals(claims.getSubject())
+                    || !claims.getAudience().equals(getDefaultClaim(audience))
+                    || !claims.getIssuer().equals(getDefaultClaim(issuer))) {
+                throw new ServiceException(UNAUTHORIZED);
+            }
+            return true;
+        } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException e) {
             throw new ServiceException(TOKEN_ENCRYP_DECRYP_ERROR);
         }
     }
 
-    EncrypTkConsumerBuilder getConsumerBuilder()
+    public EncrypTkConsumerBuilder getConsumerBuilder()
     {
         return consumerBuilder;
     }

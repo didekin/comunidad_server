@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -25,7 +26,10 @@ public class RepositoryConfig {
     private static final String DB_NAME = "didekin";
     private static final String jdbcUrlPort = getenv("RDS_LOCAL_PORT") != null ? getenv("RDS_LOCAL_PORT") : JDBC_URL_DEFAULT_PORT;
 
-    @Bean
+    /**
+     *  By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
+     */
+    @Bean @Primary
     public DataSource dataSource()
     {
         HikariConfig config = new HikariConfig();
@@ -37,7 +41,7 @@ public class RepositoryConfig {
         );
         config.setUsername(getenv("RDS_USERNAME"));
         config.setPassword(getenv("RDS_PASSWORD"));
-        config.setDriverClassName("com.mysql.jdbc.Driver");
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "150");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "1024");
@@ -49,6 +53,8 @@ public class RepositoryConfig {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
+
+        config.addDataSourceProperty("serverTimezone", "UTC");
 
         return new HikariDataSource(config);
     }

@@ -1,4 +1,4 @@
-package com.didekin.auth.api;
+package com.didekin.userservice.auth;
 
 /**
  * User: pedro@didekin

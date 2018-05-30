@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
@@ -14,11 +14,11 @@ import org.junit.experimental.categories.Category;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.didekin.auth.TkAuthClaims.TK_VALIDITY_SECONDS;
-import static com.didekin.auth.TkAuthClaims.default_audience_value;
-import static com.didekin.auth.TkAuthClaims.default_issuer_value;
-import static com.didekin.auth.TkAuthClaims.doExpirationDate;
-import static com.didekin.auth.TkAuthClaims.doDefaultAuthClaims;
+import static com.didekin.common.auth.TkAuthClaims.TK_VALIDITY_SECONDS;
+import static com.didekin.common.auth.TkAuthClaims.default_audience_value;
+import static com.didekin.common.auth.TkAuthClaims.default_issuer_value;
+import static com.didekin.common.auth.TkAuthClaims.doExpirationDate;
+import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
 import static com.didekinlib.http.usuario.TkParamNames.expiration;
@@ -50,13 +50,13 @@ public class TkAuthClaimsTest {
         initMap();
         claimsMap.put(issuer, "mock_issuer");
         claimsMap.put(audience, "mock_audience");
-        TkAuthClaims claims = TkAuthClaims.doDefaultAuthClaims(claimsMap);
+        TkAuthClaims claims = doDefaultAuthClaims(claimsMap);
         checkMap(claims);
         assertThat(claims.getJwtClaimsFromMap().getIssuer(), is("mock_issuer"));
         assertThat(claims.getJwtClaimsFromMap().getAudience(), is(singletonList("mock_audience")));
 
         initMap();
-        claims = TkAuthClaims.doDefaultAuthClaims(claimsMap);
+        claims = doDefaultAuthClaims(claimsMap);
         checkMap(claims);
         assertThat(claims.getJwtClaimsFromMap().getAudience(), is(default_audience_value));
         assertThat(claims.getJwtClaimsFromMap().getIssuer(), is(default_issuer_value));
@@ -66,7 +66,7 @@ public class TkAuthClaimsTest {
     public void test_getDefaultAuthClaims_2()
     {
         try {
-            TkAuthClaims.doDefaultAuthClaims(null);
+            doDefaultAuthClaims(null);
             fail();
         } catch (IllegalArgumentException e) {
             // First exception is related to email/user.
@@ -87,7 +87,7 @@ public class TkAuthClaimsTest {
     public void test_GetJwtClaimsFromMap() throws MalformedClaimException
     {
         initMap();
-        checkMap(TkAuthClaims.doDefaultAuthClaims(claimsMap));
+        checkMap(doDefaultAuthClaims(claimsMap));
     }
 
     // ============================ Tests of helper methods =========================
@@ -105,7 +105,7 @@ public class TkAuthClaimsTest {
     public void test_getExpirationNumDate()
     {
         initMap();
-        TkAuthClaims authClaims = TkAuthClaims.doDefaultAuthClaims(claimsMap);
+        TkAuthClaims authClaims = doDefaultAuthClaims(claimsMap);
         assertThat(authClaims.getExpirationNumDate() instanceof NumericDate, is(true));
         assertThat(authClaims.getExpirationInstant().toEpochMilli(), is(authClaims.getExpirationNumDate().getValueInMillis()));
     }
@@ -116,7 +116,7 @@ public class TkAuthClaimsTest {
         initMap();
         claimsMap.remove(appId);
         try {
-            TkAuthClaims.doDefaultAuthClaims(claimsMap);
+            doDefaultAuthClaims(claimsMap);
             fail();
         } catch (IllegalArgumentException e) {
             // First exception is related to appId: email correct.
@@ -133,7 +133,7 @@ public class TkAuthClaimsTest {
         claimsMap.putIfAbsent(appId, "appId_mock");
     }
 
-    static void checkMap(TkAuthClaims authClaims) throws MalformedClaimException
+    public static void checkMap(TkAuthClaims authClaims) throws MalformedClaimException
     {
         assertThat(authClaims.checkTokenInvariants(), is(true));
         long daysToExpiration = now().until(authClaims.getExpirationInstant(), DAYS);

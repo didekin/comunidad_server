@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 
 import com.didekinlib.http.usuario.TkParamNames;
@@ -31,7 +31,7 @@ import static org.jose4j.jwt.NumericDate.fromMilliseconds;
  * * -- Create a JOSE Header containing the desired set of Header Parameters.
  * * -- Create a JWS/JWE using the Message as the JWS payload or JWE plaintext.
  */
-class TkAuthClaims {
+public class TkAuthClaims {
 
     // Default claims map.
     private static final Map<TkParamNames, Object> defaultClaimMap;
@@ -50,7 +50,7 @@ class TkAuthClaims {
         defaultClaimMap.put(audience, default_audience_value);
     }
 
-    static Object getDefaultClaim(TkParamNames defaultClaimName)
+    public static Object getDefaultClaim(TkParamNames defaultClaimName)
     {
         return defaultClaimMap.get(defaultClaimName);
     }
@@ -63,7 +63,7 @@ class TkAuthClaims {
         }
     }
 
-    static TkAuthClaims doDefaultAuthClaims(Map<TkParamNames, ?> initClaims)
+    public static TkAuthClaims doDefaultAuthClaims(Map<TkParamNames, ?> initClaims)
     {
         TkAuthClaims claims = new TkAuthClaims(initClaims);
         claims.claimsMap.put(
@@ -75,7 +75,7 @@ class TkAuthClaims {
         return claims;
     }
 
-    static TkAuthClaims doDefaultAuthClaims(String userName, String appId)
+    public static TkAuthClaims doDefaultAuthClaims(String userName, String appId)
     {
         Map<TkParamNames, String> initClaims = new HashMap<>(2);
         initClaims.put(TkParamNames.subject, userName);
@@ -83,12 +83,12 @@ class TkAuthClaims {
         return doDefaultAuthClaims(initClaims);
     }
 
-    Object getAuthClaim(TkParamNames paramName)
+    public Object getAuthClaim(TkParamNames paramName)
     {
         return claimsMap.get(paramName);
     }
 
-    JwtClaims getJwtClaimsFromMap()
+    public JwtClaims getJwtClaimsFromMap()
     {
         JwtClaims claims = new JwtClaims();
         claimsMap.forEach((appClaimName, claimValue) -> claims.setClaim(appClaimName.getName(), claimValue));

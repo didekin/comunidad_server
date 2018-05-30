@@ -1,8 +1,9 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.auth.EncrypTkProducerBuilder;
-import com.didekin.auth.TkConfiguration;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
+import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.repository.RepositoryConfig;
+import com.didekin.userservice.auth.TkProducerConfig;
 import com.didekin.userservice.mail.UsuarioMailConfiguration;
 import com.didekin.userservice.mail.UsuarioMailService;
 
@@ -20,7 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * UsuarioMailConfiguration is used by UsuarioService to send emails.
  */
 @Configuration
-@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class, TkConfiguration.class})
+@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class, TkCommonConfig.class, TkProducerConfig.class})
 public class UsuarioRepoConfiguration {
 
     private final JdbcTemplate jdbcTemplate;

@@ -1,8 +1,9 @@
-package com.didekin.auth;
+package com.didekin.userservice.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
+import com.didekin.common.auth.EncrypTkConsumerBuilder;
 import com.didekinlib.http.usuario.TkParamNames;
 
 import org.jose4j.jwt.JwtClaims;
@@ -18,9 +19,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
-import static com.didekin.auth.TkAuthClaims.getDefaultClaim;
-import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
-import static com.didekin.auth.TkHeaders.getDefaultHeader;
+import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
+import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
+import static com.didekin.common.auth.TkHeaders.getDefaultHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;

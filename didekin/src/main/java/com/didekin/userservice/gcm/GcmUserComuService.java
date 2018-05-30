@@ -65,7 +65,6 @@ class GcmUserComuService implements
 
     private GcmUserComuService()
     {
-        // TODO: check dimensions.
         gcmSenderPool = new ThreadPoolExecutor(MAX_THREADS_GCM, MAX_THREADS_GCM, KEEP_ALIVE_MILLISEC, MILLISECONDS, newLinkedBlockingQueue(1000));
         gcmSenderPool.allowCoreThreadTimeOut(true);
         gcmSenderPool.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());

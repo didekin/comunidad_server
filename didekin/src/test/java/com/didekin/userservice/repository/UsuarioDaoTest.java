@@ -53,7 +53,7 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * Date: 31/03/15
  * Time: 15:16
  */
-@SuppressWarnings({"ThrowFromFinallyBlock", "Duplicates"})
+@SuppressWarnings({"ThrowFromFinallyBlock"})
 public abstract class UsuarioDaoTest {
 
     @Autowired
@@ -65,7 +65,7 @@ public abstract class UsuarioDaoTest {
     public void testDeleteGcmToken()
     {
         assertThat(usuarioDao.modifyUserGcmToken(UsuarioTestUtils.paco), is(1));
-        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), CoreMatchers.is(UsuarioTestUtils.paco.getGcmToken()));
+        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), is(UsuarioTestUtils.paco.getGcmToken()));
         assertThat(usuarioDao.deleteGcmToken(UsuarioTestUtils.paco.getGcmToken()), is(1));
         assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), nullValue());
     }
@@ -218,14 +218,14 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserByName_1()
+    public void testGetUserDataByName_1()
     {
         Usuario usuario = usuarioDao.getUserDataByName("luis@luis.com");
         checkBeanUsuario(usuario, luis, true);
     }
 
     @Test
-    public void testGetUserByName_2()
+    public void testGetUserDataByName_2()
     {
         try {
             usuarioDao.getUserDataByName("noexisto@no.com");
@@ -360,7 +360,7 @@ public abstract class UsuarioDaoTest {
         final Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .alias(usuarioDB.getAlias())
                 .userName("new_juan@juan.com")
-                .password(hashpw("new_password", BCRYPT_SALT))
+                .password(hashpw("new_password", BCRYPT_SALT.get()))
                 .uId(usuarioDB.getuId())
                 .build();
 
@@ -496,6 +496,52 @@ public abstract class UsuarioDaoTest {
         );
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_UpdateTokenAuthByUserName()
+    {
+        // Premises:
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), notNullValue());
+        // Check.
+        assertThat(usuarioDao.updateTokenAuthByUserName(luis.getUserName(), "update_luis_tokenAuth"), is(true));
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), is("update_luis_tokenAuth"));
+
+        // Premises:
+        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), nullValue());
+        // Check.
+        assertThat(usuarioDao.updateTokenAuthByUserName(pedro.getUserName(), "update_pedro_tokenAuth"), is(true));
+        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), is("update_pedro_tokenAuth"));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_UpdateTokenAuthById()
+    {
+        // Premises:
+        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), nullValue());
+        // Check.
+        assertThat(usuarioDao.updateTokenAuthById(pedro.getuId(), "update_pedro_tokenAuth"), is(true));
+        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), is("update_pedro_tokenAuth"));
+        // Premises:
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), notNullValue());
+        // Check.
+        assertThat(usuarioDao.updateTokenAuthById(luis.getuId(), "update_luis_tokenAuth"), is(true));
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), is("update_luis_tokenAuth"));
+        // Check.
+        assertThat(usuarioDao.updateTokenAuthById(luis.getuId(), null), is(true));
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(),nullValue());
+
+        /* Premises: user not in DB.*/
+        try {
+            usuarioDao.updateTokenAuthById(999L, "fake_token");
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+    }
+
     // ======================================  Helpers ======================================
 
     static void checkBeanUsuario(Usuario usuario, Usuario expectedUser, boolean isHashed)
@@ -507,7 +553,8 @@ public abstract class UsuarioDaoTest {
                 )),
                 hasProperty("userName", equalTo(expectedUser.getUserName())),
                 hasProperty("alias", equalTo(expectedUser.getAlias())),
-                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken()))
+                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken())),
+                hasProperty("tokenAuth", equalTo(expectedUser.getTokenAuth()))
         ));
         if (!isHashed) {
             assertThat(expectedUser.getPassword(), is(usuario.getPassword()));

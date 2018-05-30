@@ -1,6 +1,7 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.repository.RepositoryConfig;
+import com.didekin.userservice.auth.TkProducerConfig;
 import com.didekin.userservice.gcm.GcmConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
 
@@ -16,7 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * Time: 10:53
  */
 @Configuration
-@Import(value = {RepositoryConfig.class, GcmConfiguration.class})
+@Import(value = {RepositoryConfig.class, GcmConfiguration.class, TkProducerConfig.class})
 public class IncidenciaManagerConfiguration {
 
     @SuppressWarnings({"unused", "SpringJavaAutowiredFieldsWarningInspection"})

@@ -24,18 +24,15 @@ import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 public class UserMockRepoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(UserMockRepoConfiguration.class.getName());
+
     @Autowired
     Environment env;
-    @Autowired
-    private ComunidadDao comunidadDao;
-    @Autowired
-    private UsuarioDao usuarioDao;
 
     @Bean
-    public UserMockManager userMockManager()
+    public UserMockManager userMockManager(UsuarioManager usuarioManager)
     {
         logger.debug("userMockManager()");
         checkActiveProfiles(env);
-        return new UserMockManager(comunidadDao, usuarioDao);
+        return new UserMockManager(usuarioManager);
     }
 }

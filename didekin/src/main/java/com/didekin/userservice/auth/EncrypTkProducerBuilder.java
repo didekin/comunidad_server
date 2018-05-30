@@ -1,7 +1,8 @@
-package com.didekin.auth;
+package com.didekin.userservice.auth;
 
-import com.didekin.auth.api.EncryptedTkProducerIf;
-import com.didekin.auth.api.TkKeyServerProviderIf;
+import com.didekin.common.auth.TkAuthClaims;
+import com.didekin.common.auth.TkHeaders;
+import com.didekin.common.auth.TkKeyServerProviderIf;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.http.usuario.TkParamNames;
 import com.didekinlib.model.common.dominio.BeanBuilder;
@@ -14,8 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.security.Key;
 import java.util.Map;
 
-import static com.didekin.auth.TkAuthClaims.doDefaultAuthClaims;
-import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
+import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -42,17 +42,17 @@ public class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProducerBuil
     public EncrypTkProducerBuilder defaultHeadersClaims(String userName, String appId)
     {
         claims = doDefaultAuthClaims(userName, appId);
-        headers = doHeadersSymmetricKey();
+        headers = TkHeaders.doHeadersSymmetricKey();
         return this;
     }
 
-    EncrypTkProducerBuilder claims(Map<TkParamNames, ?> claimsIn)
+    public EncrypTkProducerBuilder claims(Map<TkParamNames, ?> claimsIn)
     {
-        claims = TkAuthClaims.doDefaultAuthClaims(claimsIn);
+        claims = doDefaultAuthClaims(claimsIn);
         return this;
     }
 
-    EncrypTkProducerBuilder headers(TkHeaders headersIn)
+    public EncrypTkProducerBuilder headers(TkHeaders headersIn)
     {
         headers = headersIn;
         return this;

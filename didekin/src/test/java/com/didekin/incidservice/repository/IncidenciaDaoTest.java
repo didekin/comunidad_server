@@ -1,7 +1,8 @@
 package com.didekin.incidservice.repository;
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
@@ -16,21 +17,29 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
@@ -63,13 +72,13 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 19/11/15
  * Time: 16:10
  */
-@SuppressWarnings({"unchecked", "Duplicates"})
+@SuppressWarnings({"unchecked"})
 public abstract class IncidenciaDaoTest {
 
     @Autowired
     private IncidenciaDao incidenciaDao;
     @Autowired
-    private UsuarioManager usuarioManager;
+    private UserManagerConnector userManagerConnector;
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
@@ -100,7 +109,7 @@ public abstract class IncidenciaDaoTest {
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql","classpath:delete_incidencia.sql"})
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void testDeleteIndcidencia_1() throws ServiceException
     {
@@ -519,7 +528,12 @@ public abstract class IncidenciaDaoTest {
     public void testRegIncidImportancia_3() throws ServiceException
     {
         // Premisa: usuarioComunidad incongruente con incidencia_comunidad.
-        assertThat(usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 4L), nullValue());
+        try {
+            userManagerConnector.checkUserInComunidad(pedro.getUserName(), 4L);
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
+        }
         // Data.
         Incidencia incidencia = incidenciaDao.seeIncidenciaById(4L);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
@@ -936,7 +950,7 @@ public abstract class IncidenciaDaoTest {
         // Premisa: the user who initiates the incidencia is no longer a usuarioComunidad, or an user in didekin.
         assertThat(incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0).getUsuario(), is(juan));
         // Delete user in comunidad.
-        assertThat(usuarioManager.deleteUser(juan.getUserName()), is(true));
+        assertThat(userManagerConnector.deleteUser(juan.getUserName()), is(true));
         // Exec
         IncidenciaUser incidenciaUser = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0);
         // Check: usuario data are not longer fulfilled, with the exception of userName (taken for the incidencia record).
@@ -1064,5 +1078,31 @@ public abstract class IncidenciaDaoTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
+    }
+
+    // =================================  Inner classes  ==================================
+
+    /**
+     * User: pedro@didekin
+     * Date: 19/11/15
+     * Time: 16:10
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+    @Profile({NGINX_JETTY_LOCAL, MAIL_PRE})
+    @Category({LocalDev.class})
+    public static class IncidenciaDaoDevTest extends IncidenciaDaoTest {
+    }
+
+    /**
+     * User: pedro@didekin
+     * Date: 19/11/15
+     * Time: 16:10
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+    @Profile({NGINX_JETTY_PRE})
+    @Category({DbPre.class})
+    public static class IncidenciaDaoPreTest extends IncidenciaDaoTest {
     }
 }

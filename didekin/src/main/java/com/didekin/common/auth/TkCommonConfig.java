@@ -1,6 +1,4 @@
-package com.didekin.auth;
-
-import com.didekin.auth.api.TkKeyServerProviderIf;
+package com.didekin.common.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +18,7 @@ import static java.lang.System.getenv;
  * Time: 14:34
  */
 @Configuration
-public class TkConfiguration {
+public class TkCommonConfig {
 
     static final String default_alg_for_symmetric_keys = "AES";
     static final int default_key_size = 256;
@@ -44,12 +42,6 @@ public class TkConfiguration {
     public TkKeyServerProvider tkKeyServerProvider(KeyStore keyStoreIn)
     {
         return new TkKeyServerProvider(keyStoreIn);
-    }
-
-    @Bean
-    public EncrypTkProducerBuilder encrypTkProducerBuilder(TkKeyServerProviderIf keyProviderIn)
-    {
-        return new EncrypTkProducerBuilder(keyProviderIn);
     }
 
     @Bean

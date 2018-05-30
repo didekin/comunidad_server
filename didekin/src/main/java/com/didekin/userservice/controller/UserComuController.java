@@ -75,7 +75,7 @@ public class UserComuController extends AppControllerAbstract {
     public List<Comunidad> getComusByUser(@RequestHeader("Authorization") String accessToken)
     {
         logger.debug("getComusByUser()");
-        return usuarioManager.getComusByUser(new AuthHeaderBuilder(accessToken).build().getUserName());
+        return usuarioManager.getComusByUser(usuarioManager.checkHeaderGetUserName(accessToken));
     }
 
 
@@ -84,7 +84,7 @@ public class UserComuController extends AppControllerAbstract {
             comunidadId) throws ServiceException
     {
         logger.debug("getUserComuByUserAndComu");
-        return usuarioManager.getUserComuByUserAndComu(new AuthHeaderBuilder(accessToken).build().getUserName(), comunidadId);
+        return usuarioManager.getUserComuByUserAndComu(usuarioManager.checkHeaderGetUserName(accessToken), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_OLDEST_USER + "/{comunidadId}", method = GET)

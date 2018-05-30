@@ -1,6 +1,5 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
-import com.didekin.auth.api.TkKeyServerProviderIf;
 import com.didekinlib.http.usuario.TkParamNames;
 import com.didekinlib.model.common.dominio.BeanBuilder;
 
@@ -13,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.security.Key;
 import java.util.List;
 
-import static com.didekin.auth.TkAuthClaims.getDefaultClaim;
-import static com.didekin.auth.TkHeaders.getDefaultHeader;
+import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
+import static com.didekin.common.auth.TkHeaders.getDefaultHeader;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
@@ -52,7 +51,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
     }
 
     @SuppressWarnings("unchecked")
-    EncrypTkConsumerBuilder defaultInit(String jsonWebTokenStr)
+    public EncrypTkConsumerBuilder defaultInit(String jsonWebTokenStr)
     {
         tokenToConsume(jsonWebTokenStr)
                 .expectAudience((List<String>) getDefaultClaim(audience))
@@ -62,7 +61,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
         return this;
     }
 
-    EncrypTkConsumerBuilder tokenToConsume(String jsonWebTokenStr)
+    public EncrypTkConsumerBuilder tokenToConsume(String jsonWebTokenStr)
     {
         encryptedTkStr = jsonWebTokenStr;
         return this;
@@ -72,7 +71,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
      * Set the audience value(s) to use when validating the audience ("aud") claim of a JWT
      * and require that an audience claim be present.
      */
-    EncrypTkConsumerBuilder expectAudience(List<String> audiencesIn)
+    public EncrypTkConsumerBuilder expectAudience(List<String> audiencesIn)
     {
         if (audiencesIn != null) {
             audiences = audiencesIn;
@@ -84,7 +83,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
     /**
      * Indicates the expected value of the issuer ("iss") claim and that the claim is required.
      */
-    EncrypTkConsumerBuilder expectedIssuer(String issuerIn)
+    public EncrypTkConsumerBuilder expectedIssuer(String issuerIn)
     {
         if (issuerIn != null) {
             issuer = issuerIn;
@@ -96,7 +95,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
     /**
      * Set the JWE algorithm constraints to be applied to key management when processing the JWT.
      */
-    EncrypTkConsumerBuilder keyManagementAlg(String keyAlgIn)
+    public EncrypTkConsumerBuilder keyManagementAlg(String keyAlgIn)
     {
         if (keyAlgIn != null) {
             keyManagementAlg = keyAlgIn;
@@ -108,7 +107,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
     /**
      * Set the JWE algorithm constraints to be applied to content encryption when processing the JWT.
      */
-    EncrypTkConsumerBuilder contentEncryptAlg(String contentEncAlgIn)
+    public EncrypTkConsumerBuilder contentEncryptAlg(String contentEncAlgIn)
     {
         if (contentEncAlgIn != null) {
             contentEncryptionAlg = contentEncAlgIn;
@@ -136,7 +135,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
      * Date: 11/05/2018
      * Time: 17:11
      */
-    static final class EncryptedTkConsumer {
+    public static final class EncryptedTkConsumer {
 
         private final JwtClaims claims;
 
@@ -145,7 +144,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
             claims = builderClaims;
         }
 
-        JwtClaims getClaims()
+        public JwtClaims getClaims()
         {
             return claims;
         }

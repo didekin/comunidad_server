@@ -1,14 +1,15 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.auth.TkConfiguration;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
+import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
+import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -38,6 +39,7 @@ import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
 import static com.didekin.userservice.repository.UsuarioDaoTest.checkBeanUsuario;
+import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
@@ -49,6 +51,8 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doAuthHeader;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
@@ -62,11 +66,14 @@ import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPL
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
@@ -83,6 +90,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
+import static org.mindrot.jbcrypt.BCrypt.hashpw;
 
 /**
  * User: pedro@didekin
@@ -101,10 +109,6 @@ public abstract class UsuarioManagerTest {
     private UsuarioManager usuarioManager;
     @Autowired
     private JavaMailMonitor javaMailMonitor;
-    @Autowired
-    private UsuarioDao usuarioDao;
-    @Autowired
-    private ComunidadDao comunidadDao;
     @Autowired
     UsuarioMailServiceForTest mailServiceForTest;
 
@@ -153,14 +157,20 @@ public abstract class UsuarioManagerTest {
         int comuDeleted = usuarioManager.deleteUserAndComunidades(pedro.getUserName());
         assertThat(comuDeleted, is(3));
 
-        assertThat(comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
-        assertThat(comunidadDao.getComunidadById(2L).getC_Id(), is(2L));
+        assertThat(usuarioManager.comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
+        assertThat(usuarioManager.comunidadDao.getComunidadById(2L).getC_Id(), is(2L));
         try {
-            comunidadDao.getComunidadById(3L);
+            usuarioManager.comunidadDao.getComunidadById(3L);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
-            assertThat(e.getExceptionMsg().getHttpMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
+        }
+        // Check usuario borrado.
+        try {
+            usuarioManager.getUserDataByName(pedro.getUserName());
+            fail();
+        } catch (ServiceException e) {
+            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
         }
     }
 
@@ -177,7 +187,7 @@ public abstract class UsuarioManagerTest {
         int isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
 
-        Comunidad comunidadDb = comunidadDao.getComunidadById(comunidad.getC_Id());
+        Comunidad comunidadDb = usuarioManager.comunidadDao.getComunidadById(comunidad.getC_Id());
         assertThat(comunidadDb.getC_Id(), is(comunidad.getC_Id()));
 
         // La comunidad tiene 1 usuario.
@@ -186,7 +196,7 @@ public abstract class UsuarioManagerTest {
         isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
         try {
-            comunidadDao.getComunidadById(comunidad.getC_Id());
+            usuarioManager.comunidadDao.getComunidadById(comunidad.getC_Id());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -207,7 +217,7 @@ public abstract class UsuarioManagerTest {
         // Exec and check.
         assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
         try {
-            comunidadDao.getComunidadById(ronda_plazuela_10bis.getC_Id());
+            usuarioManager.comunidadDao.getComunidadById(ronda_plazuela_10bis.getC_Id());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -222,7 +232,7 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.deleteUserComunidad(pedro_escorial), is(1));
         // Check.
         try {
-            comunidadDao.getComunidadById(3L);
+            usuarioManager.comunidadDao.getComunidadById(3L);
             fail("NO existe la comunidad");
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -385,15 +395,30 @@ public abstract class UsuarioManagerTest {
                 .build();
         Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("passwordWrong")
                 .build();
+        Usuario pedroInvalidUserName = new Usuario.UsuarioBuilder().userName("pedro_invalid_name").password("password4")
+                .build();
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(pedroOk)), is(true));
-        assertThat(usuarioManager.login(pedroWrongPassword), nullValue());
+
+        try {
+            usuarioManager.login(pedroWrongPassword);
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(PASSWORD_WRONG));
+        }
 
         try {
             usuarioManager.login(pedroWrongUserName);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+
+        try {
+            usuarioManager.login(pedroInvalidUserName);
+            fail();
+        } catch (ServiceException e) {
+            assertThat(e.getExceptionMsg(), is(USER_WRONG_INIT));
         }
     }
 
@@ -547,8 +572,8 @@ public abstract class UsuarioManagerTest {
         holders.add(new GcmTokensHolder("new_juan_token", juan.getGcmToken()));
         assertThat(usuarioManager.modifyUserGcmTokens(holders), is(3));
 
-        assertThat(usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
-        assertThat(usuarioDao.getUserDataById(pedro.getuId()).getGcmToken(), nullValue());
+        assertThat(usuarioManager.usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
+        assertThat(usuarioManager.usuarioDao.getUserDataById(pedro.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -557,7 +582,7 @@ public abstract class UsuarioManagerTest {
     public void test_passwordChange_1() throws ServiceException
     {
         assertThat(usuarioManager.passwordChange(luis.getUserName(), "new_luis_password"), is(1));
-        assertThat(checkpw("new_luis_password", usuarioDao.getUserDataById(luis.getuId()).getPassword()),
+        assertThat(checkpw("new_luis_password", usuarioManager.usuarioDao.getUserDataById(luis.getuId()).getPassword()),
                 is(true));
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk
                         (usuarioManager.login(
@@ -598,7 +623,14 @@ public abstract class UsuarioManagerTest {
 
         // Exec test.
         assertThat(usuarioManager.passwordSend(userReg.getUserName(), oneComponent_local_ES), is(true));
-        assertThat(usuarioManager.login(userReg), nullValue()); // Login no válido una vez generado el nuevo password.
+
+        // Login no válido una vez generado el nuevo password.
+        try {
+            usuarioManager.login(userReg);
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(PASSWORD_WRONG));
+        }
 
         // Check password generated and sent.
         javaMailMonitor.expungeFolder();
@@ -839,6 +871,24 @@ public abstract class UsuarioManagerTest {
         assertThat(comunidades, hasItem(comunidad));
     }
 
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_UpdateTokenAuthInDb()
+    {
+        String authToken = usuarioManager.updateTokenAuthInDb(pedro);
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(authToken), is(true));
+        assertThat(checkpw(authToken, usuarioManager.getUserDataByName(pedro.getUserName()).getTokenAuth()), is(true));
+
+        // Premises: user not in DB.
+        try {
+            usuarioManager.updateTokenAuthInDb(new Usuario.UsuarioBuilder().uId(9999).userName("fake@user.com").gcmToken("fake.gcm_token").build());
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+        }
+    }
+
     // ======================================== CHECKERS ========================================
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -854,6 +904,58 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.checkComuDataModificationPower(
                 new Usuario.UsuarioBuilder().copyUsuario(juan).build(), new Comunidad.ComunidadBuilder().c_id(2L).build()
         ), is(true));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_checkHeaderGetUserName()
+    {
+        String httpAuthHeader = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
+        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpAuthHeader).build();
+        // Premises: token in BD.
+        assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerIn.getToken()), notNullValue());
+        // Exec, check.
+        assertThat(usuarioManager.checkHeaderGetUserName(httpAuthHeader), is(pedro.getUserName()));
+
+        // Premises: token are not the same.
+        AuthHeader headerDb = doAuthHeader(pedro, usuarioManager.producerBuilder);
+        assertThat(headerIn.getToken().equals(headerDb.getToken()), is(false));
+        assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerDb.getToken()), notNullValue());
+        // Exec, check.
+        try {
+            usuarioManager.checkHeaderGetUserName(httpAuthHeader);
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(UNAUTHORIZED));
+        }
+    }
+
+    // ======================================== TESTS of HELPERS ========================================
+
+    @Test
+    public void testEncryptedPsw_1()
+    {
+        String password = "password11";
+        String encodePsw = hashpw(password, BCRYPT_SALT.get());
+        assertThat(checkpw(password, encodePsw), is(true));
+        assertThat(encodePsw.length(), is(60));
+        // Check that password hash is not deterministic.
+        String encodePswBis = hashpw(password, BCRYPT_SALT.get());
+        assertThat(encodePsw.equals(encodePswBis), is(false));
+    }
+
+    @Test
+    public void testEncryptedPsw_2()
+    {
+        String tokenToHash = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0" +
+                "." +
+                "._L86WbOFHY-3g0E2EXejJg" +
+                ".UB1tHZZq0TYFTZKPVZXY83GRxHz770Aq7BuMCEbNnaSC5cVNOLEOgBQrOQVJmVL-9Ke9KRSwuq7MmVcA2EB_0xRBr_YbzmMWbpUcTQUFtE5OZOFiCsxL5Yn0gA_DDLZboivpoSqndQRP-44mWVkM1A" +
+                ". RIvTWRrsyoJ1mpl8vUhQDQ";
+        String encodToken = hashpw(tokenToHash, BCRYPT_SALT.get());
+        assertThat(checkpw(tokenToHash, encodToken), is(true));
+        assertThat(encodToken.length(), is(60));
     }
 
     // ======================================== HELPERS ========================================
@@ -881,7 +983,7 @@ public abstract class UsuarioManagerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @ContextConfiguration(classes = {UsuarioRepoConfiguration.class,
             UsuarioMailConfigurationPre.class,
-            TkConfiguration.class})
+            TkCommonConfig.class})
     @Category({LocalDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     public static class UsuarioManagerDevTest extends UsuarioManagerTest {

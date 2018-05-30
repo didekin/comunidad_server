@@ -1,4 +1,4 @@
-package com.didekin.auth;
+package com.didekin.common.auth;
 
 
 import com.didekinlib.http.usuario.TkParamNames;
@@ -28,7 +28,7 @@ import static org.jose4j.jwe.KeyManagementAlgorithmIdentifiers.DIRECT;
  * "kid":"Dynamic_1"
  * }
  */
-class TkHeaders {
+public class TkHeaders {
 
     private static final Map<TkParamNames, String> defaultHeaderMap;
 
@@ -38,7 +38,7 @@ class TkHeaders {
         defaultHeaderMap.put(algorithm_ce, AES_128_CBC_HMAC_SHA_256);
     }
 
-    static String getDefaultHeader(TkParamNames defaultHeaderName)
+    public static String getDefaultHeader(TkParamNames defaultHeaderName)
     {
         return defaultHeaderMap.get(defaultHeaderName);
     }
@@ -60,12 +60,12 @@ class TkHeaders {
         return headers;
     }
 
-    static TkHeaders doHeadersSymmetricKey()
+    public static TkHeaders doHeadersSymmetricKey()
     {
         return doHeadersSymmetricKey(null);
     }
 
-    <T extends JsonWebStructure> void putHeadersIn(T jsonWebStructure)
+    public <T extends JsonWebStructure> void putHeadersIn(T jsonWebStructure)
     {
         headerMap.forEach((headerName, headerValue) -> jsonWebStructure.setHeader(headerName.getName(), headerValue));
     }

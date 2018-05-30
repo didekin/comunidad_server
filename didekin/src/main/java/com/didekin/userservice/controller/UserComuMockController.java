@@ -24,8 +24,6 @@ import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -35,8 +33,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  * User: pedro@didekin
  * Date: 21/11/16
  * Time: 09:46
+ *
+ * This class allows for certain 'tuned' methods for use in tests in the client apps.
  */
-@SuppressWarnings({"unused", "SpringJavaAutowiredFieldsWarningInspection"})
+@SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
 @RestController
 @Profile({NGINX_JETTY_LOCAL, NGINX_JETTY_PRE})
 public class UserComuMockController extends AppControllerAbstract {
@@ -91,20 +91,17 @@ public class UserComuMockController extends AppControllerAbstract {
         return usuarioManager.deleteUser(userName);
     }
 
+    /**
+     * Mock implementation for the case when AuthInterceptor returns true.
+     */
     @RequestMapping(value = "{mock_path}/{mock2_path}", method = GET)
     public String tryTokenInterceptor(@RequestHeader("Authorization") String accessToken,
                                       @PathVariable String mock_path,
                                       @PathVariable String mock2_path)
     {
         if (closed_paths_REGEX.isPatternOk(mock_path)) {
-            if (accessToken == null || accessToken.isEmpty()) {
-                throw new ServiceException(BAD_REQUEST);
-            }
             return CLOSED_AREA_MSG;
         } else {
-            if (accessToken != null && !accessToken.isEmpty()) {
-                throw new ServiceException(UNAUTHORIZED);
-            }
             return OPEN_AREA_MSG;
         }
     }

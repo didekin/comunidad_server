@@ -9,14 +9,23 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 
 /**
  * User: pedro@didekin
  * Date: 27/08/17
  * Time: 14:14
+ *
+ * This class groups the dependencies of incidencia's controller and manager on user(comu) service.
+ * In the future, the UsuarioManager instance should be replaced by an http endpoint.
  */
 @Service
 public class UserManagerConnector {
@@ -25,6 +34,8 @@ public class UserManagerConnector {
 
     private final UsuarioManager usuarioManager;
 
+    @Autowired
+    Environment env;
     @Autowired
     public UserManagerConnector(UsuarioManager usuarioManager)
     {
@@ -71,5 +82,16 @@ public class UserManagerConnector {
     {
         logger.debug("completeWithUserComuRoles()");
         return usuarioManager.completeWithUserComuRoles(userName, comunidadId);
+    }
+
+    /**
+     *  Only for tests.
+     */
+    @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL, MAIL_PRE})
+    boolean deleteUser(String userName)
+    {
+        logger.debug("deleteUser()");
+        checkActiveProfiles(env);
+        return usuarioManager.deleteUser(userName);
     }
 }

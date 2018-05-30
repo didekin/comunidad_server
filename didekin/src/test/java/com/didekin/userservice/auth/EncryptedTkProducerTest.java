@@ -1,7 +1,9 @@
-package com.didekin.auth;
+package com.didekin.userservice.auth;
 
 
 import com.didekin.Application;
+import com.didekin.common.auth.TkAuthClaims;
+import com.didekin.common.auth.TkHeaders;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
 import com.didekinlib.http.usuario.TkParamNames;
@@ -15,11 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static com.didekin.auth.TkAuthClaimsTest.checkMap;
-import static com.didekin.auth.TkHeaders.doHeadersSymmetricKey;
-import static com.didekin.auth.TkHeadersTest.checkMap;
+import static com.didekin.common.auth.TkAuthClaimsTest.checkMap;
+import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
+import static com.didekin.common.auth.TkHeadersTest.checkMap;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
@@ -96,6 +99,14 @@ public abstract class EncryptedTkProducerTest {
         assertThat(claims.getAuthClaim(appId), is("appId_1234"));
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(builder.build().getEncryptedTkStr()), is(true));
+    }
+
+    @Test
+    public void test_defaultHttpHeaders_1()
+    {
+        String httpHeader1 = doHttpAuthHeader(pedro, producerBuilder);
+        String httpHeader2 = doHttpAuthHeader(pedro, producerBuilder);
+        assertThat(httpHeader1.equals(httpHeader2), is(false));
     }
 
     /*  ==============================================  INNER CLASSES =============================================*/

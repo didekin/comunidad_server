@@ -1,12 +1,12 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
+import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
@@ -18,32 +18,50 @@ import java.sql.SQLException;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
+import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.repository.UsuarioManager.doCatchSqlException;
 import static com.didekin.userservice.repository.UsuarioManager.doFinallyJdbc;
 import static com.didekin.userservice.repository.UsuarioManager.doUserEncryptPswd;
+import static org.mindrot.jbcrypt.BCrypt.hashpw;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * User: pedro@didekin
  * Date: 20/04/15
  * Time: 15:41
+ * <p>
+ * Manager to be used mainly in conjunction with UserComuMockController, although it can be used with other controllers.
  */
 @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
 @Service
 public class UserMockManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserMockManager.class.getCanonicalName());
+    private static final Logger logger = getLogger(UserMockManager.class.getCanonicalName());
 
     private final ComunidadDao comunidadDao;
     private final UsuarioDao usuarioDao;
+    private final UsuarioManager usuarioManager;
 
     @Autowired
     Environment env;
 
     @Autowired
-    UserMockManager(ComunidadDao comunidadDao, UsuarioDao usuarioDao)
+    UserMockManager(UsuarioManager usuarioManagerIn)
     {
-        this.comunidadDao = comunidadDao;
-        this.usuarioDao = usuarioDao;
+        usuarioManager = usuarioManagerIn;
+        comunidadDao = usuarioManager.comunidadDao;
+        usuarioDao = usuarioManager.usuarioDao;
+    }
+
+    public String insertTokenGetHeaderStr(String userName, String appIDIn)
+    {
+        String newTokenStr = updateTokenAuthInDb(userName, appIDIn);
+        return new AuthHeader.AuthHeaderBuilder()
+                .userName(userName)
+                .appId(appIDIn)
+                .tokenInLocal(newTokenStr)
+                .build()
+                .getBase64Str();
     }
 
     public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
@@ -113,5 +131,13 @@ public class UserMockManager {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
         return pkUsuario > 0L && userComuInserted == 1;
+    }
+
+    // ...................................  HELPERS  .........................................
+
+    private String updateTokenAuthInDb(String userName, String appId)
+    {
+        String tokenAuthStr = usuarioManager.producerBuilder.defaultHeadersClaims(userName, appId).build().getEncryptedTkStr();
+        return usuarioDao.updateTokenAuthByUserName(userName, hashpw(tokenAuthStr, BCRYPT_SALT.get())) ? tokenAuthStr : null;
     }
 }

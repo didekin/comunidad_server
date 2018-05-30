@@ -1,7 +1,7 @@
 package com.didekin.userservice.controller;
 
 import com.didekin.Application;
-import com.didekin.auth.EncrypTkProducerBuilder;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
@@ -41,7 +41,6 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
-import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
@@ -49,14 +48,13 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioServConstant.PASSWORD_WRONG;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
-import static org.mindrot.jbcrypt.BCrypt.hashpw;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -141,7 +139,7 @@ public abstract class UsuarioControllerTest {
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
         USER_ENDPOINT.login(userNameOk, passwordWrong, pedro.getGcmToken())
                 .test()
-                .assertValue(response -> response.body().equals(PASSWORD_WRONG));
+                .assertValue(response -> retrofitHandler.getErrorBean(response).getMessage().equals(PASSWORD_WRONG.getHttpMessage()));
         USER_ENDPOINT.login(userNameWrong, passwordWrong, pedro.getGcmToken()).test()
                 .assertValue(response -> retrofitHandler.getErrorBean(response).getMessage().equals(USER_NAME_NOT_FOUND.getHttpMessage()));
     }
@@ -212,19 +210,6 @@ public abstract class UsuarioControllerTest {
         assertThat(USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName()).execute().body(), is(true));
         // Cleanup mail folder.
         javaMailMonitor.extTimedCleanUp();
-    }
-
-    // ......................... TESTS OF HELPER METHODS ..................................
-
-    @Test
-    public void testEncryptedPsw()
-    {
-        String password = "password11";
-        String encodePsw = hashpw(password, BCRYPT_SALT);
-        assertThat(checkpw(password, encodePsw), is(true));
-        // Check that password hash is not deterministic.
-        String encodePswBis = hashpw(password, BCRYPT_SALT);
-        assertThat(encodePsw.equals(encodePswBis), is(false));
     }
 
     // ......................... HELPER CLASSES AND METHODS ...............................

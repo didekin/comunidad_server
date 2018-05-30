@@ -1,16 +1,15 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
-import com.didekinlib.http.exception.ErrorBean;
+import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.common.dominio.ValidDataPatterns;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
-import com.google.gson.Gson;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.didekin.common.repository.ServiceException.COMUNIDAD_UNIQUE_KEY;
@@ -29,8 +29,10 @@ import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
@@ -52,13 +54,14 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
 public class UsuarioManager {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioManager.class.getCanonicalName());
-    private static final int BCRYPT_LOG_ROUNDS = 12;
-    public static final String BCRYPT_SALT = gensalt(BCRYPT_LOG_ROUNDS);
 
-    private final ComunidadDao comunidadDao;
-    private final UsuarioDao usuarioDao;
+    private static final int BCRYPT_LOG_ROUNDS = 12;
+    static final Supplier<String> BCRYPT_SALT = () -> gensalt(BCRYPT_LOG_ROUNDS);
+
+    final ComunidadDao comunidadDao;
+    final UsuarioDao usuarioDao;
     private final UsuarioMailService usuarioMailService;
-    private final EncrypTkProducerBuilder producerBuilder;
+    final EncrypTkProducerBuilder producerBuilder;
 
     @Autowired
     UsuarioManager(ComunidadDao comunidadDao,
@@ -74,8 +77,7 @@ public class UsuarioManager {
 
     //    ============================================================
     //    ................... Methods ................
-    //    ============================================================
-
+    /*    ============================================================*/
 
     public UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws ServiceException
     {
@@ -123,7 +125,7 @@ public class UsuarioManager {
         return rowsDeleted;
     }
 
-    public Comunidad getComunidadById(long comunidadId) throws ServiceException
+    Comunidad getComunidadById(long comunidadId) throws ServiceException
     {
         logger.info("getComunidadById()");
         return comunidadDao.getComunidadById(comunidadId);
@@ -202,9 +204,8 @@ public class UsuarioManager {
     }
 
     /**
-     * @return null if the userName exists but the password doesn't match that in the data base; otherwise
-     * it returns a new security token.
-     * @throws ServiceException if  USER_WRONG_INIT or USER_NAME_NOT_FOUND.
+     * @return a new security token or null if the token is not inserted in DB.
+     * @throws ServiceException if  USER_WRONG_INIT, USER_NAME_NOT_FOUND or PASSWORD_WRONG.
      */
     public String login(Usuario usuario) throws ServiceException
     {
@@ -216,9 +217,9 @@ public class UsuarioManager {
 
         Usuario usuarioDb = getUserDataByName(usuario.getUserName());
         if (checkpw(usuario.getPassword(), usuarioDb.getPassword())) {
-            return producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
+            return updateTokenAuthInDb(usuarioDb);
         }
-        return new Gson().toJson(new ErrorBean(PASSWORD_WRONG));
+        throw new ServiceException(PASSWORD_WRONG);
     }
 
     String makeNewPassword() throws ServiceException
@@ -463,6 +464,50 @@ public class UsuarioManager {
         return comunidadDao.insertUsuarioComunidad(usuarioComunidad);
     }
 
+    public List<Comunidad> searchComunidades(Comunidad comunidad)
+    {
+        logger.info("searchComunidades()");
+
+        List<Comunidad> comunidades;
+
+        if ((comunidades = comunidadDao.searchComunidadOne(comunidad)).size() > 0) {
+            return comunidades;
+        }
+        if ((comunidades = comunidadDao.searchComunidadTwo(comunidad)).size() > 0) {
+            return comunidades;
+        }
+
+        return comunidadDao.searchComunidadThree(comunidad);
+    }
+
+    public List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
+    {
+        logger.debug("seeUserComusByComu()");
+        return usuarioDao.seeUserComusByComu(idComunidad);
+    }
+
+    public List<UsuarioComunidad> seeUserComusByUser(String userName)
+    {
+        logger.info("seeUserComusByUser()");
+        return usuarioDao.seeUserComusByUser(userName);
+    }
+
+    /**
+     * Authorization tokens are treated as passwords: they are BCrypted before persisted in BD.
+     *
+     * @return null if token is not updated in DB; otherwise it returns the token persisted as a String.
+     */
+    String updateTokenAuthInDb(Usuario usuarioIn)
+    {
+        String tokenAuthStr = producerBuilder.defaultHeadersClaims(usuarioIn.getUserName(), usuarioIn.getGcmToken()).build().getEncryptedTkStr();
+        return updateTokenAuthInDb(usuarioIn, tokenAuthStr);
+    }
+
+    String updateTokenAuthInDb(Usuario usuarioIn, String newTokenAuthStr)
+    {
+        return usuarioDao.updateTokenAuthById(usuarioIn.getuId(), hashpw(newTokenAuthStr, BCRYPT_SALT.get())) ? newTokenAuthStr : null;
+    }
+
     // =================================  CHECKERS ======================================
 
     /**
@@ -477,6 +522,19 @@ public class UsuarioManager {
         return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
     }
 
+    /**
+     * @throws ServiceException UNAUTHORIZED if the token is different from the one in database or it has an invalid format.
+     */
+    public String checkHeaderGetUserName(String httpHeaderIn)
+    {
+        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        if (tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(headerIn.getToken())
+                && checkpw(headerIn.getToken(), getUserDataByName(headerIn.getUserName()).getTokenAuth())) {
+            return headerIn.getUserName();
+        }
+        throw new ServiceException(UNAUTHORIZED);
+    }
+
     // =================================  HELPERS ======================================
 
     static Usuario doUserEncryptPswd(Usuario usuarioPswdRaw)
@@ -484,7 +542,7 @@ public class UsuarioManager {
         // Password encryption.
         return new Usuario.UsuarioBuilder()
                 .copyUsuario(usuarioPswdRaw)
-                .password(hashpw(usuarioPswdRaw.getPassword(), BCRYPT_SALT))
+                .password(hashpw(usuarioPswdRaw.getPassword(), BCRYPT_SALT.get()))
                 .build();
     }
 
@@ -515,34 +573,6 @@ public class UsuarioManager {
         } catch (SQLException e) {
             throw new RuntimeException(se.getMessage(), se);
         }
-    }
-
-    public List<Comunidad> searchComunidades(Comunidad comunidad)
-    {
-        logger.info("searchComunidades()");
-
-        List<Comunidad> comunidades;
-
-        if ((comunidades = comunidadDao.searchComunidadOne(comunidad)).size() > 0) {
-            return comunidades;
-        }
-        if ((comunidades = comunidadDao.searchComunidadTwo(comunidad)).size() > 0) {
-            return comunidades;
-        }
-
-        return comunidadDao.searchComunidadThree(comunidad);
-    }
-
-    public List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
-    {
-        logger.debug("seeUserComusByComu()");
-        return usuarioDao.seeUserComusByComu(idComunidad);
-    }
-
-    public List<UsuarioComunidad> seeUserComusByUser(String userName)
-    {
-        logger.info("seeUserComusByUser()");
-        return usuarioDao.seeUserComusByUser(userName);
     }
 
     private Usuario doUserRawPswd(Usuario usuario)

@@ -88,10 +88,18 @@ enum UsuarioSql {
             " ON u.u_id = cu.u_id " +
             " WHERE u.user_name = ?"),
 
-    USER_BY_EMAIL("SELECT u_id, alias, user_name, gcm_token, password " +
+    UPDATE_TOKEN_AUTH_BY_NAME("UPDATE usuario SET " +
+            " token_auth = ? " +
+            " WHERE user_name = ?"),
+
+    UPDATE_TOKEN_AUTH_BY_ID("UPDATE usuario SET " +
+            " token_auth = ? " +
+            " WHERE u_id = ?"),
+
+    USER_BY_EMAIL("SELECT u_id, alias, user_name, gcm_token, password, token_auth " +
             " FROM usuario as u WHERE u.user_name = ?"),
 
-    USER_BY_ID("SELECT u_id, alias, user_name, gcm_token, password " +
+    USER_BY_ID("SELECT u_id, alias, user_name, gcm_token, password, token_auth " +
             " FROM usuario WHERE u_id = ?"),
 
     USERCOMU_BY_COMU("select * from usuarios_comunidades_view" +

@@ -3,6 +3,7 @@ package com.didekin.userservice.repository;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
+import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -25,11 +26,13 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mindrot.jbcrypt.BCrypt.checkpw;
 
 /**
  * User: pedro@didekin
@@ -48,6 +51,20 @@ public abstract class UserMockManagerTest {
     private UserMockManager userMockManager;
     @Autowired
     private UsuarioManager usuarioManager;
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_DoInsertAuthHeader()
+    {
+        String httpAuthHeaderIn = userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), "fake_appID");
+        // Check values from authHeader obtained from DB.
+        AuthHeader httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
+        assertThat(httpHeaderFromDb.getAppID(), is("fake_appID"));
+        assertThat(httpHeaderFromDb.getUserName(), is(pedro.getUserName()));
+        assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserDataByName(pedro.getUserName()).getTokenAuth()), is(true));
+    }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
