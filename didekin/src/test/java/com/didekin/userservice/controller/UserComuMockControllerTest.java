@@ -7,7 +7,6 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
@@ -27,6 +26,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
@@ -102,7 +104,7 @@ public abstract class UserComuMockControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
             webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
     public static class UserComuMockControllerDevTest extends UserComuMockControllerTest {
@@ -112,7 +114,7 @@ public abstract class UserComuMockControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
             webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
     @DirtiesContext
     public static class UserComuMockControllerPreTest extends UserComuMockControllerTest {
@@ -123,7 +125,7 @@ public abstract class UserComuMockControllerTest {
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
             UsuarioRepoConfiguration.class},
             webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, Profiles.MAIL_PRE})
+    @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UserComuMockControllerAwsTest extends UserComuMockControllerTest {
     }

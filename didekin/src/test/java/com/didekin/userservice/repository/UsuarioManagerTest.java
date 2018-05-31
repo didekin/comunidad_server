@@ -213,7 +213,7 @@ public abstract class UsuarioManagerTest {
         assertThat(usuarioManager.deleteUserComunidad(pedro_plazuelas_10bis), is(1));
         // Preconditions.
         assertThat(usuarioManager.getComusByUser(luis.getUserName()).size(), is(1));
-        assertThat(usuarioManager.seeUserComusByComu(ronda_plazuela_10bis.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getC_Id()).size(), is(1));
         // Exec and check.
         assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
         try {
@@ -227,7 +227,7 @@ public abstract class UsuarioManagerTest {
         // El usuario tiene tres comunidades. La comunidad tiene 1 usuario.
         // Preconditions.
         assertThat(usuarioManager.getComusByUser(pedro.getUserName()).size() > 1, is(true));
-        assertThat(usuarioManager.seeUserComusByComu(calle_el_escorial.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_el_escorial.getC_Id()).size(), is(1));
         // Exec.
         assertThat(usuarioManager.deleteUserComunidad(pedro_escorial), is(1));
         // Check.
@@ -251,7 +251,7 @@ public abstract class UsuarioManagerTest {
     {
         // Usuario con una comunidad y comunidad con dos usuarios.
         assertThat(usuarioManager.getComusByUser(luis.getUserName()).size(), is(1));
-        assertThat(usuarioManager.seeUserComusByComu(ronda_plazuela_10bis.getC_Id()).size(), is(2));
+        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getC_Id()).size(), is(2));
         // Exec.
         assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
         // Check.
@@ -869,6 +869,26 @@ public abstract class UsuarioManagerTest {
         comunidades = usuarioManager.searchComunidades(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, hasItem(comunidad));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void test_SeeUserComusByComu()
+    {
+        // Premise: user in comunidad.
+        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_la_fuente_11.getC_Id()), is(true));
+        // Check.
+        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_la_fuente_11.getC_Id()).size(), is(2));
+
+        // Premise: user not in comunidad.
+        assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
+        try {
+            usuarioManager.seeUserComusByComu(luis.getUserName(), calle_la_fuente_11.getC_Id());
+            fail();
+        } catch (ServiceException se) {
+            assertThat(se.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
+        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

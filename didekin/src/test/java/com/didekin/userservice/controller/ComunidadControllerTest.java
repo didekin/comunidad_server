@@ -9,7 +9,7 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
 import com.didekin.common.testutils.LocaleConstant;
-import com.didekin.userservice.auth.EncrypTkProducerBuilder;
+import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
@@ -39,7 +39,6 @@ import retrofit2.Response;
 
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -65,7 +64,7 @@ public abstract class ComunidadControllerTest {
     @Autowired
     UsuarioManager usuarioManager;
     @Autowired
-    private EncrypTkProducerBuilder producerBuilder;
+    private UserMockManager userMockManager;
 
     @Before
     public void setUp()
@@ -89,13 +88,20 @@ public abstract class ComunidadControllerTest {
         // Premisa: NO existe el par (comunidad, usuario).
         assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_el_escorial.getC_Id()), is(false));
         // Run, check.
-        Response<Comunidad> response = COMU_ENDPOINT.getComuData(doHttpAuthHeader(luis, producerBuilder),calle_el_escorial.getC_Id()).execute();
+        Response<Comunidad> response =
+                COMU_ENDPOINT.getComuData(
+                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        calle_el_escorial.getC_Id())
+                        .execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
 
         // Premisa: usuario en comunidad.
         assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
-        assertThat(COMU_ENDPOINT.getComuData(doHttpAuthHeader(pedro, producerBuilder), calle_el_escorial.getC_Id()).execute().body(),
+        assertThat(COMU_ENDPOINT.getComuData(
+                userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                calle_el_escorial.getC_Id())
+                        .execute().body(),
                 is(calle_el_escorial));
     }
 

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertThat;
 public class MailBundleTest {
 
     @Test
-    public void test_GetBundle_1() throws Exception
+    public void test_GetBundle_1()
     {
         checkLocalBundle(oneComponent_local_ES, MailBundle_es.class);
         checkLocalBundle(twoComponent_local_ES, MailBundle_es.class);
@@ -38,8 +38,8 @@ public class MailBundleTest {
         checkLocalBundle(oneComponent_local_EN, MailBundle_en.class);
         checkLocalBundle(twoComponent_local_EN, MailBundle_en.class);
 
-        // Default locale.
-        assertThat(getLocale(getDefault().toString()).toString(), is("en_US"));
+        // Default locale: english language, region SPAIN.
+        assertThat(getLocale(getDefault().toString()).toString(), is("en_ES"));
         checkLocalBundle("en_US", MailBundle_en.class);
 
         // Locale without resourceBundle.
@@ -50,7 +50,7 @@ public class MailBundleTest {
     }
 
     @Test
-    public void test_GetBundle_2() throws Exception
+    public void test_GetBundle_2()
     {
         // Change default locale.
         Locale.setDefault(new Locale(twoComponent_local_ES));
@@ -63,7 +63,7 @@ public class MailBundleTest {
     }
 
     @Test
-    public void test_GetBundle_3() throws Exception
+    public void test_GetBundle_3()
     {
         // Change default locale.
         Locale.setDefault(new Locale(oneComponent_local_ES));

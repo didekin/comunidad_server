@@ -7,7 +7,7 @@ VALUES (3, 1, 'pedro@didekin.es', 'incidencia_3', 46, DATE_SUB(NOW(), INTERVAL 1
 INSERT INTO didekin.incidencia
 VALUES (4, 4, 'paco@paco.com', 'incidencia_4', 37, DATE_SUB(NOW(), INTERVAL 8 SECOND), NULL);
 INSERT INTO didekin.incidencia
-VALUES (5, 4, 'paco@paco.com', 'incidencia_5', 3, DATE_SUB(NOW(), INTERVAL 2000 SECOND), DATE_SUB(NOW(), INTERVAL 1000 SECOND));
+VALUES (5, 4, 'paco@paco.com', 'incidencia_5', 3, DATE_SUB(NOW(), INTERVAL 20000 SECOND), DATE_SUB(NOW(), INTERVAL 10000 SECOND));
 INSERT INTO didekin.incidencia
 VALUES (6, 6, 'paco@paco.com', 'incidencia_6_6', 37, DATE_SUB(NOW(), INTERVAL 2000 SECOND), NULL);
 INSERT INTO didekin.incidencia

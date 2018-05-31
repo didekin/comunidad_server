@@ -46,7 +46,7 @@ public class UserMockManager {
     Environment env;
 
     @Autowired
-    UserMockManager(UsuarioManager usuarioManagerIn)
+    public UserMockManager(UsuarioManager usuarioManagerIn)
     {
         usuarioManager = usuarioManagerIn;
         comunidadDao = usuarioManager.comunidadDao;

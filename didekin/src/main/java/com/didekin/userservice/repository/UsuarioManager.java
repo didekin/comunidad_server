@@ -480,10 +480,13 @@ public class UsuarioManager {
         return comunidadDao.searchComunidadThree(comunidad);
     }
 
-    public List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
+    public List<UsuarioComunidad> seeUserComusByComu(String userName, long idComunidad)
     {
         logger.debug("seeUserComusByComu()");
-        return usuarioDao.seeUserComusByComu(idComunidad);
+        if (isUserInComunidad(userName,idComunidad)){
+            return usuarioDao.seeUserComusByComu(idComunidad);
+        }
+        throw new ServiceException(UNAUTHORIZED_TX_TO_USER);
     }
 
     public List<UsuarioComunidad> seeUserComusByUser(String userName)

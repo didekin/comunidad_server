@@ -1,5 +1,7 @@
 package com.didekin.incidservice.repository;
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -13,11 +15,14 @@ import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +51,7 @@ import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORT
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
+import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -69,7 +75,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 public abstract class IncidenciaManagerTest {
 
     @Autowired
-    private IncidenciaManagerIf incidenciaManager;
+    private IncidenciaManager incidenciaManager;
     @Autowired
     private IncidenciaDao incidenciaDao;
     @Autowired
@@ -125,7 +131,7 @@ public abstract class IncidenciaManagerTest {
                 .build();
         List<Avance> avances = new ArrayList<>(1);
         avances.add(avance);
-        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));
+        Timestamp fechaPrevNew = Timestamp.from(now().plus(5, MINUTES));
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
                 .fechaPrevista(fechaPrevNew)
@@ -174,7 +180,7 @@ public abstract class IncidenciaManagerTest {
                             paco.getUserName(),
                             "resol_incid_5_4",
                             111,
-                            Instant.now().plus(12, DAYS))
+                            now().plus(12, DAYS))
             );
             fail();
         } catch (ServiceException e) {
@@ -226,7 +232,7 @@ public abstract class IncidenciaManagerTest {
         // Data
         Incidencia incidencia = doIncidenciaWithIdDescUsername(paco.getUserName(), 4L, "desc_mod", calle_plazuela_23.getC_Id(), (short) 12);
         // Excec and check.
-        assertThat(((IncidenciaManager) incidenciaManager).modifyIncidencia(paco.getUserName(), incidencia), is(1));
+        assertThat(incidenciaManager.modifyIncidencia(paco.getUserName(), incidencia), is(1));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -238,7 +244,7 @@ public abstract class IncidenciaManagerTest {
         // UserName in incidencia is null.
         Incidencia incidencia = doIncidenciaWithId(null, 2L, 2L, (short) 1);
         try {
-            ((IncidenciaManager) incidenciaManager).modifyIncidencia(pedro.getUserName(), incidencia);
+            incidenciaManager.modifyIncidencia(pedro.getUserName(), incidencia);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_USER_WRONG_INIT));
@@ -257,7 +263,7 @@ public abstract class IncidenciaManagerTest {
         // Datos.
         incidencia = new Incidencia.IncidenciaBuilder().copyIncidencia(incidencia).descripcion("new_description").build();
         // Exec and check: returns 0.
-        assertThat(((IncidenciaManager) incidenciaManager).modifyIncidencia(juan.getUserName(), incidencia), is(0));
+        assertThat(incidenciaManager.modifyIncidencia(juan.getUserName(), incidencia), is(0));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -403,7 +409,7 @@ public abstract class IncidenciaManagerTest {
                 .build();
         List<Avance> avances = new ArrayList<>(1);
         avances.add(avance);
-        Timestamp fechaPrevNew = Timestamp.from(Instant.now().plus(5, MINUTES));
+        Timestamp fechaPrevNew = Timestamp.from(now().plus(5, MINUTES));
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
                 .fechaPrevista(fechaPrevNew)
@@ -450,7 +456,7 @@ public abstract class IncidenciaManagerTest {
     public void testRegIncidencia_1()
     {
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 1L, (short) 24);
-        assertThat(((IncidenciaManager) incidenciaManager).regIncidencia(incidencia).getIncidenciaId() > 0, is(true));
+        assertThat(incidenciaManager.regIncidencia(incidencia).getIncidenciaId() > 0, is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -462,7 +468,7 @@ public abstract class IncidenciaManagerTest {
         // Caso: comunidad no existe.  doIncidenciaWithId(String userName, long incidenciaId, long comunidadId, short ambitoId)
         Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 999L, (short) 24);
         try {
-            ((IncidenciaManager) incidenciaManager).regIncidencia(incidencia);
+            incidenciaManager.regIncidencia(incidencia);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_REGISTERED));
@@ -470,7 +476,7 @@ public abstract class IncidenciaManagerTest {
 
         /* Caso: incidenciaId > 0.*/
         final Incidencia incidenciaNew = doIncidenciaWithId(luis.getUserName(), 2L, 2L, (short) 24);
-        assertThat(((IncidenciaManager) incidenciaManager).regIncidencia(incidenciaNew), is(incidenciaNew));
+        assertThat(incidenciaManager.regIncidencia(incidenciaNew), is(incidenciaNew));
     }
 
     /**
@@ -504,7 +510,7 @@ public abstract class IncidenciaManagerTest {
         assertThat(usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken(), is(tokenId_1));
 
         Incidencia incidencia = doIncidencia(pedro.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
-        assertThat(((IncidenciaManager) incidenciaManager).regIncidencia(incidencia).getDescripcion(), is("incid_test"));
+        assertThat(incidenciaManager.regIncidencia(incidencia).getDescripcion(), is("incid_test"));
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken() == null);
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken() == null);
     }
@@ -594,8 +600,8 @@ public abstract class IncidenciaManagerTest {
         // Caso: la incidencia ya está cerrada. Incidencia 5, comunidad 4.
         // Devuelve INCIDENCIA_NOT_FOUND, porque no está entre las incidencias ABIERTAS.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
-        assertThat(incidencia.getFechaCierre().getTime() < new Date().getTime(), is(true));
-        Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_5_4", 111, Instant.now().plus(12, DAYS));
+        assertThat(incidencia.getFechaCierre().getTime()/1000 < now().toEpochMilli()/1000, is(true));
+        Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_5_4", 111, now().plus(12, DAYS));
         try {
             incidenciaManager.regResolucion(paco.getUserName(), resolucion);
             fail();
@@ -863,6 +869,27 @@ public abstract class IncidenciaManagerTest {
         }
     }
 
-//    ================================ Helper methods =======================
+//    ================================ HELPER CLASSES =======================
 
+    /**
+     * User: pedro@didekin
+     * Date: 20/11/15
+     * Time: 11:29
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+    @Category({DbPre.class})
+    public static class IncidenciaManagerPreTest extends IncidenciaManagerTest {
+    }
+
+    /**
+     * User: pedro@didekin
+     * Date: 20/11/15
+     * Time: 11:29
+     */
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+    @Category({LocalDev.class})
+    public static class IncidenciaManagerDevTest extends IncidenciaManagerTest {
+    }
 }

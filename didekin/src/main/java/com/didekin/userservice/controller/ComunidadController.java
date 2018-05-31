@@ -3,7 +3,6 @@ package com.didekin.userservice.controller;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 
 import org.slf4j.Logger;
@@ -47,8 +46,7 @@ public class ComunidadController extends AppControllerAbstract {
     {
         logger.debug("getComunidadById()");
         return usuarioService.getComunidadById(
-                usuarioService.getUserDataByName(new AuthHeader.AuthHeaderBuilder(accessToken).build().getUserName()),
-                comunidadId);
+                usuarioService.getUserDataByName(usuarioService.checkHeaderGetUserName(accessToken)), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_SEARCH, method = POST, consumes = MIME_JSON, produces = MIME_JSON)

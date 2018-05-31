@@ -1,6 +1,7 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.repository.ServiceException;
+import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.usuario.Usuario;
@@ -23,7 +24,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INI
  * User: pedro@didekin
  * Date: 27/08/17
  * Time: 14:14
- *
+ * <p>
  * This class groups the dependencies of incidencia's controller and manager on user(comu) service.
  * In the future, the UsuarioManager instance should be replaced by an http endpoint.
  */
@@ -31,21 +32,28 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INI
 public class UserManagerConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(UserManagerConnector.class.getCanonicalName());
-
     private final UsuarioManager usuarioManager;
+    private final UserMockManager userMockManager;
 
     @Autowired
     Environment env;
+
     @Autowired
     public UserManagerConnector(UsuarioManager usuarioManager)
     {
         this.usuarioManager = usuarioManager;
+        userMockManager= new UserMockManager(usuarioManager);
     }
 
     public boolean checkAuthorityInComunidad(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("checkAuthorityInComunidad()");
         return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();
+    }
+
+    public String checkHeaderGetUserName(String httpHeaderIn)
+    {
+        return usuarioManager.checkHeaderGetUserName(httpHeaderIn);
     }
 
     /**
@@ -85,7 +93,7 @@ public class UserManagerConnector {
     }
 
     /**
-     *  Only for tests.
+     * Only for tests.
      */
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL, MAIL_PRE})
     boolean deleteUser(String userName)
@@ -93,5 +101,13 @@ public class UserManagerConnector {
         logger.debug("deleteUser()");
         checkActiveProfiles(env);
         return usuarioManager.deleteUser(userName);
+    }
+
+    // ==================================  FOR TESTS =================================
+
+    @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
+    public String insertTokenGetHeaderStr(String userName, String appIDIn){
+        checkActiveProfiles(env);
+        return userMockManager.insertTokenGetHeaderStr(userName, appIDIn);
     }
 }

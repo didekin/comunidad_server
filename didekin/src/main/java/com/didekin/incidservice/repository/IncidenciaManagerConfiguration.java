@@ -37,7 +37,7 @@ public class IncidenciaManagerConfiguration {
     }
 
     @Bean
-    public IncidenciaManagerIf incidenciaManager(IncidenciaDao incidenciaDao)
+    public IncidenciaManager incidenciaManager(IncidenciaDao incidenciaDao)
     {
         return new IncidenciaManager(incidenciaDao);
     }

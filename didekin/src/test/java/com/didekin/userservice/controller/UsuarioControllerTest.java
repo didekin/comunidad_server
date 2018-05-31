@@ -1,7 +1,6 @@
 package com.didekin.userservice.controller;
 
 import com.didekin.Application;
-import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
@@ -10,6 +9,7 @@ import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
+import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
@@ -43,7 +43,6 @@ import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -74,9 +73,9 @@ public abstract class UsuarioControllerTest {
     @Autowired
     private UsuarioManager usuarioManager;
     @Autowired
-    private JavaMailMonitor javaMailMonitor;
+    private UserMockManager userMockManager;
     @Autowired
-    private EncrypTkProducerBuilder producerBuilder;
+    private JavaMailMonitor javaMailMonitor;
 
     @Before
     public void setUp()
@@ -92,10 +91,12 @@ public abstract class UsuarioControllerTest {
     @Test()
     public void testDeleteUser() throws IOException
     {
-        List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT.seeUserComusByUser(doHttpAuthHeader(pedro, producerBuilder)).execute().body();
+        final String accessToken = userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT
+                .seeUserComusByUser(accessToken).execute().body();
         assertThat(comunidades.size(), is(3));
 
-        boolean isDeleted = USER_ENDPOINT.deleteUser(doHttpAuthHeader(pedro, producerBuilder)).execute().body();
+        boolean isDeleted = USER_ENDPOINT.deleteUser(accessToken).execute().body();
         // Borra al usuario y las comunidades previamente encontradas en la consulta.
         assertThat(isDeleted, is(true));
     }
@@ -105,7 +106,8 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testGetUserData_1() throws IOException
     {
-        Usuario usuarioDB = USER_ENDPOINT.getUserData(doHttpAuthHeader(luis, producerBuilder)).execute().body();
+        Usuario usuarioDB =
+                USER_ENDPOINT.getUserData(userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken())).execute().body();
 
         assertThat(usuarioDB.getuId(), is(luis.getuId()));
         assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
@@ -155,7 +157,11 @@ public abstract class UsuarioControllerTest {
                 .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(oneComponent_local_ES, doHttpAuthHeader(paco, producerBuilder), usuarioIn_1).execute().body(), is(1));
+        assertThat(USER_ENDPOINT.modifyUser(
+                oneComponent_local_ES,
+                userMockManager.insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                usuarioIn_1)
+                .execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -170,7 +176,11 @@ public abstract class UsuarioControllerTest {
                 .uId(paco.getuId())
                 .build();
 
-        assertThat(USER_ENDPOINT.modifyUser(oneComponent_local_ES, doHttpAuthHeader(paco, producerBuilder), usuarioIn_1).execute().body(), is(1));
+        assertThat(USER_ENDPOINT.modifyUser(
+                oneComponent_local_ES,
+                userMockManager.insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                usuarioIn_1)
+                .execute().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -178,9 +188,9 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUserGcmToken() throws IOException
     {
-        assertThat(USER_ENDPOINT.modifyUserGcmToken(doHttpAuthHeader(luis, producerBuilder), "GCMtoKen1234X").execute().body(),
-                is(1));
-        assertThat(USER_ENDPOINT.getUserData(doHttpAuthHeader(luis, producerBuilder)).execute().body().getGcmToken(), is("GCMtoKen1234X"));
+        final String accessToken = userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        assertThat(USER_ENDPOINT.modifyUserGcmToken(accessToken, "GCMtoKen1234X").execute().body(), is(1));
+        assertThat(USER_ENDPOINT.getUserData(accessToken).execute().body().getGcmToken(), is("GCMtoKen1234X"));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -190,7 +200,10 @@ public abstract class UsuarioControllerTest {
     {
         // Call the controller.
         String newClearPswd = "newPacoPassword";
-        assertThat(USER_ENDPOINT.passwordChange(doHttpAuthHeader(paco, producerBuilder), newClearPswd).execute().body(),
+        assertThat(USER_ENDPOINT.passwordChange(
+                userMockManager.insertTokenGetHeaderStr(paco.getUserName(),
+                        paco.getGcmToken()),
+                newClearPswd).execute().body(),
                 is(1));
         // Check.
         assertThat(checkpw(newClearPswd, usuarioManager.getUserDataByName(paco.getUserName()).getPassword()),

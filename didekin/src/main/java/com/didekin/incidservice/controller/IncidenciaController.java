@@ -2,13 +2,12 @@ package com.didekin.incidservice.controller;
 
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.incidservice.repository.IncidenciaManagerIf;
-import com.didekinlib.http.usuario.AuthHeader.AuthHeaderBuilder;
+import com.didekin.incidservice.repository.IncidenciaManager;
+import com.didekin.incidservice.repository.UserManagerConnector;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
 import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
 import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
 import com.didekinlib.model.incidencia.dominio.Resolucion;
 
@@ -56,15 +55,25 @@ class IncidenciaController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(IncidenciaController.class.getCanonicalName());
 
+    private final IncidenciaManager incidenciaManager;
+
     @Autowired
-    private IncidenciaManagerIf incidenciaManager;
+    public IncidenciaController(IncidenciaManager incidenciaManager, UserManagerConnector userConnector)
+    {
+        this.incidenciaManager = incidenciaManager;
+    }
+
+    private UserManagerConnector getUsuarioConnector()
+    {
+        return incidenciaManager.getUsuarioConnector();
+    }
 
     @RequestMapping(value = CLOSE_INCIDENCIA, method = PUT, consumes = MIME_JSON)
     int closeIncidencia(@RequestHeader("Authorization") String accessToken,
                         @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.debug("closeIncidencia()");
-        return incidenciaManager.closeIncidencia(new AuthHeaderBuilder(accessToken).build().getUserName(), resolucion);
+        return incidenciaManager.closeIncidencia(getUsuarioConnector().checkHeaderGetUserName(accessToken), resolucion);
     }
 
     @RequestMapping(value = DELETE_INCID + "/{incidenciaId}", method = DELETE)
@@ -72,7 +81,7 @@ class IncidenciaController extends AppControllerAbstract {
                                 @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("deleteIncidencia()");
-        return incidenciaManager.deleteIncidencia(new AuthHeaderBuilder(accessToken).build().getUserName(), incidenciaId);
+        return incidenciaManager.deleteIncidencia(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidenciaId);
     }
 
     @RequestMapping(value = MOD_INCID_IMPORTANCIA, method = PUT, consumes = MIME_JSON)
@@ -80,7 +89,7 @@ class IncidenciaController extends AppControllerAbstract {
                                       @RequestBody IncidImportancia incidImportancia) throws ServiceException
     {
         logger.error("modifyIncidImportancia()");
-        return incidenciaManager.modifyIncidImportancia(new AuthHeaderBuilder(accessToken).build().getUserName(), incidImportancia);
+        return incidenciaManager.modifyIncidImportancia(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidImportancia);
     }
 
     @RequestMapping(value = MOD_RESOLUCION, method = PUT, consumes = MIME_JSON)
@@ -88,7 +97,7 @@ class IncidenciaController extends AppControllerAbstract {
                                 @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.error("modifyResolucion()");
-        return incidenciaManager.modifyResolucion(new AuthHeaderBuilder(accessToken).build().getUserName(), resolucion);
+        return incidenciaManager.modifyResolucion(getUsuarioConnector().checkHeaderGetUserName(accessToken), resolucion);
     }
 
     @RequestMapping(value = REG_INCID_COMMENT, method = POST, consumes = MIME_JSON)
@@ -96,7 +105,7 @@ class IncidenciaController extends AppControllerAbstract {
                                @RequestBody final IncidComment comment) throws ServiceException
     {
         logger.debug("regIncidComment()");
-        return incidenciaManager.regIncidComment(new AuthHeaderBuilder(accessToken).build().getUserName(), comment);
+        return incidenciaManager.regIncidComment(getUsuarioConnector().checkHeaderGetUserName(accessToken), comment);
     }
 
     @RequestMapping(value = REG_INCID_IMPORTANCIA, method = RequestMethod.POST, consumes = MIME_JSON)
@@ -104,7 +113,7 @@ class IncidenciaController extends AppControllerAbstract {
                                    @RequestBody IncidImportancia incidImportancia) throws ServiceException
     {
         logger.debug("regIncidImportancia()");
-        return incidenciaManager.regIncidImportancia(new AuthHeaderBuilder(accessToken).build().getUserName(), incidImportancia);
+        return incidenciaManager.regIncidImportancia(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidImportancia);
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
@@ -113,7 +122,7 @@ class IncidenciaController extends AppControllerAbstract {
                              @RequestBody Resolucion resolucion) throws ServiceException
     {
         logger.debug("regResolucion()");
-        return incidenciaManager.regResolucion(new AuthHeaderBuilder(accessToken).build().getUserName(), resolucion);
+        return incidenciaManager.regResolucion(getUsuarioConnector().checkHeaderGetUserName(accessToken), resolucion);
     }
 
     /**
@@ -129,9 +138,10 @@ class IncidenciaController extends AppControllerAbstract {
                                           @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeCommentsByIncid()");
-        final Incidencia incidenciaIn = incidenciaManager.seeIncidenciaById(incidenciaId);
-        final String userName = new AuthHeaderBuilder(accessToken).build().getUserName();
-        incidenciaManager.getUsuarioConnector().checkUserInComunidad(userName, incidenciaIn.getComunidad().getC_Id());
+        incidenciaManager.getUsuarioConnector().checkUserInComunidad(
+                getUsuarioConnector().checkHeaderGetUserName(accessToken),
+                incidenciaManager.seeIncidenciaById(incidenciaId).getComunidad().getC_Id()
+        );
 
         try {
             return incidenciaManager.seeCommentsByIncid(incidenciaId);
@@ -145,7 +155,7 @@ class IncidenciaController extends AppControllerAbstract {
                                                    @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeIncidImportanciaByUser");
-        return incidenciaManager.seeIncidImportanciaByUser(new AuthHeaderBuilder(accessToken).build().getUserName(), incidenciaId);
+        return incidenciaManager.seeIncidImportanciaByUser(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidenciaId);
     }
 
     @RequestMapping(value = SEE_INCIDS_CLOSED_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
@@ -153,7 +163,7 @@ class IncidenciaController extends AppControllerAbstract {
                                                       @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("seeIncidsClosedByComu()");
-        return incidenciaManager.seeIncidsClosedByComu(new AuthHeaderBuilder(accessToken).build().getUserName(), comunidadId);
+        return incidenciaManager.seeIncidsClosedByComu(getUsuarioConnector().checkHeaderGetUserName(accessToken), comunidadId);
     }
 
     @RequestMapping(value = SEE_INCIDS_OPEN_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
@@ -161,7 +171,7 @@ class IncidenciaController extends AppControllerAbstract {
                                                     @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("seeIncidsOpenByComu()");
-        return incidenciaManager.seeIncidsOpenByComu(new AuthHeaderBuilder(accessToken).build().getUserName(), comunidadId);
+        return incidenciaManager.seeIncidsOpenByComu(getUsuarioConnector().checkHeaderGetUserName(accessToken), comunidadId);
     }
 
     @RequestMapping(value = SEE_RESOLUCION + "/{incidenciaId}", produces = MIME_JSON, method = GET)
@@ -169,7 +179,7 @@ class IncidenciaController extends AppControllerAbstract {
                                     @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeResolucion()");
-        return incidenciaManager.seeResolucion(new AuthHeaderBuilder(accessToken).build().getUserName(), incidenciaId);
+        return incidenciaManager.seeResolucion(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidenciaId);
     }
 
     @RequestMapping(value = SEE_USERCOMUS_IMPORTANCIA + "/{incidenciaId}", produces = MIME_JSON, method = GET)
@@ -177,6 +187,6 @@ class IncidenciaController extends AppControllerAbstract {
                                                   @PathVariable long incidenciaId) throws ServiceException
     {
         logger.debug("seeUserComusImportancia()");
-        return incidenciaManager.seeUserComusImportancia(new AuthHeaderBuilder(accessToken).build().getUserName(), incidenciaId);
+        return incidenciaManager.seeUserComusImportancia(getUsuarioConnector().checkHeaderGetUserName(accessToken), incidenciaId);
     }
 }
