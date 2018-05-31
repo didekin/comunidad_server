@@ -6,6 +6,8 @@ import com.didekin.common.auth.TkAuthClaims;
 import com.didekin.common.auth.TkHeaders;
 import com.didekin.common.AwsPre;
 import com.didekin.common.LocalDev;
+import com.didekin.common.controller.RetrofitConfigurationDev;
+import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekinlib.http.usuario.TkParamNames;
 
 import org.jose4j.jwt.MalformedClaimException;
@@ -112,14 +114,14 @@ public abstract class EncryptedTkProducerTest {
     /*  ==============================================  INNER CLASSES =============================================*/
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class}, webEnvironment = DEFINED_PORT)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = DEFINED_PORT)
     @Category({LocalDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class EncryptedTkProducerDevTest extends EncryptedTkProducerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class}, webEnvironment = DEFINED_PORT)
+    @SpringBootTest(classes = {RetrofitConfigurationPre.class}, webEnvironment = DEFINED_PORT)
     @Category({AwsPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE})
     public static class EncryptedTkProducerAwsTest extends EncryptedTkProducerTest {

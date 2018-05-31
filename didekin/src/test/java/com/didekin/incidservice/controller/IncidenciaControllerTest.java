@@ -704,8 +704,7 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class,
-            RetrofitConfigurationDev.class},
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},
             webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
     @Category({LocalDev.class})
@@ -719,8 +718,7 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class,
-            RetrofitConfigurationDev.class})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
     @ActiveProfiles({Profiles.NGINX_JETTY_LOCAL})
     @Category({DbPre.class})
 
