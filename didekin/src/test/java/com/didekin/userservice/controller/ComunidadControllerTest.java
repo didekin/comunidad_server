@@ -48,7 +48,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INI
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -171,7 +171,7 @@ public abstract class ComunidadControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},
-            webEnvironment = RANDOM_PORT)
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
@@ -180,7 +180,7 @@ public abstract class ComunidadControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},
-            webEnvironment = RANDOM_PORT)
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
     @DirtiesContext

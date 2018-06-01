@@ -71,7 +71,7 @@ import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -707,7 +707,7 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = RANDOM_PORT)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
@@ -720,7 +720,7 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},  webEnvironment = RANDOM_PORT)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},  webEnvironment = DEFINED_PORT)
     @ActiveProfiles({NGINX_JETTY_LOCAL})
     @Category({DbPre.class})
 

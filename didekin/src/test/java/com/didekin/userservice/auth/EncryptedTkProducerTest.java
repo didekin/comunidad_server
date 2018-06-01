@@ -33,7 +33,7 @@ import static com.didekinlib.model.common.dominio.BeanBuilder.error_message_bean
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 /**
  * User: pedro@didekin
@@ -114,7 +114,7 @@ public abstract class EncryptedTkProducerTest {
     /*  ==============================================  INNER CLASSES =============================================*/
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = RANDOM_PORT)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = DEFINED_PORT)
     @Category({LocalDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class EncryptedTkProducerDevTest extends EncryptedTkProducerTest {
