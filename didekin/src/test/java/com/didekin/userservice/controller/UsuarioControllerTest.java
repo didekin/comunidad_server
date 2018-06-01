@@ -54,7 +54,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -234,7 +234,7 @@ public abstract class UsuarioControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class,
             UsuarioMailConfigurationPre.class},
-            webEnvironment = RANDOM_PORT)
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
@@ -245,7 +245,7 @@ public abstract class UsuarioControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class,
             UsuarioMailConfigurationPre.class},
-            webEnvironment = RANDOM_PORT)
+            webEnvironment = DEFINED_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
     @DirtiesContext
