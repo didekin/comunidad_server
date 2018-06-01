@@ -36,7 +36,6 @@ import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 /**
  * User: pedro@didekin
@@ -99,7 +98,7 @@ public abstract class EncryptedTkConsumerTest {
     /*  ==============================================  INNER CLASSES =============================================*/
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = DEFINED_PORT)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
     @Category({LocalDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class EncryptedTkConsumerDevTest extends EncryptedTkConsumerTest {
