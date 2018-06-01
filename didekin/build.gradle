@@ -15,9 +15,9 @@ jar {
 
 test {
     filter {
-        includeTestsMatching "com.didekin.common.mail.*Test"
+//        includeTestsMatching "com.didekin.common.mail.*Test"
         includeTestsMatching "com.didekin.userservice.*Test"
-        includeTestsMatching "com.didekin.incidservice.*Test"
+//        includeTestsMatching "com.didekin.incidservice.*Test"
     }
     useJUnit {
         if(project.hasProperty('testCategory')) {
