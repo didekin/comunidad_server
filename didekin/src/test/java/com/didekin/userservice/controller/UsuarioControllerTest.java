@@ -233,8 +233,7 @@ public abstract class UsuarioControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class,
-            UsuarioMailConfigurationPre.class},
-            webEnvironment = DEFINED_PORT)
+            UsuarioMailConfigurationPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext

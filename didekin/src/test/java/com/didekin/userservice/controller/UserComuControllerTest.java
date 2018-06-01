@@ -342,9 +342,8 @@ public abstract class UserComuControllerTest {
 //  ==============================================  INNER CLASSES =============================================
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class,
-            RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
+    @SpringBootTest(classes = { Application.class,
+            RetrofitConfigurationDev.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
