@@ -38,7 +38,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -103,7 +103,7 @@ public abstract class UserComuMockControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
+            webEnvironment = RANDOM_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
@@ -113,7 +113,7 @@ public abstract class UserComuMockControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
+            webEnvironment = RANDOM_PORT)
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
     @DirtiesContext
@@ -123,8 +123,7 @@ public abstract class UserComuMockControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class},
-            webEnvironment = DEFINED_PORT)
+            UsuarioRepoConfiguration.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UserComuMockControllerAwsTest extends UserComuMockControllerTest {

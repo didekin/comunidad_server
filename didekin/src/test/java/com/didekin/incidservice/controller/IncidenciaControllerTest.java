@@ -43,6 +43,8 @@ import java.util.List;
 
 import retrofit2.Response;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaUser;
@@ -69,6 +71,7 @@ import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -704,9 +707,8 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},
-            webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class}, webEnvironment = RANDOM_PORT)
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
     public static class IncidenciaControllerDevTest extends IncidenciaControllerTest {
@@ -718,8 +720,8 @@ abstract class IncidenciaControllerTest {
      * Time: 11:47
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
-    @ActiveProfiles({Profiles.NGINX_JETTY_LOCAL})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class},  webEnvironment = RANDOM_PORT)
+    @ActiveProfiles({NGINX_JETTY_LOCAL})
     @Category({DbPre.class})
 
     @DirtiesContext

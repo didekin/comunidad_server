@@ -36,6 +36,8 @@ import java.util.List;
 
 import retrofit2.Response;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_EL_ESCORIAL;
@@ -69,7 +71,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -342,8 +344,8 @@ public abstract class UserComuControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
+            webEnvironment = RANDOM_PORT)
+    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
     public static class UserComuControllerDevTest extends UserComuControllerTest {
@@ -352,8 +354,8 @@ public abstract class UserComuControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, Profiles.MAIL_PRE})
+            webEnvironment = RANDOM_PORT)
+    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({DbPre.class})
     @DirtiesContext
     public static class UserComuControllerPreTest extends UserComuControllerTest {
@@ -362,9 +364,8 @@ public abstract class UserComuControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class},
-            webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, Profiles.MAIL_PRE})
+            UsuarioRepoConfiguration.class})
+    @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UserComuControllerAwsTest extends UserComuControllerTest {
     }
