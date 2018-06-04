@@ -297,7 +297,7 @@ public class UsuarioManager {
                 .gcmToken(gcmToken)
                 .build();
         if (usuarioDao.modifyUserGcmToken(usuario) > 0) {
-            return updateTokenAuthInDb(usuario);      // TODO: test.
+            return updateTokenAuthInDb(usuario);
         }
         throw new ServiceException(USER_NOT_FOUND);
     }
@@ -334,7 +334,7 @@ public class UsuarioManager {
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
-            return updateTokenAuthInDb(usuarioNew);     // TODO: test.
+            return updateTokenAuthInDb(usuarioNew);
         }
         throw new ServiceException(USER_NOT_FOUND);
     }

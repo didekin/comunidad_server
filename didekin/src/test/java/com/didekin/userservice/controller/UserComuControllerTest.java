@@ -109,7 +109,7 @@ public abstract class UserComuControllerTest {
         /* Usuario con una comunidad y comunidad con un usuario: paco en comunidad 6.*/
         // Exec
         assertThat(USERCOMU_ENDPOINT.deleteUserComu(
-                userMockManager.insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
                 calle_olmo_55.getC_Id())
                 .execute().body(), is(IS_USER_DELETED));
     }
@@ -120,7 +120,7 @@ public abstract class UserComuControllerTest {
     public void testGetComusByUser_1() throws IOException
     {
         List<Comunidad> comunidades =
-                USERCOMU_ENDPOINT.getComusByUser(userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()))
+                USERCOMU_ENDPOINT.getComusByUser(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()))
                         .execute().body();
         assertThat(comunidades, hasItems(COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, COMU_EL_ESCORIAL));
     }
@@ -145,7 +145,7 @@ public abstract class UserComuControllerTest {
     public void testGetUserComuByUserAndComu() throws IOException
     {
         // No existe la comunidad.
-        String httpAuthHeader = userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        String httpAuthHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
         try {
             USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).execute();
             fail();
@@ -171,7 +171,7 @@ public abstract class UserComuControllerTest {
                 .planta("planta2")
                 .puerta("puertaB")
                 .roles(PROPIETARIO.function).build();
-        final String accessToken = userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
         int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).execute().body();
         assertThat(isInserted, is(1));
         assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getC_Id()).execute().body(), is(false));
@@ -183,7 +183,7 @@ public abstract class UserComuControllerTest {
     public void testIsOldestAdmonUserComu_2() throws IOException, ServiceException
     {
         Response<Boolean> response = USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(
-                userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                 999L)
                 .execute();
         assertThat(response.isSuccessful(), is(false));
@@ -197,7 +197,7 @@ public abstract class UserComuControllerTest {
     {
         assertThat(
                 USERCOMU_ENDPOINT.modifyComuData(
-                        userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                         calle_el_escorial)
                         .execute().body(),
                 is(1));
@@ -223,7 +223,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         assertThat(
                 USERCOMU_ENDPOINT.modifyUserComu(
-                        userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                         userComuMod)
                         .execute().body(),
                 is(1));
@@ -241,7 +241,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         boolean isRegOk =
                 USERCOMU_ENDPOINT.regComuAndUserComu(
-                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         usuarioCom)
                         .execute().body();
         // Check.
@@ -299,7 +299,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         int rowInserted =
                 USERCOMU_ENDPOINT.regUserComu(
-                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         usuarioComunidad)
                         .execute().body();
         // Check.
@@ -314,7 +314,7 @@ public abstract class UserComuControllerTest {
         // This is a registered user not asssociated to the comunidad 1 used in the tesst.
         List<UsuarioComunidad> usuarioComus =
                 USERCOMU_ENDPOINT.seeUserComusByComu(
-                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         calle_la_fuente_11.getC_Id())
                         .execute().body();
         assertThat(usuarioComus.size(), is(2));
@@ -330,7 +330,7 @@ public abstract class UserComuControllerTest {
         // The password in data base is encrypted.
         List<UsuarioComunidad> comunidades =
                 USERCOMU_ENDPOINT.seeUserComusByUser(
-                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()))
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()))
                         .execute().body();
         assertThat(comunidades.size(), is(3));
         assertThat(comunidades.get(0).getUsuario(), is(luis));

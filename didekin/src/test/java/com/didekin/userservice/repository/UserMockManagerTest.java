@@ -57,7 +57,7 @@ public abstract class UserMockManagerTest {
     @Test
     public void test_DoInsertAuthHeader()
     {
-        String httpAuthHeaderIn = userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), "fake_appID");
+        String httpAuthHeaderIn = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), "fake_appID");
         // Check values from authHeader obtained from DB.
         AuthHeader httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));

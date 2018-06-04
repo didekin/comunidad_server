@@ -93,7 +93,7 @@ public abstract class ComunidadControllerTest {
         // Run, check.
         Response<Comunidad> response =
                 COMU_ENDPOINT.getComuData(
-                        userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         calle_el_escorial.getC_Id())
                         .execute();
         assertThat(response.isSuccessful(), is(false));
@@ -102,7 +102,7 @@ public abstract class ComunidadControllerTest {
         // Premisa: usuario en comunidad.
         assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
         assertThat(COMU_ENDPOINT.getComuData(
-                userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                 calle_el_escorial.getC_Id())
                         .execute().body(),
                 is(calle_el_escorial));

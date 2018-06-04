@@ -53,7 +53,7 @@ public class UserMockManager {
         usuarioDao = usuarioManager.usuarioDao;
     }
 
-    public String insertTokenGetHeaderStr(String userName, String appIDIn)
+    public String insertAuthTkGetNewAuthTkStr(String userName, String appIDIn)
     {
         String newTokenStr = updateTokenAuthInDb(userName, appIDIn);
         return new AuthHeader.AuthHeaderBuilder()

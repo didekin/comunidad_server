@@ -296,9 +296,9 @@ public abstract class UsuarioManagerTest {
     public void testGetGcmTokensByComunidad() throws ServiceException
     {
         // Insertamos tokens en tres usuarios.
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), "pedro_gcm_token"), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), "luis_gcm_token"), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), "juan_gcm_token"), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), "pedro_gcm_token"), notNullValue());
+        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), "luis_gcm_token"), notNullValue());
+        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), "juan_gcm_token"), notNullValue());
 
         List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getC_Id());
         assertThat(tokens.size(), is(2));
@@ -563,9 +563,9 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_ModifyUserGcmTokens()
     {
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), pedro.getGcmToken()), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), luis.getGcmToken()), is(1));
-        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), juan.getGcmToken()), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), pedro.getGcmToken()), notNullValue());
+        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), luis.getGcmToken()), notNullValue());
+        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), juan.getGcmToken()), notNullValue());
 
         List<GcmTokensHolder> holders = new ArrayList<>(3);
         holders.add(new GcmTokensHolder(null, luis.getGcmToken()));
@@ -582,14 +582,16 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_passwordChange_1() throws ServiceException
     {
-        assertThat(usuarioManager.passwordChange(luis.getUserName(), "new_luis_password"), is(1));
+        String newAuthToken = usuarioManager.passwordChange(luis.getUserName(), "new_luis_password");
+        // Check on returned new authToken.
+        assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
+        assertThat(checkpw(newAuthToken, usuarioManager.getUserDataByName(luis.getUserName()).getTokenAuth()), is(true));
+        // Check on updated new password.
         assertThat(checkpw("new_luis_password", usuarioManager.usuarioDao.getUserDataById(luis.getuId()).getPassword()),
                 is(true));
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk
-                        (usuarioManager.login(
-                                new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build())
-                        ),
-                is(true));
+        // Check login with new password.
+        assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()),
+                notNullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

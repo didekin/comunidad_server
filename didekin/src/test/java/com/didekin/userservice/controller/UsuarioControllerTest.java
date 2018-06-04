@@ -53,7 +53,6 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mindrot.jbcrypt.BCrypt.checkpw;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -91,7 +90,7 @@ public abstract class UsuarioControllerTest {
     @Test()
     public void testDeleteUser() throws IOException
     {
-        final String accessToken = userMockManager.insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
         List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT
                 .seeUserComusByUser(accessToken).execute().body();
         assertThat(comunidades.size(), is(3));
@@ -107,7 +106,7 @@ public abstract class UsuarioControllerTest {
     public void testGetUserData_1() throws IOException
     {
         Usuario usuarioDB =
-                USER_ENDPOINT.getUserData(userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken())).execute().body();
+                USER_ENDPOINT.getUserData(userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken())).execute().body();
 
         assertThat(usuarioDB.getuId(), is(luis.getuId()));
         assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
@@ -159,7 +158,7 @@ public abstract class UsuarioControllerTest {
 
         assertThat(USER_ENDPOINT.modifyUser(
                 oneComponent_local_ES,
-                userMockManager.insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
                 usuarioIn_1)
                 .execute().body(), is(1));
     }
@@ -178,7 +177,7 @@ public abstract class UsuarioControllerTest {
 
         assertThat(USER_ENDPOINT.modifyUser(
                 oneComponent_local_ES,
-                userMockManager.insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
                 usuarioIn_1)
                 .execute().body(), is(1));
     }
@@ -186,11 +185,12 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUserGcmToken() throws IOException         // TODO: descomentar.
+    public void testModifyUserGcmToken()
     {
-//        final String accessToken = userMockManager.insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-//        assertThat(USER_ENDPOINT.modifyUserGcmToken(accessToken, "GCMtoKen1234X").execute().body(), is(1));
-//        assertThat(USER_ENDPOINT.getUserData(accessToken).execute().body().getGcmToken(), is("GCMtoKen1234X"));
+        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
+        USER_ENDPOINT.modifyUserGcmToken(accessToken, "new_luis_gcm_token")
+                .test()
+                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -201,7 +201,7 @@ public abstract class UsuarioControllerTest {
         // Call the controller.
         /*String newClearPswd = "newPacoPassword";
         assertThat(USER_ENDPOINT.passwordChange(
-                userMockManager.insertTokenGetHeaderStr(paco.getUserName(),
+                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(),
                         paco.getGcmToken()),
                 newClearPswd).execute().body(),
                 is(1));
