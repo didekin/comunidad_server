@@ -10,7 +10,6 @@ import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UserMockManager;
-import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuario.UsuarioEndPoints;
@@ -69,8 +68,6 @@ public abstract class UsuarioControllerTest {
 
     @Autowired
     private HttpHandler retrofitHandler;
-    @Autowired
-    private UsuarioManager usuarioManager;
     @Autowired
     private UserMockManager userMockManager;
     @Autowired
@@ -196,18 +193,13 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordChange() throws IOException, ServiceException     // TODO: descomentar.
+    public void testPasswordChange() throws ServiceException
     {
         // Call the controller.
-        /*String newClearPswd = "newPacoPassword";
-        assertThat(USER_ENDPOINT.passwordChange(
-                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(),
-                        paco.getGcmToken()),
-                newClearPswd).execute().body(),
-                is(1));
-        // Check.
-        assertThat(checkpw(newClearPswd, usuarioManager.getUserDataByName(paco.getUserName()).getPassword()),
-                is(true));*/
+        final String accessTk = userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken());
+        USER_ENDPOINT.passwordChange(accessTk, "newPacoPassword")
+                .test()
+                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
