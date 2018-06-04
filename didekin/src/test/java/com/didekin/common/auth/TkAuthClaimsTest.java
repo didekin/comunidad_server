@@ -14,11 +14,13 @@ import org.junit.experimental.categories.Category;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.didekin.common.auth.TkAuthClaims.TK_VALIDITY_DAYS;
 import static com.didekin.common.auth.TkAuthClaims.TK_VALIDITY_SECONDS;
 import static com.didekin.common.auth.TkAuthClaims.default_audience_value;
 import static com.didekin.common.auth.TkAuthClaims.default_issuer_value;
-import static com.didekin.common.auth.TkAuthClaims.doExpirationDate;
+import static com.didekin.common.auth.TkAuthClaims.doClaimsFromMap;
 import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
+import static com.didekin.common.auth.TkAuthClaims.doExpirationDate;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
 import static com.didekinlib.http.usuario.TkParamNames.expiration;
@@ -26,11 +28,13 @@ import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.jose4j.jwt.NumericDate.fromSeconds;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -42,10 +46,10 @@ import static org.junit.Assert.fail;
 @Category({LocalDev.class, AwsPre.class, DbPre.class})
 public class TkAuthClaimsTest {
 
-    private Map<TkParamNames, String> claimsMap;
+    private Map<TkParamNames, Object> claimsMap;
 
     @Test
-    public void test_getDefaultAuthClaims_1() throws MalformedClaimException
+    public void test_doDefaultAuthClaims_1() throws MalformedClaimException
     {
         initMap();
         claimsMap.put(issuer, "mock_issuer");
@@ -63,7 +67,7 @@ public class TkAuthClaimsTest {
     }
 
     @Test
-    public void test_getDefaultAuthClaims_2()
+    public void test_doDefaultAuthClaims_2()
     {
         try {
             doDefaultAuthClaims(null);
@@ -75,12 +79,22 @@ public class TkAuthClaimsTest {
     }
 
     @Test
-    public void test_GetDefaultAuthClaims_3() throws MalformedClaimException
+    public void test_doDefaultAuthClaims_3() throws MalformedClaimException
     {
         TkAuthClaims claims = doDefaultAuthClaims("user@name.com", "appId_abcde");
         assertThat(claims.getJwtClaimsFromMap().getSubject(), is("user@name.com"));
         assertThat(claims.getJwtClaimsFromMap().getClaimValue(appId.getName()), is("appId_abcde"));
         checkMap(claims);
+    }
+
+    @Test
+    public void test_DoClaimsFromMap()
+    {
+        initMap();
+        claimsMap.put(
+                expiration,
+                fromSeconds((now().minus(10, SECONDS)).getEpochSecond()).getValue());
+        assertThat(doClaimsFromMap(claimsMap).getExpirationInstant().isBefore(now()), is(true));
     }
 
     @Test
@@ -95,9 +109,9 @@ public class TkAuthClaimsTest {
     @Test
     public void test_doExpirationNumDate()
     {
-        long expireDateLong = doExpirationDate(NumericDate.fromMilliseconds(now().toEpochMilli()));
-        long nowLong = now().toEpochMilli();
-        long timeDiff = (expireDateLong - nowLong) / 1000;
+        long expireDateLong = doExpirationDate(fromSeconds(now().getEpochSecond()));
+        long nowLong = now().getEpochSecond();
+        long timeDiff = (expireDateLong - nowLong);
         assertThat(timeDiff <= TK_VALIDITY_SECONDS && timeDiff >= (TK_VALIDITY_SECONDS - 1), is(true));
     }
 
@@ -107,7 +121,7 @@ public class TkAuthClaimsTest {
         initMap();
         TkAuthClaims authClaims = doDefaultAuthClaims(claimsMap);
         assertThat(authClaims.getExpirationNumDate() instanceof NumericDate, is(true));
-        assertThat(authClaims.getExpirationInstant().toEpochMilli(), is(authClaims.getExpirationNumDate().getValueInMillis()));
+        assertThat(authClaims.getExpirationInstant().getEpochSecond(), is(authClaims.getExpirationNumDate().getValue()));
     }
 
     @Test
@@ -137,7 +151,7 @@ public class TkAuthClaimsTest {
     {
         assertThat(authClaims.checkTokenInvariants(), is(true));
         long daysToExpiration = now().until(authClaims.getExpirationInstant(), DAYS);
-        assertThat(daysToExpiration <= 60 && daysToExpiration >= 59, is(true));
+        assertThat(daysToExpiration <= TK_VALIDITY_DAYS && daysToExpiration >= (TK_VALIDITY_DAYS - 1), is(true));
 
         JwtClaims jwtClaims = authClaims.getJwtClaimsFromMap();
         assertThat(jwtClaims.getClaimNames(),

@@ -229,7 +229,7 @@ public class IncidenciaManager {
      * Postconditions:
      * 1. The comment is inserted in the DB.
      *
-     * @throws ServiceException USER_NAME_NOT_FOUND,
+     * @throws ServiceException USER_NOT_FOUND,
      *                          INCIDENCIA_NOT_FOUND.
      */
     public int regIncidComment(String userName, final IncidComment comment) throws ServiceException
@@ -298,7 +298,7 @@ public class IncidenciaManager {
      * not provided an explicit one.
      *
      * @return number of rows inserted: it should be 2.
-     * @throws ServiceException USER_NAME_NOT_FOUND,
+     * @throws ServiceException USER_NOT_FOUND,
      *                          INCIDENCIA_NOT_REGISTERED (see regIncidencia() below),
      *                          USERCOMU_WRONG_INIT.
      */

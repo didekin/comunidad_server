@@ -49,7 +49,7 @@ public abstract class EncryptedTkProducerTest {
     {
         String encryptedTkStr = producerBuilder
                 .headers(doHeadersSymmetricKey())
-                .claims(getDefaultTestClaims(pedro.getUserName())) // default data test.
+                .defaultClaims(getDefaultTestClaims(pedro)) // default data test.
                 .build()
                 .getEncryptedTkStr();
 
@@ -68,7 +68,7 @@ public abstract class EncryptedTkProducerTest {
     {
         EncrypTkProducerBuilder builder = producerBuilder
                 .headers(doHeadersSymmetricKey())
-                .claims(getDefaultTestClaims(pedro.getUserName()));
+                .defaultClaims(getDefaultTestClaims(pedro));
 
         // The same builder produces different tokens.
         assertThat(builder.build().getEncryptedTkStr().equals(builder.build().getEncryptedTkStr()), is(false));
@@ -79,7 +79,7 @@ public abstract class EncryptedTkProducerTest {
     {
         try {
             producerBuilder.headers(null)
-                    .claims(getDefaultTestClaims(pedro.getUserName()))
+                    .defaultClaims(getDefaultTestClaims(pedro))
                     .build();
             fail();
         } catch (Exception e) {
@@ -101,6 +101,8 @@ public abstract class EncryptedTkProducerTest {
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(builder.build().getEncryptedTkStr()), is(true));
     }
+
+    /*  =============================== TEST of HELPER methods ======================================*/
 
     @Test
     public void test_defaultHttpHeaders_1()

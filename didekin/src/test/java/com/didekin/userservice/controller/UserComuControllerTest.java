@@ -60,8 +60,8 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
@@ -136,7 +136,7 @@ public abstract class UserComuControllerTest {
                 )
         ).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NAME_NOT_FOUND.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NOT_FOUND.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -285,7 +285,7 @@ public abstract class UserComuControllerTest {
                 "plantaY", "door22", PRESIDENTE.function);
         Response<Boolean> response = USERCOMU_ENDPOINT.regUserAndUserComu(twoComponent_local_ES, userComu).execute();
         assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NAME_DUPLICATE.getHttpMessage()));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_DUPLICATE.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

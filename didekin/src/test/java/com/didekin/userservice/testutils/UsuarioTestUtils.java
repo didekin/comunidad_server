@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
@@ -238,11 +238,11 @@ public final class UsuarioTestUtils {
 
     // ============================  Authorization ====================================
 
-    public static Map<TkParamNames, Object> getDefaultTestClaims(String userName)
+    public static Map<TkParamNames, Object> getDefaultTestClaims(Usuario usuario)
     {
         Map<TkParamNames, Object> claimsIn = new HashMap<>(2);
-        claimsIn.putIfAbsent(subject, userName);
-        claimsIn.putIfAbsent(appId, "appId_mock");
+        claimsIn.putIfAbsent(subject, usuario.getUserName());
+        claimsIn.putIfAbsent(appId, usuario.getGcmToken());
         return claimsIn;
     }
 
@@ -298,7 +298,7 @@ public final class UsuarioTestUtils {
             usuarioManager.getUserDataByName(userName);
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 }

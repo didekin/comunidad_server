@@ -84,8 +84,8 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
-    public int modifyUserGcmTokens(@RequestHeader("Authorization") String accessToken,
-                                   @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
+    public String modifyUserGcmToken(@RequestHeader("Authorization") String accessToken,
+                                     @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken()");
         return usuarioManager.modifyUserGcmToken(usuarioManager.checkHeaderGetUserName(accessToken), gcmToken);
@@ -102,8 +102,8 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
-    public int passwordChange(@RequestHeader("Authorization") String accessToken,
-                              @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
+    public String passwordChange(@RequestHeader("Authorization") String accessToken,
+                                 @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
         logger.debug("passwordChange()");
         return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), newPassword);

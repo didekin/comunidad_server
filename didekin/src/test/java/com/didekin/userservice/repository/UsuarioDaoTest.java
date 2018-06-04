@@ -32,7 +32,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -83,7 +83,7 @@ public abstract class UsuarioDaoTest {
             usuarioDao.getUserDataByName(pedro.getUserName());
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -94,7 +94,7 @@ public abstract class UsuarioDaoTest {
             usuarioDao.deleteUser("noexiste@noexiste.com");
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -211,7 +211,7 @@ public abstract class UsuarioDaoTest {
             usuarioDao.getUserDataById(11L);
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -231,7 +231,7 @@ public abstract class UsuarioDaoTest {
             usuarioDao.getUserDataByName("noexisto@no.com");
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -538,7 +538,7 @@ public abstract class UsuarioDaoTest {
             usuarioDao.updateTokenAuthById(999L, "fake_token");
             fail();
         } catch (ServiceException se) {
-            assertThat(se.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 

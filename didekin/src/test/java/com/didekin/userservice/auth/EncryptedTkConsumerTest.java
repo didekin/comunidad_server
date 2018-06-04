@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
@@ -32,10 +33,16 @@ import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
 import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
+import static com.didekinlib.http.usuario.TkParamNames.expiration;
 import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
+import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.jose4j.jwt.NumericDate.fromSeconds;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * User: pedro@didekin
@@ -56,9 +63,28 @@ public abstract class EncryptedTkConsumerTest {
     {
         encryptedTkStr = producerBuilder
                 .headers(doHeadersSymmetricKey())
-                .claims(getDefaultTestClaims(pedro.getUserName()))  // default data test for subject and appId.
+                .defaultClaims(getDefaultTestClaims(pedro))
                 .build()
                 .getEncryptedTkStr();
+    }
+
+    @Test  // We test how jose4j validates expiration date.
+    public void test_EncrypTkConsumerBuilder_build()
+    {
+        Map<TkParamNames, Object> claimsMap = getDefaultTestClaims(pedro);
+        claimsMap.put(expiration, fromSeconds((now().minus(2, SECONDS)).getEpochSecond()).getValue());
+
+        try {
+            consumerBuilder.defaultInit(
+                    producerBuilder.headers(doHeadersSymmetricKey())
+                            .claims(claimsMap)
+                            .build()
+                            .getEncryptedTkStr()
+            ).build();
+            fail();
+        } catch (IllegalStateException ie) {
+            assertThat(ie.getMessage(), containsString("The JWT is no longer valid"));
+        }
     }
 
     @Test
@@ -91,8 +117,8 @@ public abstract class EncryptedTkConsumerTest {
         /*{"exp":1531916447000,"aud":["didekin_web"],"sub":"pedro@didekin.es","appId":"appId_mock","iss":"didekin_auth"}*/
         assertThat(claimsDesEnc.getAudience(), is(getDefaultClaim(audience)));
         assertThat(claimsDesEnc.getIssuer(), is(getDefaultClaim(issuer)));
-        assertThat(claimsDesEnc.getClaimsMap().get(appId.getName()), is(getDefaultTestClaims(pedro.getUserName()).get(appId)));
-        assertThat(claimsDesEnc.getSubject(), is(getDefaultTestClaims(pedro.getUserName()).get(subject)));
+        assertThat(claimsDesEnc.getClaimsMap().get(appId.getName()), is(getDefaultTestClaims(pedro).get(appId)));
+        assertThat(claimsDesEnc.getSubject(), is(getDefaultTestClaims(pedro).get(subject)));
     }
 
     /*  ==============================================  INNER CLASSES =============================================*/

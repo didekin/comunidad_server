@@ -11,11 +11,16 @@ import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 
 import java.security.Key;
 import java.util.Map;
 
+import static com.didekin.common.auth.TkAuthClaims.doClaimsFromMap;
 import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
+import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -25,7 +30,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Date: 25/05/2018
  * Time: 12:52
  */
-public class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProducerBuilder.EncryptedTkProducer> {
+public final class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProducerBuilder.EncryptedTkProducer> {
 
     private TkAuthClaims claims;
     private TkHeaders headers;
@@ -42,19 +47,26 @@ public class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProducerBuil
     public EncrypTkProducerBuilder defaultHeadersClaims(String userName, String appId)
     {
         claims = doDefaultAuthClaims(userName, appId);
-        headers = TkHeaders.doHeadersSymmetricKey();
+        headers = doHeadersSymmetricKey();
         return this;
     }
 
-    public EncrypTkProducerBuilder claims(Map<TkParamNames, ?> claimsIn)
+    EncrypTkProducerBuilder defaultClaims(Map<TkParamNames, ?> claimsIn)
     {
         claims = doDefaultAuthClaims(claimsIn);
         return this;
     }
 
-    public EncrypTkProducerBuilder headers(TkHeaders headersIn)
+    EncrypTkProducerBuilder headers(TkHeaders headersIn)
     {
         headers = headersIn;
+        return this;
+    }
+
+    @Profile(value = {NGINX_JETTY_LOCAL, NGINX_JETTY_PRE})
+    EncrypTkProducerBuilder claims(Map<TkParamNames, ?> initClaimsIn)
+    {
+        claims = doClaimsFromMap(initClaimsIn);
         return this;
     }
 

@@ -5,21 +5,23 @@ import com.didekinlib.http.usuario.TkParamNames;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekinlib.http.usuario.TkParamNames.appId;
 import static com.didekinlib.http.usuario.TkParamNames.audience;
 import static com.didekinlib.http.usuario.TkParamNames.expiration;
 import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
-import static java.time.Instant.ofEpochMilli;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
-import static org.jose4j.jwt.NumericDate.fromMilliseconds;
 
 /**
  * User: pedro@didekin
@@ -37,8 +39,10 @@ public class TkAuthClaims {
     private static final Map<TkParamNames, Object> defaultClaimMap;
     static final List<String> default_audience_value = singletonList("didekin_web");
     static final String default_issuer_value = "didekin_auth";
-    // 1440 horas (60 días).
-    static final long TK_VALIDITY_SECONDS = 1440 * 60 * 60;
+    // Time to expire: 90 days.
+    static final int TK_VALIDITY_DAYS = 90;
+    // Time to expire in seconds.
+    static final long TK_VALIDITY_SECONDS = TK_VALIDITY_DAYS * 24 * 60 * 60;
     // Message for invariants.
     private static final String invalid_claim_values = " No valid claim list of values ";
     // Claims map.
@@ -68,7 +72,7 @@ public class TkAuthClaims {
         TkAuthClaims claims = new TkAuthClaims(initClaims);
         claims.claimsMap.put(
                 expiration,
-                doExpirationDate(fromMilliseconds(Instant.now().toEpochMilli()))
+                doExpirationDate(NumericDate.fromSeconds(Instant.now().getEpochSecond()))
         );
         defaultClaimMap.forEach(claims.claimsMap::putIfAbsent);
         claims.checkTokenInvariants();
@@ -81,6 +85,15 @@ public class TkAuthClaims {
         initClaims.put(TkParamNames.subject, userName);
         initClaims.put(TkParamNames.appId, appId);
         return doDefaultAuthClaims(initClaims);
+    }
+
+    @Profile(value = {NGINX_JETTY_LOCAL, NGINX_JETTY_PRE})
+    public static TkAuthClaims doClaimsFromMap(Map<TkParamNames, ?> initClaims)
+    {
+        TkAuthClaims claims = new TkAuthClaims(initClaims);
+        defaultClaimMap.forEach(claims.claimsMap::putIfAbsent);
+        claims.checkTokenInvariants();
+        return claims;
     }
 
     public Object getAuthClaim(TkParamNames paramName)
@@ -97,11 +110,14 @@ public class TkAuthClaims {
 
     // ============================ Helper methods =========================
 
+    /**
+     * @param expirationNumDate is measured in seconds.
+     */
     static long doExpirationDate(NumericDate expirationNumDate)
     {
         expirationNumDate.addSeconds(TK_VALIDITY_SECONDS);
-        // jose4j requires NumericDate be converted to long for serialization.
-        return expirationNumDate.getValueInMillis();
+        // jose4j requires NumericDate be converted to long for serialization. It assumes the unit is SECONDS.
+        return expirationNumDate.getValue();
     }
 
     boolean checkTokenInvariants()
@@ -117,11 +133,11 @@ public class TkAuthClaims {
 
     Instant getExpirationInstant()
     {
-        return ofEpochMilli(getExpirationNumDate().getValueInMillis());
+        return Instant.ofEpochSecond(getExpirationNumDate().getValue());
     }
 
     NumericDate getExpirationNumDate()
     {
-        return fromMilliseconds((Long) claimsMap.get(expiration));
+        return NumericDate.fromSeconds((Long) claimsMap.get(expiration));
     }
 }

@@ -36,7 +36,8 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
@@ -204,8 +205,8 @@ public class UsuarioManager {
     }
 
     /**
-     * @return a new security token or null if the token is not inserted in DB.
-     * @throws ServiceException if  USER_WRONG_INIT, USER_NAME_NOT_FOUND or PASSWORD_WRONG.
+     * @return a new security token if the token has been inserted in DB.
+     * @throws ServiceException if  USER_WRONG_INIT, USER_NOT_FOUND or PASSWORD_WRONG.
      */
     public String login(Usuario usuario) throws ServiceException
     {
@@ -283,7 +284,11 @@ public class UsuarioManager {
         return usuarioDao.modifyUserComu(userComu);
     }
 
-    public int modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
+    /**
+     * @return new authToken.
+     * @throws ServiceException if rows affected < 1.
+     */
+    public String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken(String userName, String gcmToken)");
         Usuario usuario = new Usuario.UsuarioBuilder()
@@ -291,7 +296,10 @@ public class UsuarioManager {
                 .password(null)
                 .gcmToken(gcmToken)
                 .build();
-        return usuarioDao.modifyUserGcmToken(usuario);
+        if (usuarioDao.modifyUserGcmToken(usuario) > 0) {
+            return updateTokenAuthInDb(usuario);      // TODO: test.
+        }
+        throw new ServiceException(USER_NOT_FOUND);
     }
 
     public int modifyUserGcmTokens(List<GcmTokensHolder> holdersList)
@@ -309,10 +317,10 @@ public class UsuarioManager {
      * Postconditions:
      * 1. the password has been modified.
      *
-     * @return number of rows afected in user table: 1.
-     * @throws ServiceException if rows affected != 1.
+     * @return new authToken.
+     * @throws ServiceException if rows affected != 1 or wrong initialization of user data.
      */
-    public int passwordChange(String userName, final String newPassword) throws ServiceException
+    public String passwordChange(String userName, final String newPassword) throws ServiceException
     {
         logger.info("passwordChange()");
 
@@ -326,10 +334,9 @@ public class UsuarioManager {
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
-            return 1;
-        } else {
-            throw new ServiceException(USER_DATA_NOT_MODIFIED);
+            return updateTokenAuthInDb(usuarioNew);     // TODO: test.
         }
+        throw new ServiceException(USER_NOT_FOUND);
     }
 
     public boolean passwordSend(String userName, String localeToStr, UsuarioMailServiceIf... mailService) throws ServiceException
@@ -483,7 +490,7 @@ public class UsuarioManager {
     public List<UsuarioComunidad> seeUserComusByComu(String userName, long idComunidad)
     {
         logger.debug("seeUserComusByComu()");
-        if (isUserInComunidad(userName,idComunidad)){
+        if (isUserInComunidad(userName, idComunidad)) {
             return usuarioDao.seeUserComusByComu(idComunidad);
         }
         throw new ServiceException(UNAUTHORIZED_TX_TO_USER);
@@ -568,7 +575,7 @@ public class UsuarioManager {
                 conn.rollback();
             }
             if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(USER_NAME)) {
-                throw new ServiceException(USER_NAME_DUPLICATE);
+                throw new ServiceException(USER_DUPLICATE);
             }
             if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(COMUNIDAD_UNIQUE_KEY)) {
                 throw new ServiceException(COMUNIDAD_DUPLICATE);

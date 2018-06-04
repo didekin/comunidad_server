@@ -49,7 +49,7 @@ import static com.didekin.userservice.repository.UsuarioSql.USER_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_BY_ID;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static java.lang.Boolean.TRUE;
 import static java.sql.JDBCType.INTEGER;
 
@@ -107,7 +107,7 @@ public class UsuarioDao {
 
         int rowsDeleted = jdbcTemplate.update(DELETE_BY_NAME.toString(), userName);
         if (!(rowsDeleted == 1)) {
-            throw new ServiceException(USER_NAME_NOT_FOUND);
+            throw new ServiceException(USER_NOT_FOUND);
         }
         return TRUE;
     }
@@ -189,7 +189,7 @@ public class UsuarioDao {
             usuario = jdbcTemplate.queryForObject(
                     USER_BY_EMAIL.toString(), new UsuarioMapper(), userName);
         } catch (EmptyResultDataAccessException e) {
-            throw new ServiceException(USER_NAME_NOT_FOUND);
+            throw new ServiceException(USER_NOT_FOUND);
         }
         return usuario;
     }
@@ -204,7 +204,7 @@ public class UsuarioDao {
                     new UsuarioMapper(), idUsuario);
         } catch (EmptyResultDataAccessException e) {
             logger.error(e.getMessage());
-            throw new ServiceException(USER_NAME_NOT_FOUND);
+            throw new ServiceException(USER_NOT_FOUND);
         }
         return usuario;
     }
@@ -360,7 +360,7 @@ public class UsuarioDao {
      * It updates the DB field token_auth with a new BCcripted authorization token.
      *
      * @return true if the data is updated.
-     * @throws ServiceException (USER_NAME_NOT_FOUND) if the update does not return 1.
+     * @throws ServiceException (USER_NOT_FOUND) if the update does not return 1.
      */
     boolean updateTokenAuthById(long userId, String tokenAuthBCrypted)
     {
@@ -368,7 +368,7 @@ public class UsuarioDao {
         if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_ID.toString(), tokenAuthBCrypted, userId) == 1) {
             return TRUE;
         }
-        throw new ServiceException(USER_NAME_NOT_FOUND);
+        throw new ServiceException(USER_NOT_FOUND);
     }
 
     boolean updateTokenAuthByUserName(String userName, String tokenAuthBCrypted)
@@ -377,7 +377,7 @@ public class UsuarioDao {
         if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_NAME.toString(), tokenAuthBCrypted, userName) == 1) {
             return TRUE;
         }
-        throw new ServiceException(USER_NAME_NOT_FOUND);
+        throw new ServiceException(USER_NOT_FOUND);
     }
 
     // .................. HELPER CLASSES ......................

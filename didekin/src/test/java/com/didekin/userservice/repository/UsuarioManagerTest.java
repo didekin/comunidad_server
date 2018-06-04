@@ -71,8 +71,8 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_DUPLICATE;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NAME_NOT_FOUND;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
@@ -84,6 +84,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasProperty;
@@ -145,7 +146,7 @@ public abstract class UsuarioManagerTest {
         try {
             usuarioManager.deleteUser(usuario.getUserName());
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -170,7 +171,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.getUserDataByName(pedro.getUserName());
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -260,7 +261,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.getUserDataByName(luis.getUserName());
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -411,7 +412,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.login(pedroWrongUserName);
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
 
         try {
@@ -505,7 +506,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.login(oldUser);
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
         checkPswdSentAndLogin(usuarioNew);
     }
@@ -532,15 +533,15 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_ModifyUserGcmToken_1() throws ServiceException
     {
-        Usuario usuario = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName("juan@noauth.com"))
+        Usuario luisMod = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName(luis.getUserName()))
                 .gcmToken("GCMtoKen1234X")
                 .build();
-        // Verificamos la premisa.
-        assertThat(usuarioManager.getUserDataByName(usuario.getUserName()).getGcmToken(), nullValue());
-        // Insertamos token.
-        assertThat(usuarioManager.modifyUserGcmToken(usuario.getUserName(), usuario.getGcmToken()), is(1));
-        // Verificamos.
-        assertThat(usuarioManager.getUserDataByName(usuario.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
+        // Insertamos token y verificamos devolución de nuevo authToken.
+        String newAuthToken = usuarioManager.modifyUserGcmToken(luisMod.getUserName(), luisMod.getGcmToken());
+        assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
+        assertThat(checkpw(newAuthToken, usuarioManager.getUserDataByName(luis.getUserName()).getTokenAuth()), is(true));
+        // Verificamos cambio gcmToken.
+        assertThat(usuarioManager.getUserDataByName(luisMod.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -553,7 +554,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.modifyUserGcmToken("noexist_user", "GCMtoKen1234X");
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -602,7 +603,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.passwordChange(newPepe.getUserName(), "newPassword");
             fail();
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
@@ -706,7 +707,7 @@ public abstract class UsuarioManagerTest {
         try {
             usuarioManager.regComuAndUserAndUserComu(COMU_REAL_JUAN, twoComponent_local_ES);
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_DUPLICATE));
+            assertThat(e.getExceptionMsg(), is(USER_DUPLICATE));
         }
     }
 
@@ -808,7 +809,7 @@ public abstract class UsuarioManagerTest {
         try {
             usuarioManager.regUserAndUserComu(COMU_REAL_JUAN, oneComponent_local_ES);
         } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NAME_DUPLICATE));
+            assertThat(e.getExceptionMsg(), is(USER_DUPLICATE));
         }
     }
 
@@ -896,6 +897,7 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_UpdateTokenAuthInDb()
     {
+        // Premises: user in DB.
         String authToken = usuarioManager.updateTokenAuthInDb(pedro);
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(authToken), is(true));
         assertThat(checkpw(authToken, usuarioManager.getUserDataByName(pedro.getUserName()).getTokenAuth()), is(true));
@@ -905,7 +907,7 @@ public abstract class UsuarioManagerTest {
             usuarioManager.updateTokenAuthInDb(new Usuario.UsuarioBuilder().uId(9999).userName("fake@user.com").gcmToken("fake.gcm_token").build());
             fail();
         } catch (ServiceException se) {
-            assertThat(se.getExceptionMsg(), is(USER_NAME_NOT_FOUND));
+            assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));
         }
     }
 
