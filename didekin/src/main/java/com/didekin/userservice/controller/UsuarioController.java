@@ -106,7 +106,7 @@ public class UsuarioController extends AppControllerAbstract {
                                  @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
         logger.debug("passwordChange()");
-        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), newPassword);
+        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), , newPassword);
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)

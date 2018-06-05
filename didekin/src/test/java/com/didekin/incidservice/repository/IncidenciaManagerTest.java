@@ -484,18 +484,29 @@ public abstract class IncidenciaManagerTest {
      * Postcondition:
      * - Notification is sent to the GCM server:
      * {
-     * "registration_ids":["luis_gcm_token","pedro_gcm_token"],
+     * "registration_ids":
+     * [
+     * "eHjO7v0yDv0:APA91bFe9Zzc2wh2F4uk5zr1KWHDQRbP9LQYv1WJ6LvVZ268xO-7B_oK1knt7_opdbUyUImg4ptOwKI-SienVZ0zT2O4ErhDOYc--HPH_qbuXIEfhG5FeQr14wcVEA1g5lPpjaXEfZiE",
+     * "luis_gcm_token"],
      * "priority":"normal",
      * "delay_while_idle":true,
      * "time_to_live":1724,
      * "restricted_package_name":"com.didekindroid",
-     * "collapse_key":"incidencia_open","data":{"comunidadId":1,"typeMsg":"incidencia_open"}
+     * "collapse_key":"incidencia_open",
+     * "data":{"comunidadId":1,"typeMsg":"incidencia_open"}
      * }
      * - And the following message is received:
-     * {
-     * "multicast_id":9137010189728467367,"success":0,"failure":2,"canonical_ids":0,"results":[{"error":"InvalidRegistration"},{"error":"InvalidRegistration"}]
+     * {"multicast_id":4791718950484634048,
+     * "success":0,
+     * "failure":2,
+     * "canonical_ids":0,
+     * "results":[
+     * {"error":"NotRegistered"},
+     * {"error":"InvalidRegistration"}
+     * ]
      * }
-     * - GcmToken is written to null in database after insertion and communication con GCM service.
+     *
+     * - GcmTokens are written to null in database after insertion and communication con GCM service.
      */
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
@@ -504,7 +515,7 @@ public abstract class IncidenciaManagerTest {
     public void testRegIncidencia_3()
     {
         // Premisas: gcmTokens for pedro and luis are NOT NULL.
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1), is(1));
+        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1), notNullValue());
         assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(2));
         assertThat(usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken(), notNullValue());
         assertThat(usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken(), is(tokenId_1));

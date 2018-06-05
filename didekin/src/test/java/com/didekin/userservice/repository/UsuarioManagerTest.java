@@ -582,13 +582,13 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_passwordChange_1() throws ServiceException
     {
-        String newAuthToken = usuarioManager.passwordChange(luis.getUserName(), "new_luis_password");
+        String newAuthToken = usuarioManager.passwordChange(luis.getUserName(), luis.getPassword(), "new_luis_password");
         // Check on returned new authToken.
         assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
-        assertThat(checkpw(newAuthToken, usuarioManager.getUserDataByName(luis.getUserName()).getTokenAuth()), is(true));
+        Usuario newLuis =  usuarioManager.getUserDataByName(luis.getUserName());
+        assertThat(checkpw(newAuthToken, newLuis.getTokenAuth()), is(true));
         // Check on updated new password.
-        assertThat(checkpw("new_luis_password", usuarioManager.usuarioDao.getUserDataById(luis.getuId()).getPassword()),
-                is(true));
+        assertThat(checkpw("new_luis_password", newLuis.getPassword()), is(true));
         // Check login with new password.
         assertThat(usuarioManager.login(new Usuario.UsuarioBuilder().copyUsuario(luis).password("new_luis_password").build()),
                 notNullValue());
@@ -600,12 +600,21 @@ public abstract class UsuarioManagerTest {
     public void test_passwordChange_2() throws ServiceException
     {
         // Precondition: no existe usuario.
-        Usuario newPepe = new Usuario.UsuarioBuilder().copyUsuario(pepe).uId(999L).build();
+        Usuario oldFakedUser = new Usuario.UsuarioBuilder().copyUsuario(pepe).uId(999L).build();
         try {
-            usuarioManager.passwordChange(newPepe.getUserName(), "newPassword");
+            usuarioManager.passwordChange(oldFakedUser.getUserName(), oldFakedUser.getPassword(), "newPassword");
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
+        }
+
+        // Precondition: old password wrong.
+        oldFakedUser = new Usuario.UsuarioBuilder().copyUsuario(pepe).password("password_wrong").build();
+        try {
+            usuarioManager.passwordChange(oldFakedUser.getUserName(), oldFakedUser.getPassword(), "newPassword");
+            fail();
+        } catch (ServiceException e) {
+            assertThat(e.getExceptionMsg(), is(PASSWORD_WRONG));
         }
     }
 

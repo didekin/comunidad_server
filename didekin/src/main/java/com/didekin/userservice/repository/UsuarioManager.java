@@ -6,7 +6,6 @@ import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.model.common.dominio.ValidDataPatterns;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -23,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import javax.validation.constraints.NotNull;
 
 import static com.didekin.common.repository.ServiceException.COMUNIDAD_UNIQUE_KEY;
 import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
@@ -181,7 +182,8 @@ public class UsuarioManager {
         return usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
     }
 
-    public Usuario getUserDataByName(String email) throws ServiceException
+
+    public @NotNull Usuario getUserDataByName(String email) throws ServiceException
     {
         logger.info("getUserDataByName()");
         return usuarioDao.getUserDataByName(email);
@@ -208,7 +210,7 @@ public class UsuarioManager {
      * @return a new security token if the token has been inserted in DB.
      * @throws ServiceException if  USER_WRONG_INIT, USER_NOT_FOUND or PASSWORD_WRONG.
      */
-    public String login(Usuario usuario) throws ServiceException
+    public @NotNull String login(Usuario usuario) throws ServiceException
     {
         logger.debug("login()");
 
@@ -288,7 +290,7 @@ public class UsuarioManager {
      * @return new authToken.
      * @throws ServiceException if rows affected < 1.
      */
-    public String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
+    public @NotNull String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken(String userName, String gcmToken)");
         Usuario usuario = new Usuario.UsuarioBuilder()
@@ -320,16 +322,23 @@ public class UsuarioManager {
      * @return new authToken.
      * @throws ServiceException if rows affected != 1 or wrong initialization of user data.
      */
-    public String passwordChange(String userName, final String newPassword) throws ServiceException
+    public String passwordChange(final String userName, String oldPassword, final String newPassword) throws ServiceException
     {
         logger.info("passwordChange()");
 
-        if (!EMAIL.isPatternOk(userName) || !ValidDataPatterns.PASSWORD.isPatternOk(newPassword)) {
+        if (!EMAIL.isPatternOk(userName)
+                || !PASSWORD.isPatternOk(newPassword)
+                || !PASSWORD.isPatternOk(oldPassword)) {
             throw new ServiceException(USER_WRONG_INIT);
         }
 
+        Usuario oldUser = usuarioDao.getUserDataByName(userName);
+        if (checkpw(oldPassword, oldUser.getPassword())) {
+            throw new ServiceException(PASSWORD_WRONG);
+        }
+
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioDao.getUserDataByName(userName))
+                .copyUsuario(oldUser)
                 .password(hashpw(newPassword, gensalt(12)))
                 .build();
 
