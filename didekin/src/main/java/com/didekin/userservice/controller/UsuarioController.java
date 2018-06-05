@@ -22,6 +22,7 @@ import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.usuario.UsuarioServConstant.APP_ID_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.LOGIN;
+import static com.didekinlib.http.usuario.UsuarioServConstant.OLD_PSWD_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.PASSWORD_MODIFY;
 import static com.didekinlib.http.usuario.UsuarioServConstant.PASSWORD_SEND;
 import static com.didekinlib.http.usuario.UsuarioServConstant.PSWD_PARAM;
@@ -103,10 +104,11 @@ public class UsuarioController extends AppControllerAbstract {
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
     public String passwordChange(@RequestHeader("Authorization") String accessToken,
+                                 @RequestParam(OLD_PSWD_PARAM) String oldPassword,
                                  @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
         logger.debug("passwordChange()");
-        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), , newPassword);
+        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), oldPassword, newPassword);
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)
