@@ -4,6 +4,7 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
+import com.didekinlib.http.usuario.TkValidaPatterns;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
@@ -26,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
@@ -48,6 +50,7 @@ import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_N
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
@@ -449,36 +452,6 @@ public abstract class IncidenciaManagerTest {
         assertThat(incidenciaManager.regIncidComment(pedro.getUserName(), comment), is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testRegIncidencia_1()
-    {
-        Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 1L, (short) 24);
-        assertThat(incidenciaManager.regIncidencia(incidencia).getIncidenciaId() > 0, is(true));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testRegIncidencia_2()
-    {
-        // Caso: comunidad no existe.  doIncidenciaWithId(String userName, long incidenciaId, long comunidadId, short ambitoId)
-        Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 999L, (short) 24);
-        try {
-            incidenciaManager.regIncidencia(incidencia);
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_REGISTERED));
-        }
-
-        /* Caso: incidenciaId > 0.*/
-        final Incidencia incidenciaNew = doIncidenciaWithId(luis.getUserName(), 2L, 2L, (short) 24);
-        assertThat(incidenciaManager.regIncidencia(incidenciaNew), is(incidenciaNew));
-    }
-
     /**
      * Precondition: gcmToken is NOT NULL and NOT valid in database.
      * Postcondition:
@@ -512,18 +485,41 @@ public abstract class IncidenciaManagerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidencia_3()
+    public void testRegIncidencia_1()
     {
         // Premisas: gcmTokens for pedro and luis are NOT NULL.
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1), notNullValue());
+        String pedroTokenStr = usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1);
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(pedroTokenStr), is(true));
         assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(2));
         assertThat(usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken(), notNullValue());
         assertThat(usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken(), is(tokenId_1));
-
+        // Exec.
         Incidencia incidencia = doIncidencia(pedro.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
+        // Check incidencia returned.
         assertThat(incidenciaManager.regIncidencia(incidencia).getDescripcion(), is("incid_test"));
+        // Check update of gcm tokens in DB.
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken() == null);
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken() == null);
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testRegIncidencia_2()
+    {
+        // Caso: comunidad no existe.
+        Incidencia incidencia = doIncidencia(luis.getUserName(), "Incidencia de test", 999L, (short) 24);
+        try {
+            incidenciaManager.regIncidencia(incidencia);
+            fail();
+        } catch (ServiceException e) {
+            assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_REGISTERED));
+        }
+
+        // Caso: incidenciaId > 0.
+        final Incidencia incidenciaNew = doIncidenciaWithId(luis.getUserName(), 2L, 2L, (short) 24);
+        assertThat(incidenciaManager.regIncidencia(incidenciaNew), is(incidenciaNew));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
