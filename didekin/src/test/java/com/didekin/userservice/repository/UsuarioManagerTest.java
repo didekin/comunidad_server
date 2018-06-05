@@ -57,6 +57,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
@@ -609,7 +610,7 @@ public abstract class UsuarioManagerTest {
         }
 
         // Precondition: old password wrong.
-        oldFakedUser = new Usuario.UsuarioBuilder().copyUsuario(pepe).password("password_wrong").build();
+        oldFakedUser = new Usuario.UsuarioBuilder().copyUsuario(paco).password("password_wrong").build();
         try {
             usuarioManager.passwordChange(oldFakedUser.getUserName(), oldFakedUser.getPassword(), "newPassword");
             fail();

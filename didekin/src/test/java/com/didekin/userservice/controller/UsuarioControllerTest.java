@@ -197,7 +197,7 @@ public abstract class UsuarioControllerTest {
     {
         // Call the controller.
         final String accessTk = userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken());
-        USER_ENDPOINT.passwordChange(accessTk, "newPacoPassword")
+        USER_ENDPOINT.passwordChange(accessTk, paco.getPassword(), "newPacoPassword")
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }

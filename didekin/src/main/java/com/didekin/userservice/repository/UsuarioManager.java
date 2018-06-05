@@ -333,7 +333,7 @@ public class UsuarioManager {
         }
 
         Usuario oldUser = usuarioDao.getUserDataByName(userName);
-        if (checkpw(oldPassword, oldUser.getPassword())) {
+        if (!checkpw(oldPassword, oldUser.getPassword())) {
             throw new ServiceException(PASSWORD_WRONG);
         }
 
