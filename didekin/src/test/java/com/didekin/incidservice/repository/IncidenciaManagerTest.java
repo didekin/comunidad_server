@@ -4,7 +4,6 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.http.usuario.TkValidaPatterns;
 import com.didekinlib.model.incidencia.dominio.Avance;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
 import com.didekinlib.model.incidencia.dominio.IncidComment;
@@ -27,7 +26,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
@@ -478,7 +476,7 @@ public abstract class IncidenciaManagerTest {
      * {"error":"InvalidRegistration"}
      * ]
      * }
-     *
+     * <p>
      * - GcmTokens are written to null in database after insertion and communication con GCM service.
      */
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -607,7 +605,7 @@ public abstract class IncidenciaManagerTest {
         // Caso: la incidencia ya está cerrada. Incidencia 5, comunidad 4.
         // Devuelve INCIDENCIA_NOT_FOUND, porque no está entre las incidencias ABIERTAS.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
-        assertThat(incidencia.getFechaCierre().getTime()/1000 < now().toEpochMilli()/1000, is(true));
+        assertThat(incidencia.getFechaCierre().getTime() / 1000 < now().toEpochMilli() / 1000, is(true));
         Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_5_4", 111, now().plus(12, DAYS));
         try {
             incidenciaManager.regResolucion(paco.getUserName(), resolucion);
