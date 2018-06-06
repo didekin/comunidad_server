@@ -57,17 +57,17 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USER_DELETE, method = DELETE, produces = MIME_JSON)
-    public boolean deleteUser(@RequestHeader("Authorization") String accessToken) throws ServiceException
+    public boolean deleteUser(@RequestHeader("Authorization") String authHeader) throws ServiceException
     {
         logger.debug("deleteUser()");
-        return usuarioManager.deleteUser(usuarioManager.checkHeaderGetUserName(accessToken));
+        return usuarioManager.deleteUser(usuarioManager.checkHeaderGetUserName(authHeader));
     }
 
     @RequestMapping(value = USER_READ, method = GET, produces = MIME_JSON)
-    public Usuario getUserData(@RequestHeader("Authorization") String accessToken) throws ServiceException
+    public Usuario getUserData(@RequestHeader("Authorization") String authHeader) throws ServiceException
     {
         logger.debug("getUserData()");
-        Usuario usuarioDb = usuarioManager.getUserDataByName(usuarioManager.checkHeaderGetUserName(accessToken));
+        Usuario usuarioDb = usuarioManager.getUserDataByName(usuarioManager.checkHeaderGetUserName(authHeader));
         return new Usuario.UsuarioBuilder()
                 .userName(usuarioDb.getUserName())
                 .alias(usuarioDb.getAlias())
@@ -85,30 +85,30 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
-    public String modifyUserGcmToken(@RequestHeader("Authorization") String accessToken,
+    public String modifyUserGcmToken(@RequestHeader("Authorization") String authHeader,
                                      @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
     {
         logger.debug("modifyUserGcmToken()");
-        return usuarioManager.modifyUserGcmToken(usuarioManager.checkHeaderGetUserName(accessToken), gcmToken);
+        return usuarioManager.modifyUserGcmToken(usuarioManager.checkHeaderGetUserName(authHeader), gcmToken);
     }
 
     @RequestMapping(value = USER_WRITE, method = PUT, consumes = MIME_JSON)
     public int modifyUser(@RequestHeader(ACCEPT_LANGUAGE) String localeToStr,
-                          @RequestHeader("Authorization") String accessToken,
+                          @RequestHeader("Authorization") String authHeader,
                           @RequestBody final Usuario newUsuario)
             throws ServiceException
     {
         logger.debug("modifyUser()");
-        return usuarioManager.modifyUser(newUsuario, usuarioManager.checkHeaderGetUserName(accessToken), localeToStr);
+        return usuarioManager.modifyUser(newUsuario, usuarioManager.checkHeaderGetUserName(authHeader), localeToStr);
     }
 
     @RequestMapping(value = PASSWORD_MODIFY, method = POST, consumes = FORM_URLENCODED)
-    public String passwordChange(@RequestHeader("Authorization") String accessToken,
+    public String passwordChange(@RequestHeader("Authorization") String authHeader,
                                  @RequestParam(OLD_PSWD_PARAM) String oldPassword,
                                  @RequestParam(PSWD_PARAM) String newPassword) throws ServiceException
     {
         logger.debug("passwordChange()");
-        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(accessToken), oldPassword, newPassword);
+        return usuarioManager.passwordChange(usuarioManager.checkHeaderGetUserName(authHeader), oldPassword, newPassword);
     }
 
     @RequestMapping(value = PASSWORD_SEND, method = POST, consumes = FORM_URLENCODED)

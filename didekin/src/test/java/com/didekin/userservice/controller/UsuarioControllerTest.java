@@ -87,12 +87,12 @@ public abstract class UsuarioControllerTest {
     @Test()
     public void testDeleteUser() throws IOException
     {
-        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
+        final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
         List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT
-                .seeUserComusByUser(accessToken).execute().body();
+                .seeUserComusByUser(authHeader).execute().body();
         assertThat(comunidades.size(), is(3));
         // Borra al usuario y las comunidades previamente encontradas en la consulta.
-        USER_ENDPOINT.deleteUser(accessToken).map(Response::body).test().assertResult(true);
+        USER_ENDPOINT.deleteUser(authHeader).map(Response::body).test().assertResult(true);
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -176,8 +176,8 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testModifyUserGcmToken()
     {
-        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
-        USER_ENDPOINT.modifyUserGcmToken(accessToken, "new_luis_gcm_token")
+        final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
+        USER_ENDPOINT.modifyGcmToken(authHeader, "new_luis_gcm_token")
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
