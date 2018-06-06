@@ -155,12 +155,17 @@ public abstract class UsuarioControllerTest {
                 .build();
         USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
                 .map(Response::body).test().assertValue(1);
+    }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testModifyUser_2()
+    {
         // Change alias.
-        usuarioIn = new Usuario.UsuarioBuilder()
-                .userName(paco.getUserName())
+        Usuario usuarioIn = new Usuario.UsuarioBuilder()
+                .copyUsuario(paco)
                 .alias("newAlias")
-                .uId(paco.getuId())
                 .build();
         USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
                 .map(Response::body).test().assertValue(1);
