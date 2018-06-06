@@ -91,25 +91,26 @@ public abstract class UsuarioControllerTest {
         List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT
                 .seeUserComusByUser(accessToken).execute().body();
         assertThat(comunidades.size(), is(3));
-
-        boolean isDeleted = USER_ENDPOINT.deleteUser(accessToken).execute().body();
         // Borra al usuario y las comunidades previamente encontradas en la consulta.
-        assertThat(isDeleted, is(true));
+        USER_ENDPOINT.deleteUser(accessToken).map(Response::body).test().assertResult(true);
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserData_1() throws IOException
+    public void testGetUserData_1()
     {
-        Usuario usuarioDB =
-                USER_ENDPOINT.getUserData(userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken())).execute().body();
-
-        assertThat(usuarioDB.getuId(), is(luis.getuId()));
-        assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
-        assertThat(usuarioDB.getAlias(), is(luis.getAlias()));
-        assertThat(usuarioDB.getGcmToken(), is(luis.getGcmToken()));
-        assertThat(usuarioDB.getPassword(), is(nullValue()));
+        USER_ENDPOINT.getUserData(userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()))
+                .map(Response::body)
+                .test().assertOf(testObserver -> {
+                    Usuario usuarioDB = testObserver.values().get(0);
+                    assertThat(usuarioDB.getuId(), is(luis.getuId()));
+                    assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
+                    assertThat(usuarioDB.getAlias(), is(luis.getAlias()));
+                    assertThat(usuarioDB.getGcmToken(), is(luis.getGcmToken()));
+                    assertThat(usuarioDB.getPassword(), is(nullValue()));
+                }
+        );
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -117,7 +118,7 @@ public abstract class UsuarioControllerTest {
     public void testGetUserData_2() throws IOException
     {
         // We send an invailid token.
-        Response<Usuario> response = USER_ENDPOINT.getUserData("faked_token").execute();
+        Response<Usuario> response = USER_ENDPOINT.getUserData("faked_token").test().values().get(0);
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
@@ -145,38 +146,24 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUser_1() throws IOException
+    public void testModifyUser_1()
     {
         // Change userName.
-        Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
+        Usuario usuarioIn = new Usuario.UsuarioBuilder()
                 .userName("new_paco@new.com")
                 .uId(paco.getuId())
                 .build();
+        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
+                .map(Response::body).test().assertValue(1);
 
-        assertThat(USER_ENDPOINT.modifyUser(
-                oneComponent_local_ES,
-                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
-                usuarioIn_1)
-                .execute().body(), is(1));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testModifyUser_2() throws IOException
-    {
         // Change alias.
-        Usuario usuarioIn_1 = new Usuario.UsuarioBuilder()
+        usuarioIn = new Usuario.UsuarioBuilder()
                 .userName(paco.getUserName())
                 .alias("newAlias")
                 .uId(paco.getuId())
                 .build();
-
-        assertThat(USER_ENDPOINT.modifyUser(
-                oneComponent_local_ES,
-                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
-                usuarioIn_1)
-                .execute().body(), is(1));
+        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
+                .map(Response::body).test().assertValue(1);
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -212,7 +199,8 @@ public abstract class UsuarioControllerTest {
                 new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
         assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, usuarioComunidad).execute().body(), is(true));
         // Call the controller.
-        assertThat(USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName()).execute().body(), is(true));
+        USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName())
+                .map(Response::body).test().assertValue(true);
         // Cleanup mail folder.
         javaMailMonitor.extTimedCleanUp();
     }
