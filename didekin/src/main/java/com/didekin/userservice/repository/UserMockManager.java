@@ -77,6 +77,7 @@ public class UserMockManager {
         long pkUsuario = 0;
         long pkComunidad = 0;
         int userComuInserted = 0;
+        Usuario userWithPk = null;
         Connection conn = null;
 
         try {
@@ -85,7 +86,7 @@ public class UserMockManager {
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
 
-            Usuario userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
+            userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
             UsuarioComunidad userComuWithPks = new UsuarioComunidad.UserComuBuilder(comuWithPk, userWithPk)
                     .userComuRest(userComEncryptPswd).build();
@@ -99,7 +100,7 @@ public class UserMockManager {
         }
 
         // Return new authTokenStr.
-        return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(usuarioCom.getUsuario()) : null;
+        return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(userWithPk) : null;
     }
 
     public String regUserAndUserComu(final UsuarioComunidad userComu) throws ServiceException
