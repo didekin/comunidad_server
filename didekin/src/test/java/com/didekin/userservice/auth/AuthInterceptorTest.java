@@ -6,9 +6,9 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.auth.AuthInterceptor;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekin.userservice.controller.UserComuMockEndPoints;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.UserMockEndPoints;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,12 +54,12 @@ public abstract class AuthInterceptorTest {
     @Autowired
     private EncrypTkProducerBuilder builder;
 
-    private UserComuMockEndPoints userComuMockEndPoint;
+    private UserMockEndPoints userComuMockEndPoint;
 
     @Before
     public void setUp()
     {
-        userComuMockEndPoint = retrofitHandler.getService(UserComuMockEndPoints.class);
+        userComuMockEndPoint = retrofitHandler.getService(UserMockEndPoints.class);
     }
 
     @Test

@@ -77,6 +77,11 @@ public class UsuarioManager {
         producerBuilder = producerBuilderIn;
     }
 
+    public EncrypTkProducerBuilder getProducerBuilder()
+    {
+        return producerBuilder;
+    }
+
     //    ============================================================
     //    ................... Methods ................
     /*    ============================================================*/

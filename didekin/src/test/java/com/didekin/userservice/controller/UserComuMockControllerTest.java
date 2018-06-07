@@ -10,6 +10,7 @@ import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.usuario.UserMockEndPoints;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
@@ -24,19 +25,28 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+
 import retrofit2.Response;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.userservice.controller.UserComuMockController.CLOSED_AREA_MSG;
+import static com.didekin.userservice.controller.UserComuMockController.OPEN_AREA_MSG;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkUserNotFound;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
+import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PATH;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -48,7 +58,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  */
 public abstract class UserComuMockControllerTest {
 
-    private UserComuMockEndPoints userComuMockEndPoint;
+    private UserMockEndPoints userComuMockEndPoint;
 
     @Autowired
     private HttpHandler retrofitHandler;
@@ -58,7 +68,7 @@ public abstract class UserComuMockControllerTest {
     @Before
     public void setUp()
     {
-        userComuMockEndPoint = retrofitHandler.getService(UserComuMockEndPoints.class);
+        userComuMockEndPoint = retrofitHandler.getService(UserMockEndPoints.class);
     }
 
 //  ===========================================================================================================
@@ -96,6 +106,25 @@ public abstract class UserComuMockControllerTest {
         userComuMockEndPoint.regUserAndUserComu(userComu)
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
+    }
+
+    @Test
+    public void test_TryTokenInterceptor() throws IOException
+    {
+        assertThat(
+                userComuMockEndPoint.tryTokenInterceptor("mockAuthHeader",
+                        OPEN.substring(1),
+                        "hola")
+                        .execute().body(),
+                is(OPEN_AREA_MSG));
+
+        assertThat(
+                userComuMockEndPoint.tryTokenInterceptor(
+                        doHttpAuthHeader(pedro, usuarioManager.getProducerBuilder()),
+                        USER_PATH.substring(1),
+                        "hola")
+                        .execute().body(),
+                is(CLOSED_AREA_MSG));
     }
 
 //  ==============================================  INNER CLASSES =============================================

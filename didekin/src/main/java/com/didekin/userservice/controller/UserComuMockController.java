@@ -24,7 +24,9 @@ import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
 import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
-import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
+import static com.didekinlib.http.usuario.UserMockEndPoints.regComu_User_UserComu;
+import static com.didekinlib.http.usuario.UserMockEndPoints.regUser_UserComu;
+import static com.didekinlib.http.usuario.UserMockEndPoints.user_delete;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -43,12 +45,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class UserComuMockController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(UserComuMockController.class.getCanonicalName());
-
-    // PATHS for client tests.
-    private static final String mockPath = OPEN + "/mock";
-    static final String regComu_User_UserComu = mockPath + "/reg_comu_user_usercomu";
-    static final String regUser_UserComu = mockPath + "/reg_user_usercomu";
-    static final String user_delete = mockPath + "/user_delete";
 
     // Messages for interceptor tests.
     public static final String CLOSED_AREA_MSG = "IS_CLOSED";
@@ -96,10 +92,12 @@ public class UserComuMockController extends AppControllerAbstract {
      * Mock implementation for the case when AuthInterceptor returns true.
      */
     @RequestMapping(value = "{mock_path}/{mock2_path}", method = GET)
-    public String tryTokenInterceptor(@RequestHeader("Authorization") String accessToken,
+    public String tryTokenInterceptor(@RequestHeader("Authorization") String authHeader,
                                       @PathVariable String mock_path,
                                       @PathVariable String mock2_path)
     {
+        logger.debug("tryTokenInterceptor()");
+        checkActiveProfiles(env);
         if (closed_paths_REGEX.isPatternOk(mock_path)) {
             return CLOSED_AREA_MSG;
         } else {
