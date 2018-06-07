@@ -35,6 +35,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  * Time: 09:46
  *
  * This class allows for certain 'tuned' methods for use in tests in the client apps.
+ * It implements methods in UserComuMockEndPoints.
  */
 @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
 @RestController
@@ -67,7 +68,7 @@ public class UserComuMockController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = regComu_User_UserComu, method = POST, consumes = MIME_JSON)
-    public boolean regComuAndUserAndUserComu(@RequestBody UsuarioComunidad usuarioCom)
+    public String regComuAndUserAndUserComu(@RequestBody UsuarioComunidad usuarioCom)
             throws ServiceException
     {
         logger.debug("regComuAndUserAndUserComu()");
@@ -76,7 +77,7 @@ public class UserComuMockController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = regUser_UserComu, method = POST, consumes = MIME_JSON)
-    public boolean regUserAndUserComu(@RequestBody UsuarioComunidad userComu) throws ServiceException
+    public String regUserAndUserComu(@RequestBody UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("regUserAndUserComu()");
         checkActiveProfiles(env);

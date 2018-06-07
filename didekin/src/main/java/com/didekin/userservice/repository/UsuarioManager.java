@@ -375,6 +375,7 @@ public class UsuarioManager {
     {
         logger.info("regComuAndUserAndUserComu()");
 
+        // Generate a new password.
         final Usuario usuarioPswdRaw = doUserRawPswd(usuarioCom.getUsuario());
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))

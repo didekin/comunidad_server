@@ -64,11 +64,12 @@ public class UserMockManager {
                 .getBase64Str();
     }
 
-    public boolean regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
+    public String regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
     {
         logger.info("regComuAndUserAndUserComu()");
         checkActiveProfiles(env);
 
+        // Keep the password passed in the original usuario.
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioCom.getUsuario()))
                         .userComuRest(usuarioCom).build();
@@ -97,14 +98,16 @@ public class UserMockManager {
             doFinallyJdbc(conn, "regComuAndUserAndUserComu(): ");
         }
 
-        return pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1;
+        // Return new authTokenStr.
+        return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(usuarioCom.getUsuario()) : null;
     }
 
-    public boolean regUserAndUserComu(final UsuarioComunidad userComu) throws ServiceException
+    public String regUserAndUserComu(final UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("regUserAndUserComu()");
         checkActiveProfiles(env);
 
+        // Keep the password passed in the original usuario.
         final UsuarioComunidad userComEncryptPswd =
                 new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(userComu.getUsuario()))
                         .userComuRest(userComu).build();
@@ -130,7 +133,8 @@ public class UserMockManager {
         } finally {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
-        return pkUsuario > 0L && userComuInserted == 1;
+        // Return new authTokenStr.
+        return (pkUsuario > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(userComu.getUsuario()) : null;
     }
 
     // ...................................  HELPERS  .........................................

@@ -3,7 +3,9 @@ package com.didekin.userservice.controller;
 
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
+import io.reactivex.Single;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -26,14 +28,14 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
 public interface UserComuMockEndPoints {
 
     @POST(regComu_User_UserComu)
-    Call<Boolean> regComuAndUserAndUserComu(@Body UsuarioComunidad usuarioCom);
+    Single<Response<String>> regComuAndUserAndUserComu(@Body UsuarioComunidad usuarioCom);
 
     @POST(regUser_UserComu)
-    Call<Boolean> regUserAndUserComu(@Body UsuarioComunidad userCom);
+    Single<Response<String>> regUserAndUserComu(@Body UsuarioComunidad userCom);
 
     @FormUrlEncoded
     @POST(user_delete)
-    Call<Boolean> deleteUser(@Field(USER_PARAM) String userName);
+    Single<Response<Boolean>> deleteUser(@Field(USER_PARAM) String userName);
 
     @GET("{mock_path}/{mock2_path}")
     Call<String> tryTokenInterceptor(@Header("Authorization") String accessToken,
