@@ -24,8 +24,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
-
 import retrofit2.Response;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;

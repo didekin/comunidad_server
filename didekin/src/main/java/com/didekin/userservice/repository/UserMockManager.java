@@ -77,7 +77,7 @@ public class UserMockManager {
         long pkUsuario = 0;
         long pkComunidad = 0;
         int userComuInserted = 0;
-        Usuario userWithPk = null;
+        Usuario userWithPk;
         Connection conn = null;
 
         try {
@@ -100,7 +100,13 @@ public class UserMockManager {
         }
 
         // Return new authTokenStr.
-        return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(userWithPk) : null;
+        return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ?
+                usuarioManager.updateTokenAuthInDb(
+                        new Usuario.UsuarioBuilder()
+                                .copyUsuario(usuarioCom.getUsuario())
+                                .uId(pkUsuario).build()
+                ) :
+                null;
     }
 
     public String regUserAndUserComu(final UsuarioComunidad userComu) throws ServiceException
@@ -136,7 +142,13 @@ public class UserMockManager {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
         // Return new authTokenStr.
-        return (pkUsuario > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(usuarioPk) : null;
+        return (pkUsuario > 0L && userComuInserted == 1) ?
+                usuarioManager.updateTokenAuthInDb(
+                        new Usuario.UsuarioBuilder()
+                                .copyUsuario(userComu.getUsuario())
+                                .uId(pkUsuario).build()
+                )
+                : null;
     }
 
     // ...................................  HELPERS  .........................................

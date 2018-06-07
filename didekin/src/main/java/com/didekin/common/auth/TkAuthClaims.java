@@ -20,7 +20,6 @@ import static com.didekinlib.http.usuario.TkParamNames.expiration;
 import static com.didekinlib.http.usuario.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 
 /**

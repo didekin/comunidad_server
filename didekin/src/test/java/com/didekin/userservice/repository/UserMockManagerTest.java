@@ -73,7 +73,7 @@ public abstract class UserMockManagerTest {
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
         // Exec.
-        assertThat(userMockManager.regComuAndUserAndUserComu(userComu), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regComuAndUserAndUserComu(userComu)), is(true));
         // Check alta nueva comunidad.
         List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(USER_JUAN.getUserName());
         assertThat(comunidades.size(), is(1));
@@ -93,10 +93,10 @@ public abstract class UserMockManagerTest {
         // Nuevo usuarioComunidad.
         UsuarioComunidad newPepe = makeUsuarioComunidad(
                 new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
-                new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName("newPepe").build(),
+                new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName("new@pepe.com").build(),
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
 
-        assertThat(userMockManager.regUserAndUserComu(newPepe), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regUserAndUserComu(newPepe)), is(true));
         assertThat(usuarioManager.getComusByUser(newPepe.getUsuario().getUserName()).get(0), is(calle_el_escorial));
     }
 
