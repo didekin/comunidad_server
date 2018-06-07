@@ -26,6 +26,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 
+import retrofit2.Response;
+
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
@@ -35,6 +37,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkUserNotFound;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
+import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -67,33 +70,36 @@ public abstract class UserComuMockControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
-    public void testDeleteUser() throws IOException
+    public void testDeleteUser()
     {
         // Borra al usuario y las comunidades previamente encontradas en la consulta.
-        assertThat(userComuMockEndPoint.deleteUser(pedro.getUserName()).execute().body(), is(true));
+        userComuMockEndPoint.deleteUser(pedro.getUserName()).map(Response::body).test().assertValue(true);
         checkUserNotFound(pedro.getUserName(), usuarioManager);
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu() throws IOException
+    public void testRegComuAndUserAndUserComu()
     {
-        boolean isInserted = userComuMockEndPoint.regComuAndUserAndUserComu(COMU_REAL_JUAN).execute().body();
-        assertThat(isInserted, is(true));
+        userComuMockEndPoint.regComuAndUserAndUserComu(COMU_REAL_JUAN)
+                .test()
+                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_1() throws IOException
+    public void testRegUserAndUserComu_1()
     {
         /* Preconditions: a comunidad is already associated to other users.*/
         UsuarioComunidad userComu = makeUsuarioComunidad(calle_plazuela_23,
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).userName("newPaco").build(),
                 "portalC", null, "planta3", null,
                 PRESIDENTE.function);
-        boolean isInserted = userComuMockEndPoint.regUserAndUserComu(userComu).execute().body();
-        assertThat(isInserted, is(true));
+
+        userComuMockEndPoint.regUserAndUserComu(userComu)
+                .test()
+                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
         assertThat(usuarioManager.getComusByUser(userComu.getUsuario().getUserName()).size(), is(1));
         assertThat(usuarioManager.getComusByUser(userComu.getUsuario().getUserName()).get(0), is(calle_plazuela_23));
     }

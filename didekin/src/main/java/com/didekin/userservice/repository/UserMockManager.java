@@ -113,6 +113,7 @@ public class UserMockManager {
                         .userComuRest(userComu).build();
 
         long pkUsuario = 0;
+        Usuario usuarioPk = null;
         int userComuInserted = 0;
         Connection conn = null;
 
@@ -121,7 +122,7 @@ public class UserMockManager {
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
-            final Usuario usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
+            usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             final UsuarioComunidad userComuTris = new UsuarioComunidad.UserComuBuilder(
                     userComu.getComunidad(), usuarioPk)
                     .userComuRest(userComu)
@@ -134,7 +135,7 @@ public class UserMockManager {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
         // Return new authTokenStr.
-        return (pkUsuario > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(userComu.getUsuario()) : null;
+        return (pkUsuario > 0L && userComuInserted == 1) ? usuarioManager.updateTokenAuthInDb(usuarioPk) : null;
     }
 
     // ...................................  HELPERS  .........................................
