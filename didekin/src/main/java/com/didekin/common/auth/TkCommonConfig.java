@@ -27,7 +27,7 @@ public class TkCommonConfig {
     static final String storePswd = getenv("TOKEN_KEYSTORE_PSWD");
     static final String PKCS12_keystore_type = "PKCS12";
     static final String aliasKey = getenv("TOKEN_KEY_ALIAS");
-    private static final String keystore_path = "/didekin_web_sym.pkcs12";
+    private static final String keystore_path = "didekin_web_sym.pkcs12";
     // Singleton
     private static final AtomicReference<KeyStore> encryptKeyStore = new AtomicReference<>();
 
