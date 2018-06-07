@@ -37,8 +37,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComu
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -91,15 +89,13 @@ public abstract class UserComuMockControllerTest {
     {
         /* Preconditions: a comunidad is already associated to other users.*/
         UsuarioComunidad userComu = makeUsuarioComunidad(calle_plazuela_23,
-                new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).userName("newPaco").build(),
+                new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).userName("new@paco.com").build(),
                 "portalC", null, "planta3", null,
                 PRESIDENTE.function);
 
         userComuMockEndPoint.regUserAndUserComu(userComu)
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
-        assertThat(usuarioManager.getComusByUser(userComu.getUsuario().getUserName()).size(), is(1));
-        assertThat(usuarioManager.getComusByUser(userComu.getUsuario().getUserName()).get(0), is(calle_plazuela_23));
     }
 
 //  ==============================================  INNER CLASSES =============================================
