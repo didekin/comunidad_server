@@ -26,7 +26,8 @@ public class RetrofitConfigurationPre {
     public HttpHandler retrofitHandler()
     {
         return new HttpHandler.HttpHandlerBuilder(jetty_awspre_URL)
-                .okHttpClient(http_timeOut, new JksInAppClient(jetty_awspre_jks_appclient, jetty_awspre_jks_appclient_pswd))
+                .timeOutSec(http_timeOut)
+                .keyStoreClient(new JksInAppClient(jetty_awspre_jks_appclient, jetty_awspre_jks_appclient_pswd))
                 .build();
     }
 }
