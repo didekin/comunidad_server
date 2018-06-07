@@ -20,6 +20,6 @@ public class RetrofitConfiguration {
     @Bean
     public HttpHandler retrofitHandler()
     {
-        return new HttpHandler.HttpHandlerBuilder(aws_eb_url).okHttpClient(http_timeOut).build();
+        return new HttpHandler.HttpHandlerBuilder(aws_eb_url).timeOutSec(http_timeOut).build();
     }
 }
