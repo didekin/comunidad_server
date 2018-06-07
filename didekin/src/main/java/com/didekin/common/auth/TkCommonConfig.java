@@ -2,7 +2,9 @@ package com.didekin.common.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ResourceUtils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -33,7 +35,8 @@ public class TkCommonConfig {
     public KeyStore keyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException
     {
         KeyStore keyStore = KeyStore.getInstance(PKCS12_keystore_type);
-        keyStore.load(getClass().getResourceAsStream(keystore_path), storePswd.toCharArray());
+        keyStore.load(new FileInputStream(ResourceUtils.getFile("classpath:didekin_web_sym.pkcs12")), storePswd.toCharArray());
+//        keyStore.load(getClass().getResourceAsStream(keystore_path), storePswd.toCharArray());
         encryptKeyStore.compareAndSet(null, keyStore);
         return encryptKeyStore.get();
     }
