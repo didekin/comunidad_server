@@ -85,10 +85,10 @@ public class UsuarioController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
-    public String modifyUserGcmToken(@RequestHeader("Authorization") String authHeader,
-                                     @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
+    public String modifyGcmToken(@RequestHeader("Authorization") String authHeader,
+                                 @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
     {
-        logger.debug("modifyUserGcmToken()");
+        logger.debug("modifyGcmToken()");
         return usuarioManager.modifyUserGcmToken(usuarioManager.checkHeaderGetUserName(authHeader), gcmToken);
     }
 

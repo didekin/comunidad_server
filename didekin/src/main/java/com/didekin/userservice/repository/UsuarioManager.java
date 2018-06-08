@@ -297,7 +297,7 @@ public class UsuarioManager {
      */
     public @NotNull String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
     {
-        logger.debug("modifyUserGcmToken(String userName, String gcmToken)");
+        logger.debug("modifyGcmToken(String userName, String gcmToken)");
         Usuario usuario = new Usuario.UsuarioBuilder()
                 .copyUsuario(getUserDataByName(userName))
                 .password(null)
@@ -311,7 +311,7 @@ public class UsuarioManager {
 
     public int modifyUserGcmTokens(List<GcmTokensHolder> holdersList)
     {
-        logger.debug("modifyUserGcmToken(List<GcmTokensHolder> holdersList)");
+        logger.debug("modifyGcmToken(List<GcmTokensHolder> holdersList)");
         return (int) holdersList.parallelStream()
                 .filter(holder -> holder.getOriginalGcmTk() != null)
                 .map(holder -> holder.getNewGcmTk() == null ? usuarioDao.deleteGcmToken(holder.getOriginalGcmTk()) : usuarioDao.modifyUserGcmToken(holder))

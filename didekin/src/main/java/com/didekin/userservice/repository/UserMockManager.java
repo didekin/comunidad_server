@@ -99,12 +99,13 @@ public class UserMockManager {
             doFinallyJdbc(conn, "regComuAndUserAndUserComu(): ");
         }
 
-        // Return new authTokenStr.
+        // Return new authTokenStr. The parameter usuarioCom contains an usuario withh gcmToken.
         return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ?
                 usuarioManager.updateTokenAuthInDb(
                         new Usuario.UsuarioBuilder()
                                 .copyUsuario(usuarioCom.getUsuario())
-                                .uId(pkUsuario).build()
+                                .uId(pkUsuario)  // this is what is needed this new instance.
+                                .build()
                 ) :
                 null;
     }
@@ -120,7 +121,7 @@ public class UserMockManager {
                         .userComuRest(userComu).build();
 
         long pkUsuario = 0;
-        Usuario usuarioPk = null;
+        Usuario usuarioPk;
         int userComuInserted = 0;
         Connection conn = null;
 
@@ -141,12 +142,13 @@ public class UserMockManager {
         } finally {
             doFinallyJdbc(conn, "regUserAndUserComu(): conn.setAutoCommit(true), conn.close(): ");
         }
-        // Return new authTokenStr.
+        // Return new authTokenStr. The parameter usuarioCom contains an usuario withh gcmToken.
         return (pkUsuario > 0L && userComuInserted == 1) ?
                 usuarioManager.updateTokenAuthInDb(
                         new Usuario.UsuarioBuilder()
                                 .copyUsuario(userComu.getUsuario())
-                                .uId(pkUsuario).build()
+                                .uId(pkUsuario)  // this is what is needed this new instance.
+                                .build()
                 )
                 : null;
     }

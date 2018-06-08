@@ -316,14 +316,14 @@ public class UsuarioDao {
 
     int modifyUserGcmToken(Usuario usuario)
     {
-        logger.debug("modifyUserGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("modifyGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
                 usuario.getGcmToken(), usuario.getuId());
     }
 
     int modifyUserGcmToken(GcmTokensHolder holder)
     {
-        logger.debug("modifyUserGcmToken()");
+        logger.debug("modifyGcmToken()");
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
 
