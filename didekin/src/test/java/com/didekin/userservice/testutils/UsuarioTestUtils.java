@@ -26,8 +26,12 @@ import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -299,6 +303,28 @@ public final class UsuarioTestUtils {
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
+        }
+    }
+
+    public static void checkBeanUsuarioDb(Usuario usuario, Usuario expectedUser, boolean isHashed)
+    {
+        checkBeanUsuarioMin(usuario, expectedUser, isHashed);
+        assertThat(usuario.getTokenAuth(), is(expectedUser.getTokenAuth()));
+    }
+
+    public static void checkBeanUsuarioMin(Usuario usuario, Usuario expectedUser, boolean isHashed)
+    {
+        assertThat(usuario, allOf(
+                hasProperty("uId", anyOf(
+                        equalTo(expectedUser.getuId()),
+                        greaterThan(0L)
+                )),
+                hasProperty("userName", equalTo(expectedUser.getUserName())),
+                hasProperty("alias", equalTo(expectedUser.getAlias())),
+                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken())))
+        );
+        if (!isHashed) {
+            assertThat(expectedUser.getPassword(), is(usuario.getPassword()));
         }
     }
 }

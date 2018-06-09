@@ -38,7 +38,6 @@ import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.repository.PswdGenerator.default_password_length;
-import static com.didekin.userservice.repository.UsuarioDaoTest.checkBeanUsuario;
 import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_OTRA;
@@ -50,6 +49,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.checkBeanUsuarioMin;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
@@ -359,9 +359,12 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_getUserData_1() throws ServiceException
     {
+        // Although luis has authToken initialized, it is not updated in DB.
+        assertThat(luis.getTokenAuth(), notNullValue());
+        // Exec.
         usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(
                 COMU_LA_PLAZUELA_5, luis, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
-        checkBeanUsuario(usuarioManager.getUserData(luis.getUserName()), luis, true);
+        checkBeanUsuarioMin(usuarioManager.getUserData(luis.getUserName()), luis, true);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")

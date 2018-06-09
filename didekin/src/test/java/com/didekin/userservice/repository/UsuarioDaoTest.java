@@ -34,14 +34,12 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INI
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -201,7 +199,7 @@ public abstract class UsuarioDaoTest {
     public void testGetUserDataById_1() throws ServiceException
     {
         Usuario usuario = usuarioDao.getUserDataById(luis.getuId());
-        checkBeanUsuario(usuario, luis, false);
+        UsuarioTestUtils.checkBeanUsuarioDb(usuario, luis, false);
     }
 
     @Test()
@@ -221,7 +219,7 @@ public abstract class UsuarioDaoTest {
     public void testGetUserDataByName_1()
     {
         Usuario usuario = usuarioDao.getUserDataByName("luis@luis.com");
-        checkBeanUsuario(usuario, luis, true);
+        UsuarioTestUtils.checkBeanUsuarioDb(usuario, luis, true);
     }
 
     @Test
@@ -539,25 +537,6 @@ public abstract class UsuarioDaoTest {
             fail();
         } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));
-        }
-    }
-
-    // ======================================  Helpers ======================================
-
-    static void checkBeanUsuario(Usuario usuario, Usuario expectedUser, boolean isHashed)
-    {
-        assertThat(usuario, allOf(
-                hasProperty("uId", anyOf(
-                        equalTo(expectedUser.getuId()),
-                        greaterThan(0L)
-                )),
-                hasProperty("userName", equalTo(expectedUser.getUserName())),
-                hasProperty("alias", equalTo(expectedUser.getAlias())),
-                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken())),
-                hasProperty("tokenAuth", equalTo(expectedUser.getTokenAuth()))
-        ));
-        if (!isHashed) {
-            assertThat(expectedUser.getPassword(), is(usuario.getPassword()));
         }
     }
 
