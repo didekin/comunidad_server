@@ -278,7 +278,7 @@ public abstract class UserComuControllerTest {
     {
         // Duplicate user (and comunidad).
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
-        Usuario usuario = usuarioManager.getUserDataByName(USER_JUAN.getUserName());
+        Usuario usuario = usuarioManager.getUserData(USER_JUAN.getUserName());
         Comunidad comunidad = usuarioManager.getComusByUser(USER_JUAN.getUserName()).get(0);
         // Data, exec, check.
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, usuario, "portal", "esc",

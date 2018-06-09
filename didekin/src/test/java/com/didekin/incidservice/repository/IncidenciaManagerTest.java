@@ -489,15 +489,15 @@ public abstract class IncidenciaManagerTest {
         String pedroTokenStr = usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1);
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(pedroTokenStr), is(true));
         assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(2));
-        assertThat(usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken(), notNullValue());
-        assertThat(usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken(), is(tokenId_1));
+        assertThat(usuarioManager.getUserData(luis.getUserName()).getGcmToken(), notNullValue());
+        assertThat(usuarioManager.getUserData(pedro.getUserName()).getGcmToken(), is(tokenId_1));
         // Exec.
         Incidencia incidencia = doIncidencia(pedro.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
         // Check incidencia returned.
         assertThat(incidenciaManager.regIncidencia(incidencia).getDescripcion(), is("incid_test"));
         // Check update of gcm tokens in DB.
-        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(pedro.getUserName()).getGcmToken() == null);
-        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserDataByName(luis.getUserName()).getGcmToken() == null);
+        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserData(pedro.getUserName()).getGcmToken() == null);
+        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserData(luis.getUserName()).getGcmToken() == null);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")

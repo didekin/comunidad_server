@@ -295,7 +295,7 @@ public final class UsuarioTestUtils {
     public static void checkUserNotFound(String userName, UsuarioManager usuarioManager)
     {
         try {
-            usuarioManager.getUserDataByName(userName);
+            usuarioManager.getUserData(userName);
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));

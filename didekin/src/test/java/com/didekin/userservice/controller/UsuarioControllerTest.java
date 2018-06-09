@@ -49,7 +49,9 @@ import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_sy
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -108,6 +110,10 @@ public abstract class UsuarioControllerTest {
                     assertThat(usuarioDB.getUserName(), is(luis.getUserName()));
                     assertThat(usuarioDB.getAlias(), is(luis.getAlias()));
                     assertThat(usuarioDB.getGcmToken(), is(luis.getGcmToken()));
+                    assertThat(usuarioDB.getTokenAuth(), allOf(
+                            notNullValue(),
+                            is(luis.getTokenAuth())
+                    ));
                     assertThat(usuarioDB.getPassword(), is(nullValue()));
                 }
         );

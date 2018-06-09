@@ -182,7 +182,7 @@ public class UsuarioDao {
 
     Usuario getUserDataByName(String userName)
     {
-        logger.info("getUserDataByName(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserData(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
 
         Usuario usuario;
         try {

@@ -81,7 +81,7 @@ public class UserManagerConnector {
     {
         logger.debug("completeUser()");
         return new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioManager.getUserDataByName(userName))
+                .copyUsuario(usuarioManager.getUserData(userName))
                 .password(null)
                 .build();
     }

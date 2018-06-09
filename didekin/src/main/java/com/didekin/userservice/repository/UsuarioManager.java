@@ -188,9 +188,9 @@ public class UsuarioManager {
     }
 
 
-    public @NotNull Usuario getUserDataByName(String email) throws ServiceException
+    public @NotNull Usuario getUserData(String email) throws ServiceException
     {
-        logger.info("getUserDataByName()");
+        logger.info("getUserData()");
         return usuarioDao.getUserDataByName(email);
     }
 
@@ -223,7 +223,7 @@ public class UsuarioManager {
             throw new ServiceException(USER_WRONG_INIT);
         }
 
-        Usuario usuarioDb = getUserDataByName(usuario.getUserName());
+        Usuario usuarioDb = getUserData(usuario.getUserName());
         if (checkpw(usuario.getPassword(), usuarioDb.getPassword())) {
             return updateTokenAuthInDb(usuarioDb);
         }
@@ -299,7 +299,7 @@ public class UsuarioManager {
     {
         logger.debug("modifyGcmToken(String userName, String gcmToken)");
         Usuario usuario = new Usuario.UsuarioBuilder()
-                .copyUsuario(getUserDataByName(userName))
+                .copyUsuario(getUserData(userName))
                 .password(null)
                 .gcmToken(gcmToken)
                 .build();
@@ -357,7 +357,7 @@ public class UsuarioManager {
     {
         logger.debug("passwordSend()");
 
-        final Usuario oldUsuario = getUserDataByName(userName);
+        final Usuario oldUsuario = getUserData(userName);
         final Usuario usuarioPswdRaw = doUserRawPswd(oldUsuario);
         final Usuario usuarioPswdEncr = doUserEncryptPswd(usuarioPswdRaw);
 
@@ -554,7 +554,7 @@ public class UsuarioManager {
     {
         AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
         if (tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(headerIn.getToken())
-                && checkpw(headerIn.getToken(), getUserDataByName(headerIn.getUserName()).getTokenAuth())) {
+                && checkpw(headerIn.getToken(), getUserData(headerIn.getUserName()).getTokenAuth())) {
             return headerIn.getUserName();
         }
         throw new ServiceException(UNAUTHORIZED);

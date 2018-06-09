@@ -63,7 +63,7 @@ public abstract class UserMockManagerTest {
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
         assertThat(httpHeaderFromDb.getAppID(), is("fake_appID"));
         assertThat(httpHeaderFromDb.getUserName(), is(pedro.getUserName()));
-        assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserDataByName(pedro.getUserName()).getTokenAuth()), is(true));
+        assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

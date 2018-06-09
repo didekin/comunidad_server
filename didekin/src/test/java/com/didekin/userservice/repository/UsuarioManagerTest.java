@@ -169,7 +169,7 @@ public abstract class UsuarioManagerTest {
         }
         // Check usuario borrado.
         try {
-            usuarioManager.getUserDataByName(pedro.getUserName());
+            usuarioManager.getUserData(pedro.getUserName());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
@@ -240,7 +240,7 @@ public abstract class UsuarioManagerTest {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
         try {
-            assertThat(usuarioManager.getUserDataByName(pedro.getUserName()), notNullValue());
+            assertThat(usuarioManager.getUserData(pedro.getUserName()), notNullValue());
         } catch (ServiceException e) {
             fail();
         }
@@ -259,7 +259,7 @@ public abstract class UsuarioManagerTest {
         // Check.
         assertThat(usuarioManager.getComunidadById(ronda_plazuela_10bis.getC_Id()), is(ronda_plazuela_10bis));
         try {
-            usuarioManager.getUserDataByName(luis.getUserName());
+            usuarioManager.getUserData(luis.getUserName());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
@@ -357,11 +357,11 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_getUserDataByName_1() throws ServiceException
+    public void test_getUserData_1() throws ServiceException
     {
         usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(
-                COMU_LA_PLAZUELA_5, pedro, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
-        checkBeanUsuario(usuarioManager.getUserDataByName(pedro.getUserName()), pedro, true);
+                COMU_LA_PLAZUELA_5, luis, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
+        checkBeanUsuario(usuarioManager.getUserData(luis.getUserName()), luis, true);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -479,7 +479,7 @@ public abstract class UsuarioManagerTest {
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(usuarioIn)), is(true));
         // We change alias ONLY.
         assertThat(usuarioManager.modifyUser(usuarioIn, "juan@noauth.com", twoComponent_local_ES), is(1));
-        assertThat(usuarioManager.getUserDataByName("juan@noauth.com").getAlias(), is("new_juan_alias"));
+        assertThat(usuarioManager.getUserData("juan@noauth.com").getAlias(), is("new_juan_alias"));
         // Login has not changed.
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(usuarioIn)), is(true));
     }
@@ -489,7 +489,7 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testModifyUser_2() throws ServiceException, IOException, MessagingException
     {
-        Usuario oldUser = usuarioManager.getUserDataByName("juan@noauth.com");
+        Usuario oldUser = usuarioManager.getUserData("juan@noauth.com");
         // We change userName.
         final Usuario usuarioNew = new Usuario.UsuarioBuilder()
                 .uId(7L)
@@ -498,7 +498,7 @@ public abstract class UsuarioManagerTest {
 
         assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
         // Check new data in DB.
-        assertThat(usuarioManager.getUserDataByName(TO), allOf(
+        assertThat(usuarioManager.getUserData(TO), allOf(
                 hasProperty("uId", equalTo(7L)),
                 hasProperty("alias", is("juan_no_auth")))
         );
@@ -534,15 +534,15 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_ModifyUserGcmToken_1() throws ServiceException
     {
-        Usuario luisMod = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName(luis.getUserName()))
+        Usuario luisMod = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserData(luis.getUserName()))
                 .gcmToken("GCMtoKen1234X")
                 .build();
         // Insertamos token y verificamos devolución de nuevo authToken.
         String newAuthToken = usuarioManager.modifyUserGcmToken(luisMod.getUserName(), luisMod.getGcmToken());
         assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
-        assertThat(checkpw(newAuthToken, usuarioManager.getUserDataByName(luis.getUserName()).getTokenAuth()), is(true));
+        assertThat(checkpw(newAuthToken, usuarioManager.getUserData(luis.getUserName()).getTokenAuth()), is(true));
         // Verificamos cambio gcmToken.
-        assertThat(usuarioManager.getUserDataByName(luisMod.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
+        assertThat(usuarioManager.getUserData(luisMod.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -586,7 +586,7 @@ public abstract class UsuarioManagerTest {
         String newAuthToken = usuarioManager.passwordChange(luis.getUserName(), luis.getPassword(), "new_luis_password");
         // Check on returned new authToken.
         assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
-        Usuario newLuis =  usuarioManager.getUserDataByName(luis.getUserName());
+        Usuario newLuis =  usuarioManager.getUserData(luis.getUserName());
         assertThat(checkpw(newAuthToken, newLuis.getTokenAuth()), is(true));
         // Check on updated new password.
         assertThat(checkpw("new_luis_password", newLuis.getPassword()), is(true));
@@ -631,7 +631,7 @@ public abstract class UsuarioManagerTest {
         javaMailMonitor.extSetUp();
         String password = javaMailMonitor.getPswdFromMsg();
         // Check login.
-        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserDataByName(TO)).password(password).build();
+        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserData(TO)).password(password).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userReg)), is(true));
 
         // Exec test.
@@ -663,7 +663,7 @@ public abstract class UsuarioManagerTest {
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioManager.getUserDataByName(pedro.getUserName()))
+                .copyUsuario(usuarioManager.getUserData(pedro.getUserName()))
                 .password(pedro.getPassword()).build();
         // Exec
         try {
@@ -849,7 +849,7 @@ public abstract class UsuarioManagerTest {
         final UsuarioComunidad usuarioComunidad_1 = makeUsuarioComunidad(comunidad1, USER_JUAN, "portal", "esc",
                 "plantaX", "door12", PROPIETARIO.function);
         usuarioManager.regComuAndUserAndUserComu(usuarioComunidad_1, oneComponent_local_ES);
-        Usuario userWithPk = usuarioManager.getUserDataByName(USER_JUAN.getUserName());
+        Usuario userWithPk = usuarioManager.getUserData(USER_JUAN.getUserName());
 
         // Primera búsqueda.
         List<Comunidad> comunidades = usuarioManager.searchComunidades(comunidad);
@@ -912,7 +912,7 @@ public abstract class UsuarioManagerTest {
         // Premises: user in DB.
         String authToken = usuarioManager.updateTokenAuthInDb(pedro);
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(authToken), is(true));
-        assertThat(checkpw(authToken, usuarioManager.getUserDataByName(pedro.getUserName()).getTokenAuth()), is(true));
+        assertThat(checkpw(authToken, usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
 
         // Premises: user not in DB.
         try {

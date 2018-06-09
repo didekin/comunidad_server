@@ -46,7 +46,7 @@ public class ComunidadController extends AppControllerAbstract {
     {
         logger.debug("getComunidadById()");
         return usuarioService.getComunidadById(
-                usuarioService.getUserDataByName(usuarioService.checkHeaderGetUserName(accessToken)), comunidadId);
+                usuarioService.getUserData(usuarioService.checkHeaderGetUserName(accessToken)), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_SEARCH, method = POST, consumes = MIME_JSON, produces = MIME_JSON)
