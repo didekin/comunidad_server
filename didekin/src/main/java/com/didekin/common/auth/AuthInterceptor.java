@@ -2,6 +2,7 @@ package com.didekin.common.auth;
 
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.google.gson.JsonSyntaxException;
 
 import org.jose4j.jwt.JwtClaims;
@@ -54,7 +55,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         try {
-            AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
+            AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
             if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
                     || !headerIn.getUserName().equals(claims.getSubject())
