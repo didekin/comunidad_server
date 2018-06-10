@@ -42,7 +42,7 @@ public class UserManagerConnector {
     public UserManagerConnector(UsuarioManager usuarioManager)
     {
         this.usuarioManager = usuarioManager;
-        userMockManager= new UserMockManager(usuarioManager);
+        userMockManager = new UserMockManager(usuarioManager);
     }
 
     public boolean checkAuthorityInComunidad(String userName, long comunidadId) throws ServiceException
@@ -80,7 +80,10 @@ public class UserManagerConnector {
     Usuario completeUser(String userName)
     {
         logger.debug("completeUser()");
-        return usuarioManager.getUserData(userName);
+        return new Usuario.UsuarioBuilder()
+                .copyUsuario(usuarioManager.getUserData(userName))
+                .password(null)
+                .build();
     }
 
     UsuarioComunidad completeUserAndComuRoles(String userName, long comunidadId)
@@ -103,7 +106,8 @@ public class UserManagerConnector {
     // ==================================  FOR TESTS =================================
 
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
-    public String insertTokenGetHeaderStr(String userName, String appIDIn){
+    public String insertTokenGetHeaderStr(String userName, String appIDIn)
+    {
         checkActiveProfiles(env);
         return userMockManager.insertAuthTkGetNewAuthTkStr(userName, appIDIn);
     }
