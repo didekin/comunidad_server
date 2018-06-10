@@ -6,7 +6,6 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.auth.EncrypTkConsumerBuilder;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekinlib.http.usuario.TkParamNames;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
@@ -27,15 +26,14 @@ import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekin.common.auth.TkHeaders.getDefaultHeader;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_ce;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_cek;
+import static com.didekin.userservice.auth.TkParamNames.appId;
+import static com.didekin.userservice.auth.TkParamNames.audience;
+import static com.didekin.userservice.auth.TkParamNames.issuer;
+import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
-import static com.didekinlib.http.usuario.TkParamNames.appId;
-import static com.didekinlib.http.usuario.TkParamNames.audience;
-import static com.didekinlib.http.usuario.TkParamNames.expiration;
-import static com.didekinlib.http.usuario.TkParamNames.issuer;
-import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -72,7 +70,7 @@ public abstract class EncryptedTkConsumerTest {
     public void test_EncrypTkConsumerBuilder_build()
     {
         Map<TkParamNames, Object> claimsMap = getDefaultTestClaims(pedro);
-        claimsMap.put(expiration, fromSeconds((now().minus(2, SECONDS)).getEpochSecond()).getValue());
+        claimsMap.put(TkParamNames.expiration, fromSeconds((now().minus(2, SECONDS)).getEpochSecond()).getValue());
 
         try {
             consumerBuilder.defaultInit(

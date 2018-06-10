@@ -1,12 +1,12 @@
 package com.didekin.userservice.testutils;
 
 
-import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.repository.ServiceException;
+import com.didekin.userservice.auth.EncrypTkProducerBuilder;
+import com.didekin.userservice.auth.TkParamNames;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.http.usuario.TkParamNames;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -17,9 +17,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.didekin.userservice.auth.TkParamNames.appId;
+import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
-import static com.didekinlib.http.usuario.TkParamNames.appId;
-import static com.didekinlib.http.usuario.TkParamNames.subject;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
@@ -306,13 +306,7 @@ public final class UsuarioTestUtils {
         }
     }
 
-    public static void checkBeanUsuarioDb(Usuario usuario, Usuario expectedUser, boolean isHashed)
-    {
-        checkBeanUsuarioMin(usuario, expectedUser, isHashed);
-        assertThat(usuario.getTokenAuth(), is(expectedUser.getTokenAuth()));
-    }
-
-    public static void checkBeanUsuarioMin(Usuario usuario, Usuario expectedUser, boolean isHashed)
+    public static void checkBeanUsuario(Usuario usuario, Usuario expectedUser, boolean isHashed)
     {
         assertThat(usuario, allOf(
                 hasProperty("uId", anyOf(
@@ -321,8 +315,9 @@ public final class UsuarioTestUtils {
                 )),
                 hasProperty("userName", equalTo(expectedUser.getUserName())),
                 hasProperty("alias", equalTo(expectedUser.getAlias())),
-                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken())))
-        );
+                hasProperty("gcmToken", equalTo(expectedUser.getGcmToken())),
+                hasProperty("tokenAuth", equalTo(expectedUser.getTokenAuth()))
+        ));
         if (!isHashed) {
             assertThat(expectedUser.getPassword(), is(usuario.getPassword()));
         }

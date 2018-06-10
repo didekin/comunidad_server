@@ -49,7 +49,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.checkBeanUsuarioMin;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.checkBeanUsuario;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
@@ -364,7 +364,11 @@ public abstract class UsuarioManagerTest {
         // Exec.
         usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(
                 COMU_LA_PLAZUELA_5, luis, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
-        checkBeanUsuarioMin(usuarioManager.getUserData(luis.getUserName()), luis, true);
+        // Check.
+        checkBeanUsuario(
+                usuarioManager.getUserData(luis.getUserName()),
+                usuarioManager.usuarioDao.getUserDataByName(luis.getUserName()),
+                true);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -542,7 +546,7 @@ public abstract class UsuarioManagerTest {
                 .build();
         // Insertamos token y verificamos devolución de nuevo authToken.
         String newAuthToken = usuarioManager.modifyUserGcmToken(luisMod.getUserName(), luisMod.getGcmToken());
-        assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
+        assertThat(newAuthToken, notNullValue());
         assertThat(checkpw(newAuthToken, usuarioManager.getUserData(luis.getUserName()).getTokenAuth()), is(true));
         // Verificamos cambio gcmToken.
         assertThat(usuarioManager.getUserData(luisMod.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
@@ -589,7 +593,7 @@ public abstract class UsuarioManagerTest {
         String newAuthToken = usuarioManager.passwordChange(luis.getUserName(), luis.getPassword(), "new_luis_password");
         // Check on returned new authToken.
         assertThat(newAuthToken, allOf(notNullValue(), not(is(luis.getTokenAuth()))));
-        Usuario newLuis =  usuarioManager.getUserData(luis.getUserName());
+        Usuario newLuis = usuarioManager.getUserData(luis.getUserName());
         assertThat(checkpw(newAuthToken, newLuis.getTokenAuth()), is(true));
         // Check on updated new password.
         assertThat(checkpw("new_luis_password", newLuis.getPassword()), is(true));
@@ -624,7 +628,7 @@ public abstract class UsuarioManagerTest {
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSend() throws Exception
+    public void test_passwordSend_1() throws Exception
     {
         // Preconditions: dirección email válida.
         Usuario userDroid = new Usuario.UsuarioBuilder().copyUsuario(pedro).userName(TO).build();
@@ -662,7 +666,7 @@ public abstract class UsuarioManagerTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_passwordSend_mailFail()
+    public void test_passwordSend_2()
     {
         // Preconditions: dirección email válida.
         Usuario usuarioIn = new Usuario.UsuarioBuilder()

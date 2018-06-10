@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -44,6 +43,7 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
+import static java.util.stream.Stream.of;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
@@ -157,7 +157,7 @@ public class UsuarioManager {
     public List<String> getGcmTokensByComunidad(long comunidadId)
     {
         logger.debug("getGcmTokensByComunidad()");
-        return Stream.of(usuarioDao.getGcmTokensByComunidad(comunidadId))
+        return of(usuarioDao.getGcmTokensByComunidad(comunidadId))
                 .peek(tokensList -> logger.debug("getGcmTokensByComunidad(); gcmTokens size = " + tokensList.size()))
                 .findFirst().get();
     }
@@ -547,9 +547,7 @@ public class UsuarioManager {
         return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
     }
 
-    /**
-     * @throws ServiceException UNAUTHORIZED if the token is different from the one in database or it has an invalid format.
-     */
+
     public String checkHeaderGetUserName(String httpHeaderIn)
     {
         AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
@@ -558,6 +556,20 @@ public class UsuarioManager {
             return headerIn.getUserName();
         }
         throw new ServiceException(UNAUTHORIZED);
+    }
+
+    /**
+     * @throws ServiceException UNAUTHORIZED if the token is different from the one in database or it has an invalid format.
+     */
+    public Usuario checkHeaderGetUserData(String httpHeaderIn)
+    {
+        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        return of(headerIn)
+                .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
+                .map(header -> getUserData(header.getUserName()))
+                .filter(usuarioDb -> checkpw(headerIn.getToken(), usuarioDb.getTokenAuth()))
+                .findFirst()
+                .orElseThrow(() -> new ServiceException(UNAUTHORIZED));
     }
 
     // =================================  HELPERS ======================================

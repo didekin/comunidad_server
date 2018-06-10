@@ -80,10 +80,7 @@ public class UserManagerConnector {
     Usuario completeUser(String userName)
     {
         logger.debug("completeUser()");
-        return new Usuario.UsuarioBuilder()
-                .copyUsuario(usuarioManager.getUserData(userName))
-                .password(null)
-                .build();
+        return usuarioManager.getUserData(userName);
     }
 
     UsuarioComunidad completeUserAndComuRoles(String userName, long comunidadId)

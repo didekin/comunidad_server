@@ -15,8 +15,6 @@ import javax.crypto.SecretKey;
  */
 public interface TkKeyServerProviderIf {
 
-    // TODO: utilizar Bounty Castle BCFKS in app.
-
     SecretKey getCurrentKeyForTk();
 
     SecretKey getNewSymmetricKey() throws NoSuchAlgorithmException;

@@ -3,7 +3,8 @@ package com.didekin.common.auth;
 import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekinlib.http.usuario.TkParamNames;
+import com.didekin.userservice.auth.TkParamNames;
+
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
@@ -21,11 +22,11 @@ import static com.didekin.common.auth.TkAuthClaims.default_issuer_value;
 import static com.didekin.common.auth.TkAuthClaims.doClaimsFromMap;
 import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
 import static com.didekin.common.auth.TkAuthClaims.doExpirationDate;
-import static com.didekinlib.http.usuario.TkParamNames.appId;
-import static com.didekinlib.http.usuario.TkParamNames.audience;
-import static com.didekinlib.http.usuario.TkParamNames.expiration;
-import static com.didekinlib.http.usuario.TkParamNames.issuer;
-import static com.didekinlib.http.usuario.TkParamNames.subject;
+import static com.didekin.userservice.auth.TkParamNames.appId;
+import static com.didekin.userservice.auth.TkParamNames.audience;
+import static com.didekin.userservice.auth.TkParamNames.expiration;
+import static com.didekin.userservice.auth.TkParamNames.issuer;
+import static com.didekin.userservice.auth.TkParamNames.subject;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.SECONDS;

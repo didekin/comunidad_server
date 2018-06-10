@@ -4,7 +4,6 @@ import com.didekin.common.auth.TkAuthClaims;
 import com.didekin.common.auth.TkHeaders;
 import com.didekin.common.auth.TkKeyServerProviderIf;
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.http.usuario.TkParamNames;
 import com.didekinlib.model.common.dominio.BeanBuilder;
 
 import org.jose4j.jwe.JsonWebEncryption;

@@ -67,12 +67,11 @@ public class UsuarioController extends AppControllerAbstract {
     public Usuario getUserData(@RequestHeader("Authorization") String authHeader) throws ServiceException
     {
         logger.debug("getUserData()");
-        Usuario usuarioDb = usuarioManager.getUserData(usuarioManager.checkHeaderGetUserName(authHeader));
+        Usuario usuarioDb = usuarioManager.checkHeaderGetUserData(authHeader);
         return new Usuario.UsuarioBuilder()
                 .userName(usuarioDb.getUserName())
                 .alias(usuarioDb.getAlias())
                 .gcmToken(usuarioDb.getGcmToken())
-                .tokenAuth(usuarioDb.getTokenAuth())
                 .uId(usuarioDb.getuId()).build();
     }
 

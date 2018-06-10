@@ -32,12 +32,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class ComunidadController extends AppControllerAbstract {
 
     private static final Logger logger = LoggerFactory.getLogger(ComunidadController.class.getCanonicalName());
-    private final UsuarioManager usuarioService;
+    private final UsuarioManager usuarioManager;
 
     @Autowired
-    public ComunidadController(UsuarioManager usuarioService)
+    public ComunidadController(UsuarioManager usuarioManager)
     {
-        this.usuarioService = usuarioService;
+        this.usuarioManager = usuarioManager;
     }
 
     @RequestMapping(value = COMUNIDAD_READ + "/{comunidadId}", method = GET, produces = MIME_JSON)
@@ -45,14 +45,13 @@ public class ComunidadController extends AppControllerAbstract {
             throws ServiceException
     {
         logger.debug("getComunidadById()");
-        return usuarioService.getComunidadById(
-                usuarioService.getUserData(usuarioService.checkHeaderGetUserName(accessToken)), comunidadId);
+        return usuarioManager.getComunidadById(usuarioManager.checkHeaderGetUserData(accessToken), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_SEARCH, method = POST, consumes = MIME_JSON, produces = MIME_JSON)
     public List<Comunidad> searchComunidades(@RequestBody Comunidad comunidad)
     {
         logger.debug("searchComunidadOne()");
-        return usuarioService.searchComunidades(comunidad);
+        return usuarioManager.searchComunidades(comunidad);
     }
 }

@@ -14,9 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
-import static com.didekinlib.http.usuario.TkParamNames.appId;
-import static com.didekinlib.http.usuario.TkParamNames.audience;
-import static com.didekinlib.http.usuario.TkParamNames.issuer;
+import static com.didekin.userservice.auth.TkParamNames.appId;
+import static com.didekin.userservice.auth.TkParamNames.audience;
+import static com.didekin.userservice.auth.TkParamNames.issuer;
 import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;

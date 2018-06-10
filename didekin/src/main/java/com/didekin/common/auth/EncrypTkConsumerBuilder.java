@@ -1,6 +1,6 @@
 package com.didekin.common.auth;
 
-import com.didekinlib.http.usuario.TkParamNames;
+import com.didekin.userservice.auth.TkParamNames;
 import com.didekinlib.model.common.dominio.BeanBuilder;
 
 import org.jose4j.jwa.AlgorithmConstraints;
@@ -14,9 +14,9 @@ import java.util.List;
 
 import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekin.common.auth.TkHeaders.getDefaultHeader;
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
-import static com.didekinlib.http.usuario.TkParamNames.audience;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_ce;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_cek;
+import static com.didekin.userservice.auth.TkParamNames.audience;
 import static org.jose4j.jwa.AlgorithmConstraints.ConstraintType.WHITELIST;
 
 /**

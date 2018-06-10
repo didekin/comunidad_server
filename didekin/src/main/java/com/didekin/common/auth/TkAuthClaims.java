@@ -1,7 +1,7 @@
 package com.didekin.common.auth;
 
 
-import com.didekinlib.http.usuario.TkParamNames;
+import com.didekin.userservice.auth.TkParamNames;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -14,11 +14,11 @@ import java.util.Map;
 
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
-import static com.didekinlib.http.usuario.TkParamNames.appId;
-import static com.didekinlib.http.usuario.TkParamNames.audience;
-import static com.didekinlib.http.usuario.TkParamNames.expiration;
-import static com.didekinlib.http.usuario.TkParamNames.issuer;
-import static com.didekinlib.http.usuario.TkParamNames.subject;
+import static com.didekin.userservice.auth.TkParamNames.appId;
+import static com.didekin.userservice.auth.TkParamNames.audience;
+import static com.didekin.userservice.auth.TkParamNames.expiration;
+import static com.didekin.userservice.auth.TkParamNames.issuer;
+import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
 import static java.util.Collections.singletonList;
 

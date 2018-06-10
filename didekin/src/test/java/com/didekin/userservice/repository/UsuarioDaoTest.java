@@ -199,7 +199,7 @@ public abstract class UsuarioDaoTest {
     public void testGetUserDataById_1() throws ServiceException
     {
         Usuario usuario = usuarioDao.getUserDataById(luis.getuId());
-        UsuarioTestUtils.checkBeanUsuarioDb(usuario, luis, false);
+        UsuarioTestUtils.checkBeanUsuario(usuario, luis, false);
     }
 
     @Test()
@@ -219,7 +219,7 @@ public abstract class UsuarioDaoTest {
     public void testGetUserDataByName_1()
     {
         Usuario usuario = usuarioDao.getUserDataByName("luis@luis.com");
-        UsuarioTestUtils.checkBeanUsuarioDb(usuario, luis, true);
+        UsuarioTestUtils.checkBeanUsuario(usuario, luis, true);
     }
 
     @Test

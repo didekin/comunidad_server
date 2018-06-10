@@ -1,15 +1,15 @@
 package com.didekin.common.auth;
 
 
-import com.didekinlib.http.usuario.TkParamNames;
+import com.didekin.userservice.auth.TkParamNames;
 
 import org.jose4j.jwx.JsonWebStructure;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_ce;
-import static com.didekinlib.http.usuario.TkParamNames.algorithm_cek;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_ce;
+import static com.didekin.userservice.auth.TkParamNames.algorithm_cek;
 import static org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256;
 import static org.jose4j.jwe.KeyManagementAlgorithmIdentifiers.DIRECT;
 
