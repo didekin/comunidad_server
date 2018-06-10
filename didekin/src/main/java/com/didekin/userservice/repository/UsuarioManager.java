@@ -6,6 +6,7 @@ import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -550,7 +551,7 @@ public class UsuarioManager {
 
     public String checkHeaderGetUserName(String httpHeaderIn)
     {
-        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
         if (tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(headerIn.getToken())
                 && checkpw(headerIn.getToken(), getUserData(headerIn.getUserName()).getTokenAuth())) {
             return headerIn.getUserName();
@@ -563,7 +564,7 @@ public class UsuarioManager {
      */
     public Usuario checkHeaderGetUserData(String httpHeaderIn)
     {
-        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
         return of(headerIn)
                 .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
                 .map(header -> getUserData(header.getUserName()))
