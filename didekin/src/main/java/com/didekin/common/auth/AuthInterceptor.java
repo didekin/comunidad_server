@@ -7,6 +7,8 @@ import com.google.gson.JsonSyntaxException;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -32,6 +34,7 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.AUTH_HEADER;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthInterceptor.class.getCanonicalName());
     private final EncrypTkConsumerBuilder consumerBuilder;
 
     @Autowired
@@ -65,6 +68,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
             return true;
         } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException e) {
+            logger.debug(e.getMessage());
             throw new ServiceException(TOKEN_ENCRYP_DECRYP_ERROR);
         }
     }
