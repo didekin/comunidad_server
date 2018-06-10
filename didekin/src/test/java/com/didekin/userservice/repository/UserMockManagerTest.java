@@ -4,6 +4,7 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
@@ -59,7 +60,7 @@ public abstract class UserMockManagerTest {
     {
         String httpAuthHeaderIn = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), "fake_appID");
         // Check values from authHeader obtained from DB.
-        AuthHeader httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
+        AuthHeaderIf httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
         assertThat(httpHeaderFromDb.getAppID(), is("fake_appID"));
         assertThat(httpHeaderFromDb.getUserName(), is(pedro.getUserName()));

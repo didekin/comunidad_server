@@ -7,6 +7,7 @@ import com.didekin.userservice.auth.TkParamNames;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -250,7 +251,7 @@ public final class UsuarioTestUtils {
         return claimsIn;
     }
 
-    public static AuthHeader doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
+    public static AuthHeaderIf doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
         String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
         return new AuthHeader.AuthHeaderBuilder().userName(usuario.getUserName()).appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build();

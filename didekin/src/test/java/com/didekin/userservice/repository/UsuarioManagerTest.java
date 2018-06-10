@@ -10,6 +10,7 @@ import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.http.usuario.AuthHeader;
+import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -953,14 +954,14 @@ public abstract class UsuarioManagerTest {
     public void test_checkHeaderGetUserName()
     {
         String httpAuthHeader = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
-        AuthHeader headerIn = new AuthHeader.AuthHeaderBuilder(httpAuthHeader).build();
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpAuthHeader).build();
         // Premises: token in BD.
         assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerIn.getToken()), notNullValue());
         // Exec, check.
         assertThat(usuarioManager.checkHeaderGetUserName(httpAuthHeader), is(pedro.getUserName()));
 
         // Premises: token are not the same.
-        AuthHeader headerDb = doAuthHeader(pedro, usuarioManager.producerBuilder);
+        AuthHeaderIf headerDb = doAuthHeader(pedro, usuarioManager.producerBuilder);
         assertThat(headerIn.getToken().equals(headerDb.getToken()), is(false));
         assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerDb.getToken()), notNullValue());
         // Exec, check.
