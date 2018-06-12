@@ -30,7 +30,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.List;
 
@@ -65,6 +64,7 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -154,7 +154,7 @@ public abstract class UserComuControllerTest {
             USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
             fail();
         } catch (Exception e) {
-            assertThat(e instanceof EOFException, is(true));
+            assertThat(e.getMessage(), containsString("java.io.EOFException"));
         }
 
         // Comunidad asociada a usuario.
