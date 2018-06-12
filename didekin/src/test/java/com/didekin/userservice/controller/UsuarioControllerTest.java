@@ -13,9 +13,7 @@ import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuario.UsuarioEndPoints;
-import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +27,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.mail.MessagingException;
 
@@ -39,9 +36,6 @@ import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
-import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -50,6 +44,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -64,7 +59,6 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 public abstract class UsuarioControllerTest {
 
     private UsuarioEndPoints USER_ENDPOINT;
-    private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
 
     @Autowired
     private HttpHandler retrofitHandler;
@@ -77,7 +71,6 @@ public abstract class UsuarioControllerTest {
     public void setUp()
     {
         USER_ENDPOINT = retrofitHandler.getService(UsuarioEndPoints.class);
-        USERCOMU_ENDPOINT = retrofitHandler.getService(UsuarioComunidadEndPoints.class);
     }
 
 //    ===================================== CONTROLLER TESTS =======================================
@@ -85,13 +78,10 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
-    public void testDeleteUser() throws IOException
+    public void testDeleteUser()
     {
         final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
-        List<UsuarioComunidad> comunidades = USERCOMU_ENDPOINT
-                .seeUserComusByUser(authHeader).execute().body();
-        assertThat(comunidades.size(), is(3));
-        // Borra al usuario y las comunidades previamente encontradas en la consulta.
+        assertThat(authHeader, notNullValue());
         USER_ENDPOINT.deleteUser(authHeader).map(Response::body).test().assertResult(true);
     }
 
@@ -195,18 +185,16 @@ public abstract class UsuarioControllerTest {
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
 
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordSend() throws MessagingException, IOException, ServiceException
+    public void testPasswordSend() throws MessagingException, ServiceException   // TODO: test.
     {
-        // Preconditions.
-        Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();
-        UsuarioComunidad usuarioComunidad =
-                new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
-        assertThat(USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, usuarioComunidad).execute().body(), is(true));
         // Call the controller.
-        USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName())
-                .map(Response::body).test().assertValue(true);
+        USER_ENDPOINT.passwordSend(oneComponent_local_ES, paco.getUserName())
+                .map(Response::body)
+                .test()
+                .assertValue(true);
         // Cleanup mail folder.
         javaMailMonitor.extTimedCleanUp();
     }

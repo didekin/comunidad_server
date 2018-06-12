@@ -60,7 +60,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
@@ -80,6 +79,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 02/04/15
  * Time: 12:12
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public abstract class UserComuControllerTest {
 
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
@@ -104,24 +104,27 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
-    public void testDeleteUserComu() throws IOException
+    public void testDeleteUserComu()
     {
         /* Usuario con una comunidad y comunidad con un usuario: paco en comunidad 6.*/
-        // Exec
-        assertThat(USERCOMU_ENDPOINT.deleteUserComu(
-                userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
-                calle_olmo_55.getC_Id())
-                .execute().body(), is(IS_USER_DELETED));
+        USERCOMU_ENDPOINT
+                .deleteUserComu(
+                        userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
+                        calle_olmo_55.getC_Id()
+                ).map(Response::body).test().assertValue(IS_USER_DELETED);
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComusByUser_1() throws IOException
+    public void testGetComusByUser_1()
     {
-        List<Comunidad> comunidades =
-                USERCOMU_ENDPOINT.getComusByUser(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()))
-                        .execute().body();
+        List<Comunidad> comunidades = USERCOMU_ENDPOINT
+                .getComusByUser(
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(),
+                                pedro.getGcmToken())
+                )
+                .blockingGet().body();
         assertThat(comunidades, hasItems(COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, COMU_EL_ESCORIAL));
     }
 
@@ -129,12 +132,13 @@ public abstract class UserComuControllerTest {
     public void testGetComusByUser_2() throws IOException
     {
         // Intento de consulta por usuario no registrado.
-        Response<List<Comunidad>> response = USERCOMU_ENDPOINT.getComusByUser(
-                doHttpAuthHeader(
-                        new Usuario.UsuarioBuilder().userName("faked@user.com").gcmToken("faked.token").build(),
-                        producerBuilder
-                )
-        ).execute();
+        Response<List<Comunidad>> response = USERCOMU_ENDPOINT
+                .getComusByUser(
+                        doHttpAuthHeader(
+                                new Usuario.UsuarioBuilder().userName("faked@user.com").gcmToken("faked.token").build(),
+                                producerBuilder
+                        )
+                ).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NOT_FOUND.getHttpMessage()));
     }
@@ -142,19 +146,19 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserComuByUserAndComu() throws IOException
+    public void testGetUserComuByUserAndComu()
     {
         // No existe la comunidad.
         String httpAuthHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
         try {
-            USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).execute();
+            USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
             fail();
         } catch (Exception e) {
             assertThat(e instanceof EOFException, is(true));
         }
 
         // Comunidad asociada a usuario.
-        UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).execute().body();
+        UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
         assertThat(userComu.getComunidad(), is(COMU_LA_FUENTE));
         assertThat(userComu.getUsuario().getAlias(), is("pedronevado"));
         assertThat(userComu.getRoles(), is("adm"));
@@ -163,7 +167,7 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testIsOldestAdmonUserComu_1() throws IOException, ServiceException
+    public void testIsOldestAdmonUserComu_1() throws ServiceException
     {
         // luis: PRO, not oldest, in comunidad 3.
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, luis)
@@ -172,20 +176,19 @@ public abstract class UserComuControllerTest {
                 .puerta("puertaB")
                 .roles(PROPIETARIO.function).build();
         final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
-        int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).execute().body();
+        int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).blockingGet().body();
         assertThat(isInserted, is(1));
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getC_Id()).execute().body(), is(false));
+        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getC_Id()).blockingGet().body(), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testIsOldestAdmonUserComu_2() throws IOException, ServiceException
+    public void testIsOldestAdmonUserComu_2() throws ServiceException, IOException
     {
-        Response<Boolean> response = USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(
-                userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
-                999L)
-                .execute();
+        Response<Boolean> response = USERCOMU_ENDPOINT
+                .isOldestOrAdmonUserComu(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()), 999L)
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
     }
@@ -193,20 +196,20 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyComuData() throws IOException
+    public void testModifyComuData()
     {
         assertThat(
                 USERCOMU_ENDPOINT.modifyComuData(
                         userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                         calle_el_escorial)
-                        .execute().body(),
+                        .blockingGet().body(),
                 is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUserComu() throws IOException
+    public void testModifyUserComu()
     {
         // Preconditions.
         assertThat(
@@ -225,15 +228,20 @@ public abstract class UserComuControllerTest {
                 USERCOMU_ENDPOINT.modifyUserComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
                         userComuMod)
-                        .execute().body(),
+                        .blockingGet().body(),
                 is(1));
-        assertThat(usuarioManager.getUserComuByUserAndComu(pedro_plazuelas_10bis.getUsuario().getUserName(), pedro_plazuelas_10bis.getComunidad().getC_Id()).getEscalera(), is("MOD"));
+        assertThat(usuarioManager
+                        .getUserComuByUserAndComu(
+                                pedro_plazuelas_10bis.getUsuario().getUserName(),
+                                pedro_plazuelas_10bis.getComunidad().getC_Id()
+                        ).getEscalera(),
+                is("MOD"));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserComu() throws IOException
+    public void testRegComuAndUserComu()
     {
         // Preconditions a user already registered: luis en comunidades 1 y 2.
         UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(COMU_OTRA, null).portal("B").escalera
@@ -243,55 +251,40 @@ public abstract class UserComuControllerTest {
                 USERCOMU_ENDPOINT.regComuAndUserComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         usuarioCom)
-                        .execute().body();
+                        .blockingGet().body();
         // Check.
         assertThat(isRegOk, is(true));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegComuAndUserAndUserComu() throws IOException
+    public void testRegComuAndUserAndUserComu()
     {
-        boolean isInserted = USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute().body();
+        boolean isInserted = USERCOMU_ENDPOINT
+                .regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).blockingGet().body();
         assertThat(isInserted, is(true));
     }
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserAndUserComu_1() throws IOException
+    public void testRegUserAndUserComu_1()
     {
         // Preconditions: a comunidad is already associated to other users.
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).execute();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).blockingGet();
         Comunidad comunidad = usuarioManager.getComusByUser(USER_PEPE.getUserName()).get(0);
         // Data, exec, check.
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null,
                 PRESIDENTE.function);
-        boolean isInserted = USERCOMU_ENDPOINT.regUserAndUserComu(oneComponent_local_ES, userComu).execute().body();
+        boolean isInserted = USERCOMU_ENDPOINT.regUserAndUserComu(oneComponent_local_ES, userComu).blockingGet().body();
         assertThat(isInserted, is(true));
         assertThat(usuarioManager.getComusByUser(USER_JUAN.getUserName()).size(), is(1));
         assertThat(usuarioManager.getComusByUser(USER_JUAN.getUserName()).get(0), is(comunidad));
     }
 
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testRegUserAndUserComu_2() throws ServiceException, IOException
-    {
-        // Duplicate user (and comunidad).
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, COMU_REAL_JUAN).execute();
-        Usuario usuario = usuarioManager.getUserData(USER_JUAN.getUserName());
-        Comunidad comunidad = usuarioManager.getComusByUser(USER_JUAN.getUserName()).get(0);
-        // Data, exec, check.
-        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, usuario, "portal", "esc",
-                "plantaY", "door22", PRESIDENTE.function);
-        Response<Boolean> response = USERCOMU_ENDPOINT.regUserAndUserComu(twoComponent_local_ES, userComu).execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_DUPLICATE.getHttpMessage()));
-    }
-
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testRegUserComu() throws IOException
+    public void testRegUserComu()
     {
         Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build();
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, null).portal("portal")
@@ -301,7 +294,7 @@ public abstract class UserComuControllerTest {
                 USERCOMU_ENDPOINT.regUserComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         usuarioComunidad)
-                        .execute().body();
+                        .blockingGet().body();
         // Check.
         assertThat(rowInserted, is(1));
     }
@@ -309,14 +302,14 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSeeUserComuByComu() throws IOException
+    public void testSeeUserComuByComu()
     {
         // This is a registered user not asssociated to the comunidad 1 used in the tesst.
         List<UsuarioComunidad> usuarioComus =
                 USERCOMU_ENDPOINT.seeUserComusByComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
                         calle_la_fuente_11.getC_Id())
-                        .execute().body();
+                        .blockingGet().body();
         assertThat(usuarioComus.size(), is(2));
         assertThat(usuarioComus.get(1).getUsuario(), is(pedro));
         assertThat(usuarioComus.get(0).getUsuario(), is(luis));
@@ -325,13 +318,13 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSeeUserComusByUser() throws IOException
+    public void testSeeUserComusByUser()
     {
         // The password in data base is encrypted.
         List<UsuarioComunidad> comunidades =
                 USERCOMU_ENDPOINT.seeUserComusByUser(
                         userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()))
-                        .execute().body();
+                        .blockingGet().body();
         assertThat(comunidades.size(), is(3));
         assertThat(comunidades.get(0).getUsuario(), is(luis));
         assertThat(comunidades.get(0).getComunidad(), is(calle_plazuela_23));
@@ -342,7 +335,7 @@ public abstract class UserComuControllerTest {
 //  ==============================================  INNER CLASSES =============================================
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = { Application.class,
+    @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})

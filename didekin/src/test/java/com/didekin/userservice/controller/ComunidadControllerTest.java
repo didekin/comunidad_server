@@ -8,7 +8,6 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
-import com.didekin.common.testutils.LocaleConstant;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
@@ -32,19 +31,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Response;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
+import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -86,32 +83,21 @@ public abstract class ComunidadControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComuData() throws IOException
+    public void testGetComuData()
     {
-        // Premisa: NO existe el par (comunidad, usuario).
-        assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_el_escorial.getC_Id()), is(false));
-        // Run, check.
-        Response<Comunidad> response =
-                COMU_ENDPOINT.getComuData(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
-                        calle_el_escorial.getC_Id())
-                        .execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
-
         // Premisa: usuario en comunidad.
         assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
-        assertThat(COMU_ENDPOINT.getComuData(
-                userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
-                calle_el_escorial.getC_Id())
-                        .execute().body(),
-                is(calle_el_escorial));
+        COMU_ENDPOINT
+                .getComuData(
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
+                        calle_el_escorial.getC_Id()
+                ).map(Response::body).test().assertValue(calle_el_escorial);
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSearchComunidades_1() throws IOException
+    public void testSearchComunidades_1()
     {
         // Exige comunidadDao.searchThree. Dos ocurrencias en DB que se ajustan a la regla 3.
 
@@ -126,7 +112,7 @@ public abstract class ComunidadControllerTest {
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portal1", "esc2",
                 "planta3", "puerta12", PROPIETARIO.function);
 
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(LocaleConstant.oneComponent_local_ES, userComu);
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, userComu);
 
         // Datos de comunidad de búsqueda.
         Comunidad comunidadSearch = new Comunidad.ComunidadBuilder()
@@ -136,7 +122,7 @@ public abstract class ComunidadControllerTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = COMU_ENDPOINT.searchComunidades(comunidadSearch).execute().body();
+        List<Comunidad> comunidades = COMU_ENDPOINT.searchComunidades(comunidadSearch).blockingGet().body();
 
         // Sólo devuelve la primera ocurrencia, porque se ajusta a la regla_1 de búsqueda.
         assertThat(comunidades.size(), is(1));
@@ -152,7 +138,7 @@ public abstract class ComunidadControllerTest {
     }
 
     @Test
-    public void testSearchComunidades_2() throws IOException
+    public void testSearchComunidades_2()
     {
         // NO existe comunidad en DB.
         final Comunidad comunidad = new Comunidad.ComunidadBuilder()
@@ -161,10 +147,8 @@ public abstract class ComunidadControllerTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = COMU_ENDPOINT.searchComunidades(comunidad).execute().body();
-
         // Return a not null list with 0 items.
-        assertThat(comunidades.size(), is(0));
+        assertThat(COMU_ENDPOINT.searchComunidades(comunidad).blockingGet().body().size(), is(0));
     }
 
 //  ==============================================  INNER CLASSES =============================================

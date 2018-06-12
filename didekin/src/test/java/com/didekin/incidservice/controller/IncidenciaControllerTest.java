@@ -83,7 +83,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Subclasses:
  * - IncidenciaControlerAutowireTest: set of tests that requires a full application context initialization,
  * for autowiring controllers.
- * - IncidenciaControllerAwsTest: set of test executed in client mode (server instantiated in AWS) and, therefore,
+ * - IncidenciaControllerAwsTest: set of test blockingGetd in client mode (server instantiated in AWS) and, therefore,
  * cannot autowire controllers in the tests.
  */
 
@@ -113,13 +113,13 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testCloseIncidencia_1() throws ServiceException, IOException
+    public void testCloseIncidencia_1() throws ServiceException
     {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).execute().body();
-        Incidencia incidencia = ENDPOINT.seeIncidImportancia(accessToken, 3L).execute().body().getIncidImportancia().getIncidencia();
+        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();
+        Incidencia incidencia = ENDPOINT.seeIncidImportancia(accessToken, 3L).blockingGet().body().getIncidImportancia().getIncidencia();
         assertThat(incidencia.getFechaCierre(), nullValue());
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
@@ -127,7 +127,7 @@ abstract class IncidenciaControllerTest {
                 .avances(null)
                 .build();
         // Devuelve 2: no modifica avances.
-        assertThat(ENDPOINT.closeIncidencia(accessToken, resolucion).execute().body(), is(2));
+        assertThat(ENDPOINT.closeIncidencia(accessToken, resolucion).blockingGet().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -140,19 +140,19 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.deleteIncidencia(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 2L)
-                .execute().body(), is(1));
+                .blockingGet().body(), is(1));
         /* Caso: no existe incidencia (es la incidencia borrada).*/
         assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(
                 getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
                 2L)
-                .execute()), is(false));
+                .blockingGet()), is(false));
     }
 
     @Test
     public void testDeleteIncidencia_2() throws IOException
     {
         // Caso: token inválido.
-        Response<Integer> response = ENDPOINT.deleteIncidencia("token_faked", 2L).execute();
+        Response<Integer> response = ENDPOINT.deleteIncidencia("token_faked", 2L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
@@ -168,20 +168,20 @@ abstract class IncidenciaControllerTest {
                 ENDPOINT.deleteIncidencia(
                         getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
                         3L)
-                        .execute()), is(false));
+                        .blockingGet()), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_1() throws ServiceException, IOException
+    public void testModifyIncidImportancia_1() throws ServiceException
     {
         // Caso OK: usuario 'adm', con incidImportancia NO registrada, modifica incidencia e inserta importancia.
         // Premisas.
         assertThat(luis_plazuelas_10bis.hasAdministradorAuthority(), is(true));
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(accessToken, 3L).execute().body().getIncidImportancia();
+        IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(accessToken, 3L).blockingGet().body().getIncidImportancia();
         // No hay registro: fechaAlta == null.
         assertThat(incidImportancia0.getFechaAlta(), nullValue());
         assertThat(incidImportancia0.getImportancia(), is((short) 0));
@@ -192,7 +192,7 @@ abstract class IncidenciaControllerTest {
                 .importancia((short) 1)
                 .build();
 
-        assertThat(ENDPOINT.modifyIncidImportancia(accessToken, incidImportancia0).execute().body(), is(2));
+        assertThat(ENDPOINT.modifyIncidImportancia(accessToken, incidImportancia0).blockingGet().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -207,7 +207,7 @@ abstract class IncidenciaControllerTest {
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 0).build();
 
-        Response<Integer> response = ENDPOINT.modifyIncidImportancia("token_faked", incidImportancia).execute();
+        Response<Integer> response = ENDPOINT.modifyIncidImportancia("token_faked", incidImportancia).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(TOKEN_ENCRYP_DECRYP_ERROR.getHttpMessage()));
     }
@@ -216,11 +216,11 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_1() throws ServiceException, IOException
+    public void testModifyResolucion_1() throws ServiceException
     {
         // Caso OK: modifica resolucion y añade un avance: devuelve 2.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).execute().body();// Nuevos datos.
+        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();// Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
         avances.add(new Avance.AvanceBuilder()
                 .avanceDesc("avance3")
@@ -233,7 +233,7 @@ abstract class IncidenciaControllerTest {
                 .costeEstimado(1111)
                 .avances(avances)
                 .build();
-        assertThat(ENDPOINT.modifyResolucion(accessToken, resolucion).execute().body(), is(2));
+        assertThat(ENDPOINT.modifyResolucion(accessToken, resolucion).blockingGet().body(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -244,7 +244,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 4L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 4L).blockingGet().body();
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
@@ -252,7 +252,7 @@ abstract class IncidenciaControllerTest {
                 .costeEstimado(1111)
                 .build();
 
-        Response<Integer> response = ENDPOINT.modifyResolucion(accessToken, resolucion).execute();
+        Response<Integer> response = ENDPOINT.modifyResolucion(accessToken, resolucion).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
@@ -267,7 +267,7 @@ abstract class IncidenciaControllerTest {
         Resolucion resolucion = ENDPOINT.seeResolucion(
                 getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
                 3L)
-                .execute().body();
+                .blockingGet().body();
         try {
             incidenciaManager.getUsuarioConnector().checkUserInComunidad(paco.getUserName(), resolucion.getComunidadId());
             fail();
@@ -284,7 +284,7 @@ abstract class IncidenciaControllerTest {
         Response<Integer> response = ENDPOINT.modifyResolucion(
                 getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
                 resolucion)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -293,11 +293,11 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_4() throws ServiceException, IOException
+    public void testModifyResolucion_4() throws ServiceException
     {
         // Caso OK: avance con descripción vacía; devuelve 1.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).execute().body();
+        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();
 
         // Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
@@ -308,14 +308,14 @@ abstract class IncidenciaControllerTest {
                 .copyResolucion(resolucion)
                 .avances(avances)
                 .build();
-        assertThat(ENDPOINT.modifyResolucion(accessToken, resolucion).execute().body(), is(1));
+        assertThat(ENDPOINT.modifyResolucion(accessToken, resolucion).blockingGet().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_1() throws IOException
+    public void testRegIncidComment_1()
     {
         // Caso OK.
         IncidenciaUser incidUserComu =
@@ -325,7 +325,7 @@ abstract class IncidenciaControllerTest {
         assertThat(ENDPOINT.regIncidComment(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 comment)
-                .execute().body(), is(1));
+                .blockingGet().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -341,7 +341,7 @@ abstract class IncidenciaControllerTest {
         Response<Integer> response = ENDPOINT.regIncidComment(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 comment)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -359,7 +359,7 @@ abstract class IncidenciaControllerTest {
         Response<Integer> response = ENDPOINT.regIncidComment(
                 getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
                 comment)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
@@ -368,20 +368,20 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidComment_4() throws ServiceException, IOException
+    public void testRegIncidComment_4() throws ServiceException
     {
         // Caso: incidencia está cerrada.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken());
-        Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(accessToken, 6L).execute().body().get(0).getIncidencia();
+        Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(accessToken, 6L).blockingGet().body().get(0).getIncidencia();
         IncidComment comment = doComment("Comment_DESC", incidencia, pedro);
-        assertThat(ENDPOINT.regIncidComment(accessToken, comment).execute().body(), is(1));
+        assertThat(ENDPOINT.regIncidComment(accessToken, comment).blockingGet().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_1() throws ServiceException, IOException
+    public void testRegIncidImportancia_1() throws ServiceException
     {
         // Caso OK: usuario NO adm registrado en comunidad. No existe registro previo de incidencia.
         assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), 4L), is(false));
@@ -393,7 +393,7 @@ abstract class IncidenciaControllerTest {
         // Exec and check: inserta incidencia e incidenciImportancia.
         assertThat(
                 ENDPOINT.regIncidImportancia(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
-                        incidImportancia).execute().body(),
+                        incidImportancia).blockingGet().body(),
                 is(2));
     }
 
@@ -410,7 +410,10 @@ abstract class IncidenciaControllerTest {
                 .build();
 
         Response<Integer> response =
-                ENDPOINT.regIncidImportancia(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), incidImportancia).execute();
+                ENDPOINT.regIncidImportancia(
+                        getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        incidImportancia
+                ).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -419,28 +422,35 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegIncidImportancia_3() throws ServiceException, IOException
+    public void testRegIncidImportancia_3() throws ServiceException
     {
         // Caso: incidencia ya dada de alta en BD. Registro devuelve '1', en lugar de '2'.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        Incidencia incidencia = ENDPOINT.seeIncidImportancia(accessToken, 3L).execute().body().getIncidImportancia().getIncidencia();
+        Incidencia incidencia = ENDPOINT
+                .seeIncidImportancia(accessToken, 3L)
+                .blockingGet().body().getIncidImportancia().getIncidencia();
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .usuarioComunidad(luis_plazuelas_10bis)
                 .importancia((short) 2).build();
-        assertThat(ENDPOINT.regIncidImportancia(accessToken, incidImportancia).execute().body(), is(1));
+        assertThat(ENDPOINT.regIncidImportancia(accessToken, incidImportancia).blockingGet().body(), is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegResolucion_1() throws IOException
+    public void testRegResolucion_1()
     {
         // Caso OK.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 2L, pedro_lafuente.getComunidad().getC_Id(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia, pedro.getUserName(), "resol_incid_2_2", 1111, now().plus(12, DAYS));
+        Resolucion resolucion = doResolucion(incidencia, pedro.getUserName(),
+                "resol_incid_2_2",
+                1111,
+                now().plus(12, DAYS));
         assertThat(ENDPOINT.
-                regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion).execute().body(), is(1));
+                        regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion)
+                        .blockingGet().body(),
+                is(1));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -453,9 +463,14 @@ abstract class IncidenciaControllerTest {
         // Preconditions
         assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getC_Id()), is(false));
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
+        Resolucion resolucion = doResolucion(incidencia,
+                luis.getUserName(),
+                "resol_incid_5_4",
+                22222,
+                now().plus(12, DAYS));
         Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), resolucion).execute();
+                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), resolucion)
+                        .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
@@ -468,9 +483,15 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
         Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia, luis.getUserName(), "resol_incid_5_4", 22222, now().plus(12, DAYS));
+        Resolucion resolucion = doResolucion(
+                incidencia,
+                luis.getUserName(),
+                "resol_incid_5_4",
+                22222,
+                now().plus(12, DAYS));
         Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion).execute();
+                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion)
+                        .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -479,18 +500,19 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeCommentsByIncid_1() throws IOException
+    public void testSeeCommentsByIncid_1()
     {
         // Caso OK.
         final String tokenLuis = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
-        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(tokenLuis, 1L).execute().body();
+        List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(tokenLuis, 1L).blockingGet().body();
         assertThat(comments.size(), is(2));
         // Diferente usuario misma comunidad.
         comments =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 1L).execute().body();
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 1L)
+                        .blockingGet().body();
         assertThat(comments.size(), is(2));
         // Diferente incidencia.
-        comments = ENDPOINT.seeCommentsByIncid(tokenLuis, 5L).execute().body();
+        comments = ENDPOINT.seeCommentsByIncid(tokenLuis, 5L).blockingGet().body();
         assertThat(comments.size(), is(1));
     }
 
@@ -502,7 +524,8 @@ abstract class IncidenciaControllerTest {
     {
         // Usuario no asociado a la comunidad de la incidencia.
         Response<List<IncidComment>> response =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 5L).execute();
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 5L)
+                        .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -515,7 +538,8 @@ abstract class IncidenciaControllerTest {
     {
         // No existe la incidencia; existe la comunidad.
         Response<List<IncidComment>> response =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 999L).execute();
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 999L)
+                        .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
     }
@@ -524,11 +548,12 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeCommentsByIncid_4() throws IOException
+    public void testSeeCommentsByIncid_4()
     {
         // Existe la incidencia; no tiene comentarios.
         List<IncidComment> comments =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 3L).execute().body();
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 3L)
+                        .blockingGet().body();
         assertThat(comments, notNullValue());
         assertThat(comments.size(), is(0));
     }
@@ -537,11 +562,16 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidImportancia_1() throws IOException
+    public void testSeeIncidImportancia_1()
     {
         /* Caso Ok.*/
         IncidAndResolBundle bundle =
-                ENDPOINT.seeIncidImportancia(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()).execute().body();
+                ENDPOINT.
+                        seeIncidImportancia(
+                                getUserConnector()
+                                        .insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()
+                        )
+                        .blockingGet().body();
         IncidImportancia incidImportancia = bundle.getIncidImportancia();
         assertThat(incidImportancia, hasProperty("importancia", is((short) 2)));
         assertThat(bundle.hasResolucion(), is(false));
@@ -556,12 +586,12 @@ abstract class IncidenciaControllerTest {
         // 1. No existe incidencia en BD, existe usuario. Es irrelevante la relación usuario_comunidad.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
         Response<IncidAndResolBundle> response =
-                ENDPOINT.seeIncidImportancia(accessToken, 999L).execute();
+                ENDPOINT.seeIncidImportancia(accessToken, 999L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
 
         // 2. Existe incidencia, existe usuario, no existe relación usuario_comunidad, ni, por lo tanto, usuario_incidencia.
-        response = ENDPOINT.seeIncidImportancia(accessToken, 5L).execute();
+        response = ENDPOINT.seeIncidImportancia(accessToken, 5L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -570,12 +600,12 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsClosedByComu_1() throws ServiceException, IOException
+    public void testSeeIncidsClosedByComu_1() throws ServiceException
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
                         getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), UsuarioTestUtils.calle_olmo_55.getC_Id()
-                ).execute().body();
+                ).blockingGet().body();
         assertThat(incidencias.size(), is(1));
     }
 
@@ -583,11 +613,14 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeIncidsOpenByComu_1() throws ServiceException, IOException
+    public void testSeeIncidsOpenByComu_1() throws ServiceException
     {
         // Caso OK: comunidad con 2 incidencias abiertas.
         List<IncidenciaUser> incidencias =
-                ENDPOINT.seeIncidsOpenByComu(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()).execute().body();
+                ENDPOINT.seeIncidsOpenByComu(
+                        getUserConnector()
+                                .insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()
+                ).blockingGet().body();
         assertThat(incidencias.size(), is(2));
     }
 
@@ -601,7 +634,7 @@ abstract class IncidenciaControllerTest {
         Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 999L)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -616,7 +649,7 @@ abstract class IncidenciaControllerTest {
         Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 calle_plazuela_23.getC_Id())
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -625,13 +658,13 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_1() throws IOException
+    public void testSeeResolucion_1()
     {
         // Caso OK: resolución con avances.
         assertThat(ENDPOINT.seeResolucion(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 3L)
-                .execute().body().getAvances().size(), is(2));
+                .blockingGet().body().getAvances().size(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -644,7 +677,7 @@ abstract class IncidenciaControllerTest {
         Response<Resolucion> response = ENDPOINT.seeResolucion(
                 getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
                 3L)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
@@ -653,13 +686,13 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeUserComusImportancia_1() throws IOException
+    public void testSeeUserComusImportancia_1()
     {
         // Caso OK.
         assertThat(ENDPOINT.seeUserComusImportancia(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
                 4L)
-                .execute().body().size(), is(2));
+                .blockingGet().body().size(), is(2));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
@@ -672,7 +705,7 @@ abstract class IncidenciaControllerTest {
         Response<List<ImportanciaUser>> response = ENDPOINT.seeUserComusImportancia(
                 getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
                 4L)
-                .execute();
+                .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
