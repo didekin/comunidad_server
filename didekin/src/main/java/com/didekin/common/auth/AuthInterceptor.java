@@ -61,7 +61,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
             if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
-                    || !headerIn.getUserName().equals(claims.getSubject())
                     || !claims.getAudience().equals(getDefaultClaim(audience))
                     || !claims.getIssuer().equals(getDefaultClaim(issuer))) {
                 throw new ServiceException(UNAUTHORIZED);

@@ -63,7 +63,6 @@ public abstract class UserMockManagerTest {
         AuthHeaderIf httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
         assertThat(httpHeaderFromDb.getAppID(), is("fake_appID"));
-        assertThat(httpHeaderFromDb.getUserName(), is(pedro.getUserName()));
         assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
     }
 

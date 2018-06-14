@@ -95,7 +95,7 @@ public abstract class AuthInterceptorTest {
     {
         // Path in closed area and token well formed but with cross-validation errors.
         String tokenInLocal = builder.defaultHeadersClaims(pedro.getUserName(), pedro.getGcmToken()).build().getEncryptedTkStr();
-        String headerStr = new AuthHeader.AuthHeaderBuilder().userName(luis.getUserName()).appId(luis.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
+        String headerStr = new AuthHeader.AuthHeaderBuilder().appId(luis.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
         // Check.
         Response<String> response = userComuMockEndPoint.tryTokenInterceptor(headerStr, USER_PATH.substring(1), "read").execute();
         assertThat(response.isSuccessful(), is(false));

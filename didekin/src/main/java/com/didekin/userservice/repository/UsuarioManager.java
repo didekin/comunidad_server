@@ -1,5 +1,6 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.common.auth.EncrypTkConsumerBuilder;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.mail.UsuarioMailService;
@@ -11,6 +12,7 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
+import org.jose4j.jwt.MalformedClaimException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
@@ -65,17 +68,20 @@ public class UsuarioManager {
     final UsuarioDao usuarioDao;
     private final UsuarioMailService usuarioMailService;
     final EncrypTkProducerBuilder producerBuilder;
+    private final EncrypTkConsumerBuilder consumerBuilder;
 
     @Autowired
     UsuarioManager(ComunidadDao comunidadDao,
                    UsuarioDao usuarioDao,
                    UsuarioMailService usuarioMailService,
-                   EncrypTkProducerBuilder producerBuilderIn)
+                   EncrypTkProducerBuilder producerBuilderIn,
+                   EncrypTkConsumerBuilder consumerBuilderIn)
     {
         this.comunidadDao = comunidadDao;
         this.usuarioDao = usuarioDao;
         this.usuarioMailService = usuarioMailService;
         producerBuilder = producerBuilderIn;
+        consumerBuilder = consumerBuilderIn;
     }
 
     public EncrypTkProducerBuilder getProducerBuilder()
@@ -551,12 +557,7 @@ public class UsuarioManager {
 
     public String checkHeaderGetUserName(String httpHeaderIn)
     {
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
-        if (tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(headerIn.getToken())
-                && checkpw(headerIn.getToken(), getUserData(headerIn.getUserName()).getTokenAuth())) {
-            return headerIn.getUserName();
-        }
-        throw new ServiceException(UNAUTHORIZED);
+        return getUser(httpHeaderIn, Usuario::getUserName);
     }
 
     /**
@@ -564,13 +565,7 @@ public class UsuarioManager {
      */
     public Usuario checkHeaderGetUserData(String httpHeaderIn)
     {
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
-        return of(headerIn)
-                .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
-                .map(header -> getUserData(header.getUserName()))
-                .filter(usuarioDb -> checkpw(headerIn.getToken(), usuarioDb.getTokenAuth()))
-                .findFirst()
-                .orElseThrow(() -> new ServiceException(UNAUTHORIZED));
+        return getUser(httpHeaderIn, Function.identity());
     }
 
     // =================================  HELPERS ======================================
@@ -636,5 +631,30 @@ public class UsuarioManager {
             }
         }
         throw new ServiceException(PASSWORD_NOT_SENT);
+    }
+
+    private Function<AuthHeaderIf, Usuario> getUsuarioFromHeaderFunc()
+    {
+        return header -> {
+            try {
+                return getUserData(
+                        consumerBuilder.defaultInit(header.getToken()).build().getClaims().getSubject()
+                );
+            } catch (MalformedClaimException e) {
+                throw new ServiceException(UNAUTHORIZED);
+            }
+        };
+    }
+
+    private <T> T getUser(String httpHeaderIn, Function<Usuario, T> mapToUserReturn)
+    {
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        return of(headerIn)
+                .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
+                .map(getUsuarioFromHeaderFunc())
+                .filter(usuarioDb -> checkpw(headerIn.getToken(), usuarioDb.getTokenAuth()))
+                .map(mapToUserReturn)
+                .findFirst()
+                .orElseThrow(() -> new ServiceException(UNAUTHORIZED));
     }
 }

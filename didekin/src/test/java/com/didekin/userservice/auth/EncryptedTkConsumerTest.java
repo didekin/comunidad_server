@@ -94,7 +94,6 @@ public abstract class EncryptedTkConsumerTest {
         checkPlainTxtClaims(claimsDesEnc);
     }
 
-
     @SuppressWarnings("unchecked")
     @Test
     public void test_GetClaims_2() throws MalformedClaimException

@@ -254,7 +254,7 @@ public final class UsuarioTestUtils {
     public static AuthHeaderIf doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
         String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
-        return new AuthHeader.AuthHeaderBuilder().userName(usuario.getUserName()).appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build();
+        return new AuthHeader.AuthHeaderBuilder().appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build();
     }
 
     public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)

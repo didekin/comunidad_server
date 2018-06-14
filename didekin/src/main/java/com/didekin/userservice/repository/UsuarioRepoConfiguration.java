@@ -1,5 +1,6 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.common.auth.EncrypTkConsumerBuilder;
 import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.repository.RepositoryConfig;
@@ -27,13 +28,18 @@ public class UsuarioRepoConfiguration {
     private final JdbcTemplate jdbcTemplate;
     private final UsuarioMailService mailService;
     private final EncrypTkProducerBuilder producerBuilder;
+    private final EncrypTkConsumerBuilder consumerBuilder;
 
     @Autowired
-    public UsuarioRepoConfiguration(JdbcTemplate jdbcTemplate, UsuarioMailService mailService, EncrypTkProducerBuilder producerBuilderIn)
+    public UsuarioRepoConfiguration(JdbcTemplate jdbcTemplate,
+                                    UsuarioMailService mailService,
+                                    EncrypTkProducerBuilder producerBuilderIn,
+                                    EncrypTkConsumerBuilder consumerBuilderIn)
     {
         this.jdbcTemplate = jdbcTemplate;
         this.mailService = mailService;
         this.producerBuilder = producerBuilderIn;
+        consumerBuilder = consumerBuilderIn;
     }
 
     @Bean
@@ -57,6 +63,6 @@ public class UsuarioRepoConfiguration {
     @Bean
     public UsuarioManager usuarioManager()
     {
-        return new UsuarioManager(comunidadDao(), usuarioDao(), mailService, producerBuilder);
+        return new UsuarioManager(comunidadDao(), usuarioDao(), mailService, producerBuilder, consumerBuilder);
     }
 }

@@ -57,7 +57,6 @@ public class UserMockManager {
     {
         String newTokenStr = updateTokenAuthInDb(userName, appIDIn);
         return new AuthHeader.AuthHeaderBuilder()
-                .userName(userName)
                 .appId(appIDIn)
                 .tokenInLocal(newTokenStr)
                 .build()
