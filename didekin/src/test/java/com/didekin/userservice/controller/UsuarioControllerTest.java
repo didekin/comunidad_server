@@ -14,6 +14,7 @@ import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuario.UsuarioEndPoints;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,9 @@ import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
+import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_PLAZUELA_5;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -188,10 +192,15 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testPasswordSend() throws MessagingException, ServiceException   // TODO: test.
+    public void testPasswordSend() throws MessagingException, ServiceException
     {
+        // Preconditions.
+        Usuario usuario = new Usuario.UsuarioBuilder().userName(TO).alias("yo").password("yo_password").build();
+        UsuarioComunidad usuarioComunidad =
+                new UsuarioComunidad.UserComuBuilder(COMU_LA_PLAZUELA_5, usuario).userComuRest(COMU_PLAZUELA5_JUAN).build();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regComuAndUserAndUserComu(usuarioComunidad)), is(true));
         // Call the controller.
-        USER_ENDPOINT.passwordSend(oneComponent_local_ES, paco.getUserName())
+        USER_ENDPOINT.passwordSend(oneComponent_local_ES, usuario.getUserName())
                 .map(Response::body)
                 .test()
                 .assertValue(true);
