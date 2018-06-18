@@ -72,7 +72,6 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
@@ -351,18 +350,15 @@ public abstract class UsuarioManagerTest {
     {
         // UsuarioComunidad en BD.
         assertThat(usuarioManager.getUserComuByUserAndComu(pedro.getUserName(), 1L), is(pedro_plazuelas_10bis));
+
         // No existe la combinación (usario, comunidad); existe la comunidad.
-        try {
-            usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L);
-            fail();
-        }          catch(ServiceException se){
-            assertThat(se.getExceptionMsg(), is(USER_COMU_NOT_FOUND));
-        }
+        assertThat(usuarioManager.getUserComuByUserAndComu("paco@paco.com", 1L), nullValue());
+
         // No existe la comunidad.
         try {
             usuarioManager.getUserComuByUserAndComu("paco@paco.com", 111L);
             fail();
-        }          catch (ServiceException se){
+        } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
         }
     }

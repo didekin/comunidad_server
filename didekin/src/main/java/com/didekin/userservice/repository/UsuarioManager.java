@@ -189,7 +189,8 @@ public class UsuarioManager {
     }
 
     /**
-     * @throws ServiceException COMUNIDAD_NOT_FOUND, USER_COMU_NOT_FOUND, if there is not userComu in DB.
+     * @return an instance of usuarioComunidad or null, if there exists the comunidad.
+     * @throws ServiceException COMUNIDAD_NOT_FOUND, if there is not userComu in DB and there doesn't exist the comunidad.
      */
     public @Null UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws ServiceException
     {
@@ -197,7 +198,6 @@ public class UsuarioManager {
         final UsuarioComunidad userComu = usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
         if (userComu == null) {
             getComunidadById(comunidadId); // throw COMUNIDAD_NOT_FOUND
-            throw new ServiceException(USER_COMU_NOT_FOUND);
         }
         return userComu;
     }
