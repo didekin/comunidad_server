@@ -64,7 +64,6 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -154,7 +153,7 @@ public abstract class UserComuControllerTest {
             USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
             fail();
         } catch (Exception e) {
-            assertThat(e.getMessage(), containsString("java.io.EOFException"));
+            assertThat(e.getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
         }
 
         // Comunidad asociada a usuario.

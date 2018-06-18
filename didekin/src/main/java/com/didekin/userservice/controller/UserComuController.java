@@ -57,58 +57,58 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USERCOMU_DELETE + "/{comunidadId}", method = DELETE)
-    public int deleteUserComu(@RequestHeader("Authorization") String accessToken,
+    public int deleteUserComu(@RequestHeader("Authorization") String authHeader,
                               @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("deleteUserComu()");
         return usuarioManager.deleteUserComunidad(
                 new UsuarioComunidad.UserComuBuilder(
                         new Comunidad.ComunidadBuilder().c_id(comunidadId).build(),
-                        usuarioManager.checkHeaderGetUserData(accessToken)
+                        usuarioManager.checkHeaderGetUserData(authHeader)
                 ).build()
         );
     }
 
     @RequestMapping(value = COMUS_BY_USER, method = GET, produces = MIME_JSON)
-    public List<Comunidad> getComusByUser(@RequestHeader("Authorization") String accessToken)
+    public List<Comunidad> getComusByUser(@RequestHeader("Authorization") String authHeader)
     {
         logger.debug("getComusByUser()");
-        return usuarioManager.getComusByUser(usuarioManager.checkHeaderGetUserName(accessToken));
+        return usuarioManager.getComusByUser(usuarioManager.checkHeaderGetUserName(authHeader));
     }
 
 
     @RequestMapping(value = USERCOMU_READ + "/{comunidadId}", method = GET, produces = MIME_JSON)
-    public UsuarioComunidad getUserComuByUserAndComu(@RequestHeader("Authorization") String accessToken, @PathVariable long
+    public UsuarioComunidad getUserComuByUserAndComu(@RequestHeader("Authorization") String authHeader, @PathVariable long
             comunidadId) throws ServiceException
     {
         logger.debug("getUserComuByUserAndComu");
-        return usuarioManager.getUserComuByUserAndComu(usuarioManager.checkHeaderGetUserName(accessToken), comunidadId);
+        return usuarioManager.getUserComuByUserAndComu(usuarioManager.checkHeaderGetUserName(authHeader), comunidadId);
     }
 
     @RequestMapping(value = COMUNIDAD_OLDEST_USER + "/{comunidadId}", method = GET)
-    public boolean isOldestOrAdmonUserComu(@RequestHeader("Authorization") String accessToken,
+    public boolean isOldestOrAdmonUserComu(@RequestHeader("Authorization") String authHeader,
                                            @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("isOldestOrAdmonUserComu()");
         return usuarioManager.checkComuDataModificationPower(
-                usuarioManager.checkHeaderGetUserData(accessToken),
+                usuarioManager.checkHeaderGetUserData(authHeader),
                 new Comunidad.ComunidadBuilder().c_id(comunidadId).build()
         );
     }
 
     @RequestMapping(value = COMUNIDAD_WRITE, method = PUT, consumes = MIME_JSON)
-    public int modifyComuData(@RequestHeader("Authorization") String accessToken,
+    public int modifyComuData(@RequestHeader("Authorization") String authHeader,
                               @RequestBody final Comunidad comunidad)
             throws ServiceException
     {
         logger.info("modifyComuData()");
         return usuarioManager.modifyComuData(
-                usuarioManager.checkHeaderGetUserData(accessToken),
+                usuarioManager.checkHeaderGetUserData(authHeader),
                 comunidad);
     }
 
     @RequestMapping(value = USERCOMU_MODIFY, method = PUT, consumes = MIME_JSON)
-    public int modifyUserComu(@RequestHeader("Authorization") String accessToken,
+    public int modifyUserComu(@RequestHeader("Authorization") String authHeader,
                               @RequestBody final UsuarioComunidad userComu) throws ServiceException
     {
         logger.debug("modifyUserComu()");
@@ -116,7 +116,7 @@ public class UserComuController extends AppControllerAbstract {
                 (
                         new UsuarioComunidad.UserComuBuilder(
                                 userComu.getComunidad(),
-                                usuarioManager.checkHeaderGetUserData(accessToken)
+                                usuarioManager.checkHeaderGetUserData(authHeader)
                         ).userComuRest(userComu)
                                 .build()
                 );
@@ -165,18 +165,18 @@ public class UserComuController extends AppControllerAbstract {
     }
 
     @RequestMapping(value = USERCOMUS_BY_COMU + "/{comunidadId}", method = GET, produces = MIME_JSON)
-    public List<UsuarioComunidad> seeUserComusByComu(@RequestHeader("Authorization") String accessToken,
+    public List<UsuarioComunidad> seeUserComusByComu(@RequestHeader("Authorization") String authHeader,
                                                      @PathVariable long comunidadId) throws ServiceException
     {
         logger.debug("seeUserComusByComu()");
-        return usuarioManager.seeUserComusByComu(usuarioManager.checkHeaderGetUserName(accessToken), comunidadId);
+        return usuarioManager.seeUserComusByComu(usuarioManager.checkHeaderGetUserName(authHeader), comunidadId);
     }
 
     @RequestMapping(value = USERCOMUS_BY_USER, produces = MIME_JSON, method = GET)
-    public List<UsuarioComunidad> seeUserComusByUser(@RequestHeader("Authorization") String accessToken)
+    public List<UsuarioComunidad> seeUserComusByUser(@RequestHeader("Authorization") String authHeader)
             throws ServiceException
     {
         logger.debug("seeUserComusByUser()");
-        return usuarioManager.seeUserComusByUser(usuarioManager.checkHeaderGetUserName(accessToken));
+        return usuarioManager.seeUserComusByUser(usuarioManager.checkHeaderGetUserName(authHeader));
     }
 }

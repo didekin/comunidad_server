@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 import static com.didekin.common.repository.ServiceException.COMUNIDAD_UNIQUE_KEY;
 import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
@@ -39,6 +40,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
@@ -47,6 +49,7 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
+import static java.util.function.Function.identity;
 import static java.util.stream.Stream.of;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
 import static org.mindrot.jbcrypt.BCrypt.gensalt;
@@ -186,12 +189,17 @@ public class UsuarioManager {
     }
 
     /**
-     * @return null if the pair usuarioComunidad doesn't exist.
+     * @throws ServiceException COMUNIDAD_NOT_FOUND, USER_COMU_NOT_FOUND, if there is not userComu in DB.
      */
-    public UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws ServiceException
+    public @Null UsuarioComunidad getUserComuByUserAndComu(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("getUserComuFullByUserAndComu()");
-        return usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
+        final UsuarioComunidad userComu = usuarioDao.getUserComuFullByUserAndComu(userName, comunidadId);
+        if (userComu == null) {
+            getComunidadById(comunidadId); // throw COMUNIDAD_NOT_FOUND
+            throw new ServiceException(USER_COMU_NOT_FOUND);
+        }
+        return userComu;
     }
 
 
@@ -565,7 +573,7 @@ public class UsuarioManager {
      */
     public Usuario checkHeaderGetUserData(String httpHeaderIn)
     {
-        return getUser(httpHeaderIn, Function.identity());
+        return getUser(httpHeaderIn, identity());
     }
 
     // =================================  HELPERS ======================================
