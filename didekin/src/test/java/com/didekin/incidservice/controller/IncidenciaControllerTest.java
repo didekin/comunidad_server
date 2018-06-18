@@ -11,7 +11,6 @@ import com.didekin.common.springprofile.Profiles;
 import com.didekin.incidservice.repository.IncidenciaManager;
 import com.didekin.incidservice.repository.IncidenciaManagerConfiguration;
 import com.didekin.incidservice.repository.UserManagerConnector;
-import com.didekin.userservice.testutils.UsuarioTestUtils;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.incidencia.IncidenciaServEndPoints;
 import com.didekinlib.model.incidencia.dominio.Avance;
@@ -51,6 +50,7 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenci
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
@@ -618,7 +618,7 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), ronda_plazuela_10bis.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), calle_el_escorial.getC_Id()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(0));
     }
@@ -685,7 +685,20 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testSeeResolucion_2() throws IOException
+    public void testSeeResolucion_2()
+    {
+        // Caso OK: no hay resolución.    // TODO: fail.
+        assertThat(ENDPOINT.seeResolucion(
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                1L)
+                .blockingGet().body(), nullValue());
+    }
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
+    @Sql(executionPhase = AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testSeeResolucion_3() throws IOException
     {
         // Caso: usuario no asociado a la comunidad.
         Response<Resolucion> response = ENDPOINT.seeResolucion(
