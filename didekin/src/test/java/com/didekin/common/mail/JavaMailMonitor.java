@@ -92,7 +92,7 @@ public class JavaMailMonitor {
     {
         // Cleanup mail folder.
         folder.open(READ_WRITE);
-        waitAtMost(12, SECONDS).until(() -> folder.getMessageCount() != 0);
+        waitAtMost(20, SECONDS).until(() -> folder.getMessageCount() != 0);
         closeStoreAndFolder();
     }
 

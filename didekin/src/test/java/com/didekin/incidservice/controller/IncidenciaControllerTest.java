@@ -52,6 +52,7 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenci
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
@@ -604,7 +605,20 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), UsuarioTestUtils.calle_olmo_55.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), calle_olmo_55.getC_Id()
+                ).blockingGet().body();
+        assertThat(incidencias.size(), is(1));
+    }
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
+    @Sql(executionPhase = AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
+    public void testSeeIncidsClosedByComu_2() throws ServiceException
+    {
+        List<IncidenciaUser> incidencias =
+                ENDPOINT.seeIncidsClosedByComu(
+                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), calle_olmo_55.getC_Id()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(1));
     }
