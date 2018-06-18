@@ -68,7 +68,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -145,16 +144,13 @@ public abstract class UserComuControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserComuByUserAndComu()
+    public void testGetUserComuByUserAndComu() throws IOException
     {
         // No existe la comunidad.
         String httpAuthHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
-        try {
-            USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
-            fail();
-        } catch (Exception e) {
-            assertThat(e.getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
-        }
+        Response<UsuarioComunidad> response = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
+        assertThat(response.isSuccessful(), is(false));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
 
         // Comunidad asociada a usuario.
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
