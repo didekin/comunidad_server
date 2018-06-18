@@ -618,9 +618,9 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), calle_olmo_55.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), ronda_plazuela_10bis.getC_Id()
                 ).blockingGet().body();
-        assertThat(incidencias.size(), is(1));
+        assertThat(incidencias.size(), is(0));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
