@@ -24,6 +24,8 @@ import java.util.List;
 import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;
@@ -301,8 +303,8 @@ public abstract class UsuarioDaoTest {
         long maxPk = usuarioDao.getMaxPk();
 
         Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
-        usuarioDao.insertUsuario(UsuarioTestUtils.USER_PACO, conn);
-        assertThat(UsuarioTestUtils.USER_PACO.getuId() > maxPk, is(true));
+        usuarioDao.insertUsuario(USER_PACO, conn);
+        assertThat(USER_PACO.getuId() > maxPk, is(true));
 
         maxPk = usuarioDao.getMaxPk();
         long pkUsuario = usuarioDao.insertUsuario(UsuarioTestUtils.USER_LUIS, conn);
@@ -317,15 +319,14 @@ public abstract class UsuarioDaoTest {
     public void testInsertUsuario_2() throws Exception
     {
         Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
-        usuarioDao.insertUsuario(UsuarioTestUtils.USER_PACO, conn);
+        usuarioDao.insertUsuario(USER_PACO, conn);
 
         if (conn != null) {
             conn.close();
         }
-
         try {
             conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
-            usuarioDao.insertUsuario(UsuarioTestUtils.USER_PACO, conn);
+            usuarioDao.insertUsuario(USER_PACO, conn);
             fail();
         } catch (Exception e) {
             assertThat(e.getMessage(), allOf(containsString(DUPLICATE_ENTRY), containsString(USER_NAME)));
@@ -333,6 +334,26 @@ public abstract class UsuarioDaoTest {
             if (conn != null) {
                 conn.close();
             }
+        }
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testInsertUsuario_3() throws Exception
+    {
+        Usuario usuario1 = new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).gcmToken("gcm_token_1").build();
+        Usuario usuario2 = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).gcmToken("gcm_token_1").build();
+
+        Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+        assertThat(usuarioDao.insertUsuario(usuario1, conn) > 0L, is(true));
+        if (conn != null) {
+            conn.close();
+        }
+
+        conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+        assertThat(usuarioDao.insertUsuario(usuario2, conn) > 0L, is(false));
+        if (conn != null) {
+            conn.close();
         }
     }
 
@@ -529,7 +550,7 @@ public abstract class UsuarioDaoTest {
         assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), is("update_luis_tokenAuth"));
         // Check.
         assertThat(usuarioDao.updateTokenAuthById(luis.getuId(), null), is(true));
-        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(),nullValue());
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), nullValue());
 
         /* Premises: user not in DB.*/
         try {
