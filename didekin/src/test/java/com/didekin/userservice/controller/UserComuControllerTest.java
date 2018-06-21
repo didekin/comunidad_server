@@ -304,6 +304,38 @@ public abstract class UserComuControllerTest {
         assertThat(rowInserted, is(1));
     }
 
+
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testRegUserComu_B()
+    {
+        // Comunidad1 and user1 in DB.
+         regUserComuWithGcmTk(COMU_REAL_JUAN, "juan_gcm_token");
+        Comunidad comunidad1 = usuarioManager.getComusByUser(USER_JUAN.getUserName()).get(0);
+        /* Comunidad2 and user2 in DB.*/
+        regUserComuWithGcmTk(COMU_TRAV_PLAZUELA_PEPE, "pepe_mock_gcmTk");
+        // Add comunidad1 and user2 (her data are in cache now and they can be null).
+        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad1, null, "portal",
+                "esc", "planta2", "doorJ", PROPIETARIO.function);
+        assertThat(usuarioManager.regUserComu(userComu) > 0, is(true));
+    }
+
+    public  String regUserComuWithGcmTk(UsuarioComunidad userComuIn, String gcmToken)
+    {
+        UsuarioComunidad userComuWithGcmTk = new UsuarioComunidad.UserComuBuilder
+                (
+                        userComuIn.getComunidad(),
+                        new Usuario.UsuarioBuilder()
+                                .copyUsuario(userComuIn.getUsuario())
+                                .gcmToken(gcmToken)  // We need this token in the server.
+                                .build()
+                )
+                .userComuRest(userComuIn)
+                .build();
+
+        return userMockManager.regComuAndUserAndUserComu(userComuWithGcmTk);
+    }
+
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
