@@ -31,9 +31,11 @@ import javax.validation.constraints.Null;
 
 import static com.didekin.common.repository.ServiceException.COMUNIDAD_UNIQUE_KEY;
 import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
+import static com.didekin.common.repository.ServiceException.GCM_TOKEN_KEY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
 import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.http.exception.GenericExceptionMsg.DATABASE_ERROR;
 import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
@@ -600,18 +602,21 @@ public class UsuarioManager {
 
     static void doCatchSqlException(Connection conn, SQLException se)
     {
+        logger.error("doCatchSqlException(): %s%n", se.toString());
+
         try {
             if (conn != null) {
                 conn.rollback();
             }
-            if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(USER_NAME)) {
+            if (se.getMessage().contains(DUPLICATE_ENTRY) &&
+                    (se.getMessage().contains(USER_NAME) || se.getMessage().contains(GCM_TOKEN_KEY))) {
                 throw new ServiceException(USER_DUPLICATE);
             }
             if (se.getMessage().contains(DUPLICATE_ENTRY) && se.getMessage().contains(COMUNIDAD_UNIQUE_KEY)) {
                 throw new ServiceException(COMUNIDAD_DUPLICATE);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(se.getMessage(), se);
+            throw new ServiceException(DATABASE_ERROR);
         }
     }
 
@@ -630,6 +635,8 @@ public class UsuarioManager {
 
     private void doCatchMailException(Connection conn, MailException me)
     {
+        logger.error("doCatchMailException(): %s%n", me.getCause().getMessage());
+
         if (conn != null) {
             try {
                 conn.rollback();

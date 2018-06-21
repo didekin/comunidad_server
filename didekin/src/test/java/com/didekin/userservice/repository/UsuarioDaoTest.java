@@ -19,9 +19,11 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
+import static com.didekin.common.repository.ServiceException.GCM_TOKEN_KEY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
@@ -324,17 +326,8 @@ public abstract class UsuarioDaoTest {
         if (conn != null) {
             conn.close();
         }
-        try {
-            conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
-            usuarioDao.insertUsuario(USER_PACO, conn);
-            fail();
-        } catch (Exception e) {
-            assertThat(e.getMessage(), allOf(containsString(DUPLICATE_ENTRY), containsString(USER_NAME)));
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+
+        tryCheckInsertUser(USER_PACO, conn, USER_NAME);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -350,11 +343,7 @@ public abstract class UsuarioDaoTest {
             conn.close();
         }
 
-        conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
-        assertThat(usuarioDao.insertUsuario(usuario2, conn) > 0L, is(false));
-        if (conn != null) {
-            conn.close();
-        }
+        tryCheckInsertUser(usuario2, conn, GCM_TOKEN_KEY);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -558,6 +547,23 @@ public abstract class UsuarioDaoTest {
             fail();
         } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));
+        }
+    }
+
+    // ====================================== Helpers ======================================
+
+    private void tryCheckInsertUser(Usuario usuario2, Connection conn, String exceptionKey) throws SQLException
+    {
+        try {
+            conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+            usuarioDao.insertUsuario(usuario2, conn);
+            fail();
+        } catch (Exception e) {
+            assertThat(e.getMessage(), allOf(containsString(DUPLICATE_ENTRY), containsString(exceptionKey)));
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
 

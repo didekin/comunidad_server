@@ -714,7 +714,8 @@ public abstract class UsuarioManagerTest {
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
-        // Exec.
+
+        // Exec: mailServiceForTest is wrongly configured.
         try {
             usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES, mailServiceForTest);
             fail();

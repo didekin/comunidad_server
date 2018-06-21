@@ -15,6 +15,7 @@ public class ServiceException extends RuntimeException {
     public static final String GENERATED_KEY = "getGeneratedKeys()_NO_VALUE";
     public static final String USER_NAME = "user_name";
     public static final String USER_COMU_PK = "key 'PRIMARY'";
+    public static final String GCM_TOKEN_KEY = "key 'gcm_token'";
 
     private final ExceptionMsgIf exceptionMsg;
 
