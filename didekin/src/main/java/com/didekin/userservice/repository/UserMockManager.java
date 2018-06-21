@@ -55,6 +55,7 @@ public class UserMockManager {
 
     public String insertAuthTkGetNewAuthTkStr(String userName, String appIDIn)
     {
+        logger.debug("insertAuthTkGetNewAuthTkStr()");
         String newTokenStr = updateTokenAuthInDb(userName, appIDIn);
         return new AuthHeader.AuthHeaderBuilder()
                 .appId(appIDIn)

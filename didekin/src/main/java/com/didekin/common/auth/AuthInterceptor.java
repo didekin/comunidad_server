@@ -46,6 +46,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
     {
+        logger.debug("preHandle()");
         String authHeader = request.getHeader(AUTH_HEADER);
 
         if (authHeader == null || authHeader.isEmpty()) {
@@ -63,6 +64,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
                     || !claims.getAudience().equals(getDefaultClaim(audience))
                     || !claims.getIssuer().equals(getDefaultClaim(issuer))) {
+                logger.error("preHandle(): claims not valid");
                 throw new ServiceException(UNAUTHORIZED);
             }
             return true;

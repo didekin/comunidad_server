@@ -108,6 +108,7 @@ public class UserManagerConnector {
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
     public String insertTokenGetHeaderStr(String userName, String appIDIn)
     {
+        logger.debug("insertTokenGetHeaderStr()");
         checkActiveProfiles(env);
         return userMockManager.insertAuthTkGetNewAuthTkStr(userName, appIDIn);
     }

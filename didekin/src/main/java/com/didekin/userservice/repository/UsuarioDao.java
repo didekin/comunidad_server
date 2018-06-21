@@ -372,7 +372,7 @@ public class UsuarioDao {
 
     boolean updateTokenAuthByUserName(String userName, String tokenAuthBCrypted)
     {
-        logger.debug("updateTokenAuthById()");
+        logger.debug("updateTokenAuthByUserName()");
         if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_NAME.toString(), tokenAuthBCrypted, userName) == 1) {
             return TRUE;
         }
