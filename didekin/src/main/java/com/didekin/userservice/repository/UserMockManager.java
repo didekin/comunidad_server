@@ -157,6 +157,7 @@ public class UserMockManager {
 
     private String updateTokenAuthInDb(String userName, String appId)
     {
+        logger.debug("updateTokenAuthInDb()");
         String tokenAuthStr = usuarioManager.producerBuilder.defaultHeadersClaims(userName, appId).build().getEncryptedTkStr();
         return usuarioDao.updateTokenAuthByUserName(userName, hashpw(tokenAuthStr, BCRYPT_SALT.get())) ? tokenAuthStr : null;
     }

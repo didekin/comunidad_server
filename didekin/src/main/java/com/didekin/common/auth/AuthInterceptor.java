@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
+import static com.didekin.common.auth.TkAuthClaims.invalid_claim_values;
 import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
@@ -61,12 +62,20 @@ public class AuthInterceptor implements HandlerInterceptor {
         try {
             AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
+
             if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
                     || !claims.getAudience().equals(getDefaultClaim(audience))
                     || !claims.getIssuer().equals(getDefaultClaim(issuer))) {
-                logger.error("preHandle(): claims not valid");
+
+                logger.error(
+                        invalid_claim_values
+                        + "\n appId: " + claims.getClaimValue(appId.getName()
+                        + "\n audience: " + claims.getAudience()
+                        + "\n issuer: " + claims.getIssuer())
+                );
                 throw new ServiceException(UNAUTHORIZED);
             }
+
             return true;
         } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException e) {
             logger.debug(e.getMessage());

@@ -540,12 +540,14 @@ public class UsuarioManager {
      */
     String updateTokenAuthInDb(Usuario usuarioIn)
     {
+        logger.debug("updateTokenAuthInDb(usuarioIn)");
         String tokenAuthStr = producerBuilder.defaultHeadersClaims(usuarioIn.getUserName(), usuarioIn.getGcmToken()).build().getEncryptedTkStr();
         return updateTokenAuthInDb(usuarioIn, tokenAuthStr);
     }
 
     String updateTokenAuthInDb(Usuario usuarioIn, String newTokenAuthStr)
     {
+        logger.debug("updateTokenAuthInDb(usuarioIn,newTokenAuthStr)");
         return usuarioDao.updateTokenAuthById(usuarioIn.getuId(), hashpw(newTokenAuthStr, BCRYPT_SALT.get())) ? newTokenAuthStr : null;
     }
 
