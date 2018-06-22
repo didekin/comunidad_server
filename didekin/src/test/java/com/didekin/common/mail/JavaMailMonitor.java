@@ -14,9 +14,9 @@ import javax.mail.internet.InternetAddress;
 import static com.didekin.common.mail.BundleUtil.getLocale;
 import static com.didekin.common.mail.BundleUtil.mailBundleName;
 import static com.didekin.common.mail.BundleUtil.usuarioMailBundleName;
-import static com.didekin.userservice.mail.UsuarioMailConfiguration.text_plain_UTF_8;
 import static com.didekin.common.mail.MailKey.SALUDO;
 import static com.didekin.common.mail.MailKey.SUBJECT;
+import static com.didekin.userservice.mail.UsuarioMailConfiguration.text_plain_UTF_8;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.TO;
 import static com.didekin.userservice.mail.UsuarioMailConfigurationPre.strato_buzon_folder;
 import static com.didekin.userservice.mail.UsuarioMailKey.TXT_CHANGE_Password;
@@ -50,7 +50,15 @@ public class JavaMailMonitor {
         folder = store.getFolder(strato_buzon_folder);
     }
 
-    // ............... Internal helpers ...................
+    // ...................... Helpers ......................
+
+    public void extSetUp() throws MessagingException
+    {
+        if (!folder.isOpen()) {
+            folder.open(READ_WRITE);
+        }
+        expungeFolder();
+    }
 
     public void closeStoreAndFolder() throws MessagingException
     {
@@ -73,20 +81,11 @@ public class JavaMailMonitor {
         folder.expunge();
     }
 
-    // ............... External helpers ...................
-
     public Folder getFolder()
     {
         return folder;
     }
 
-    public void extSetUp() throws MessagingException
-    {
-        if (!folder.isOpen()) {
-            folder.open(READ_WRITE);
-        }
-        expungeFolder();
-    }
 
     public void extTimedCleanUp() throws MessagingException
     {
@@ -128,6 +127,7 @@ public class JavaMailMonitor {
     public String getPswdFromMsg() throws MessagingException, IOException
     {
         waitAtMost(30, SECONDS).until(() -> folder.getMessageCount() != 0);
+        // Take the last one in the folder.
         String msgContent = (String) folder.getMessages()[0].getContent();
         return msgContent.split(getDoubleLineSeparatorFromMsg(msgContent))[1].split(":")[1].trim();
     }

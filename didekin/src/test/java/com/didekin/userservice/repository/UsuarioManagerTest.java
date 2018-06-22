@@ -111,6 +111,8 @@ public abstract class UsuarioManagerTest {
     @Autowired
     private UsuarioManager usuarioManager;
     @Autowired
+    private UserMockManager userMockManager;
+    @Autowired
     private JavaMailMonitor javaMailMonitor;
     @Autowired
     UsuarioMailServiceForTest mailServiceForTest;
@@ -511,20 +513,24 @@ public abstract class UsuarioManagerTest {
                 .userName(TO)
                 .build();
 
-        assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
-        // Check new data in DB.
-        assertThat(usuarioManager.getUserData(TO), allOf(
-                hasProperty("uId", equalTo(7L)),
-                hasProperty("alias", is("juan_no_auth")))
-        );
-        // Login changed.
-        try {
-            usuarioManager.login(oldUser);
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (javaMailMonitor){
+            javaMailMonitor.extSetUp();
+            assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
+            // Check new data in DB.
+            assertThat(usuarioManager.getUserData(TO), allOf(
+                    hasProperty("uId", equalTo(7L)),
+                    hasProperty("alias", is("juan_no_auth")))
+            );
+            // Login changed.
+            try {
+                usuarioManager.login(oldUser);
+                fail();
+            } catch (ServiceException e) {
+                assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
+            }
+            checkPswdSentAndLogin(usuarioNew);
         }
-        checkPswdSentAndLogin(usuarioNew);
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -638,37 +644,35 @@ public abstract class UsuarioManagerTest {
     @Test
     public void test_passwordSend_1() throws Exception
     {
-        // Preconditions: dirección email válida.
+        // Preconditions:
         Usuario userDroid = new Usuario.UsuarioBuilder().copyUsuario(pedro).userName(TO).build();
         UsuarioComunidad userComu = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, userDroid).userComuRest(pedro_escorial).build();
-        assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, twoComponent_local_ES), is(true));
-        // Check password generated and sent.
-        javaMailMonitor.extSetUp();
-        String password = javaMailMonitor.getPswdFromMsg();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regComuAndUserAndUserComu(userComu)), is(true));
         // Check login.
-        Usuario userReg = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserData(TO)).password(password).build();
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userReg)), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userDroid)), is(true));
 
         // Exec test.
-        assertThat(usuarioManager.passwordSend(userReg.getUserName(), oneComponent_local_ES), is(true));
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (javaMailMonitor){
+            javaMailMonitor.extSetUp();
+            assertThat(usuarioManager.passwordSend(usuarioManager.getUserData(TO).getUserName(), oneComponent_local_ES), is(true));
+            // Login no válido una vez generado el nuevo password.
+            try {
+                usuarioManager.login(userDroid);
+                fail();
+            } catch (ServiceException se) {
+                assertThat(se.getExceptionMsg(), is(PASSWORD_WRONG));
+            }
 
-        // Login no válido una vez generado el nuevo password.
-        try {
-            usuarioManager.login(userReg);
-            fail();
-        } catch (ServiceException se) {
-            assertThat(se.getExceptionMsg(), is(PASSWORD_WRONG));
+            // Check password generated and sent.
+            String password = javaMailMonitor.getPswdFromMsg();
+            checkGeneratedPassword(password, default_password_length);
+            // Check login with new password.
+            Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(userDroid).password(password).build();
+            assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userIn)), is(true));
+            // Cleaning and closing.
+            javaMailMonitor.closeStoreAndFolder();
         }
-
-        // Check password generated and sent.
-        javaMailMonitor.expungeFolder();
-        password = javaMailMonitor.getPswdFromMsg();
-        checkGeneratedPassword(password, default_password_length);
-        // Check login with new password.
-        Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(userReg).password(password).build();
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userIn)), is(true));
-        // Cleaning and closing.
-        javaMailMonitor.closeStoreAndFolder();
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -699,8 +703,12 @@ public abstract class UsuarioManagerTest {
         UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
                 "door", ADMINISTRADOR.function);
         // Exec.
-        assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES), is(true));
-        checkPswdSentAndLogin(userIn);
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (javaMailMonitor){
+            javaMailMonitor.extSetUp();
+            assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES), is(true));
+            checkPswdSentAndLogin(userIn);
+        }
         // Check alta nueva comunidad.
         List<UsuarioComunidad> comunidades = usuarioManager.seeUserComusByUser(userIn.getUserName());
         assertThat(comunidades.size(), is(1));
@@ -798,8 +806,12 @@ public abstract class UsuarioManagerTest {
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName(TO).build(),
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
 
-        assertThat(usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES), is(true));
-        checkPswdSentAndLogin(newPepe.getUsuario());
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (javaMailMonitor){
+            javaMailMonitor.extSetUp();
+            assertThat(usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES), is(true));
+            checkPswdSentAndLogin(newPepe.getUsuario());
+        }
 
         // Check alta en comunidad.
         assertThat(usuarioManager.getComusByUser(TO).get(0), is(calle_el_escorial));
@@ -1013,7 +1025,6 @@ public abstract class UsuarioManagerTest {
     private void checkPswdSentAndLogin(Usuario newUsuario) throws MessagingException, IOException
     {
         // Check password generated and sent.
-        javaMailMonitor.extSetUp();
         String password = javaMailMonitor.getPswdFromMsg();
         checkGeneratedPassword(password, default_password_length);
         // Cleaning and closing.
@@ -1031,7 +1042,7 @@ public abstract class UsuarioManagerTest {
      * Time: 16:23
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class,
+    @ContextConfiguration(classes = {UserMockRepoConfiguration.class,
             UsuarioMailConfigurationPre.class,
             TkCommonConfig.class})
     @Category({LocalDev.class})
@@ -1045,7 +1056,7 @@ public abstract class UsuarioManagerTest {
      * Time: 16:23
      */
     @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+    @ContextConfiguration(classes = {UserMockRepoConfiguration.class, UsuarioMailConfigurationPre.class})
     @Category({DbPre.class})
     @ActiveProfiles(value = {MAIL_PRE})
     public static class UsuarioManagerPreTest extends UsuarioManagerTest {
