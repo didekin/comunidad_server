@@ -42,7 +42,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
  * Date: 02/04/15
  * Time: 11:22
  */
-@SuppressWarnings({"UnusedParameters"})
+@SuppressWarnings("unused")
 @RestController
 public class UsuarioController extends AppControllerAbstract {
 

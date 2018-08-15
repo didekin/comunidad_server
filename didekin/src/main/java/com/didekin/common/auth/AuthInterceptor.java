@@ -69,9 +69,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
                 logger.error(
                         invalid_claim_values
-                        + "\n appId: " + claims.getClaimValue(appId.getName()
-                        + "\n audience: " + claims.getAudience()
-                        + "\n issuer: " + claims.getIssuer())
+                        + "\n ========== appId: " + claims.getClaimValue(appId.getName()
+                        + "\n ========== audience: " + claims.getAudience()
+                        + "\n ========== issuer: " + claims.getIssuer())
                 );
                 throw new ServiceException(UNAUTHORIZED);
             }

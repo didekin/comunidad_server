@@ -50,6 +50,7 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
+import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
 import static java.util.stream.Stream.of;
 import static org.mindrot.jbcrypt.BCrypt.checkpw;
@@ -313,7 +314,7 @@ public class UsuarioManager {
      */
     public @NotNull String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
     {
-        logger.debug("modifyGcmToken(String userName, String gcmToken)");
+        logger.debug("modifyGcmToken(String userName, String gcmToken): %s, %s", userName, gcmToken);
         Usuario usuario = new Usuario.UsuarioBuilder()
                 .copyUsuario(getUserData(userName))
                 .password(null)
@@ -408,7 +409,7 @@ public class UsuarioManager {
         Connection conn = null;
 
         try {
-            conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
@@ -442,7 +443,7 @@ public class UsuarioManager {
         Connection conn = null;
 
         try {
-            conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
             pkComunidad = comunidadDao.insertComunidad(usuarioCom.getComunidad(), conn);
 
@@ -474,7 +475,7 @@ public class UsuarioManager {
         Connection conn = null;
 
         try {
-            conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);

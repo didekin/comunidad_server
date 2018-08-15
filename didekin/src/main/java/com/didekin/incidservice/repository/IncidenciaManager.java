@@ -95,7 +95,7 @@ public class IncidenciaManager {
 
         // Asynchronous GCM notification.
         GcmIncidRequestData requestData = new GcmIncidRequestData(incidencia_closed_type, resolucionFull.getComunidadId());
-        gcmUserComuService.sendGcmMessageToComunidad(resolucionFull, requestData);
+        gcmUserComuService.sendGcmMsgToUserComu(resolucionFull, requestData);
 
         return rowsUpdated;
     }
@@ -281,7 +281,7 @@ public class IncidenciaManager {
                 })
                 .peek(incidencia1 -> {
                     GcmIncidRequestData requestData = new GcmIncidRequestData(incidencia_open_type, incidencia1.getComunidadId());
-                    gcmUserComuService.sendGcmMessageToComunidad(incidencia1, requestData);
+                    gcmUserComuService.sendGcmMsgToUserComu(incidencia1, requestData);
                 }).findFirst().orElse(incidencia);  // Return original parameter if incidenciaId != 0
     }
 
@@ -361,7 +361,7 @@ public class IncidenciaManager {
 
         // Asynchronous GCM notification.
         GcmIncidRequestData requestData = new GcmIncidRequestData(resolucion_open_type, resolucion.getComunidadId());
-        gcmUserComuService.sendGcmMessageToComunidad(resolucion, requestData);
+        gcmUserComuService.sendGcmMsgToUserComu(resolucion, requestData);
 
         return rowsUpdated;
     }

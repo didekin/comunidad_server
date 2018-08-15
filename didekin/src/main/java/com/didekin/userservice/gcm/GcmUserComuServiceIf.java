@@ -10,5 +10,5 @@ import com.didekinlib.model.common.gcm.GcmToComunidadHelper;
  */
 public interface GcmUserComuServiceIf {
 
-    void sendGcmMessageToComunidad(GcmToComunidadHelper tokensHelper, GcmRequestData requestData);
+    void sendGcmMsgToUserComu(GcmToComunidadHelper tokensHelper, GcmRequestData requestData);
 }

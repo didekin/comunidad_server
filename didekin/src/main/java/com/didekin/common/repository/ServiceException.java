@@ -29,4 +29,9 @@ public class ServiceException extends RuntimeException {
         return exceptionMsg;
     }
 
+    @Override
+    public String getMessage()
+    {
+        return exceptionMsg.getHttpMessage();
+    }
 }
