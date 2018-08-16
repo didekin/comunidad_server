@@ -25,8 +25,14 @@ public class UserMockRepoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(UserMockRepoConfiguration.class.getName());
 
+    @SuppressWarnings("WeakerAccess")
+    final Environment env;
+
     @Autowired
-    Environment env;
+    public UserMockRepoConfiguration(Environment env)
+    {
+        this.env = env;
+    }
 
     @Bean
     public UserMockManager userMockManager(UsuarioManager usuarioManager)

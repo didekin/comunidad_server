@@ -92,17 +92,6 @@ public class UserManagerConnector {
         return usuarioManager.completeWithUserComuRoles(userName, comunidadId);
     }
 
-    /**
-     * Only for tests.
-     */
-    @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL, MAIL_PRE})
-    boolean deleteUser(String userName)
-    {
-        logger.debug("deleteUser()");
-        checkActiveProfiles(env);
-        return usuarioManager.deleteUser(userName);
-    }
-
     // ==================================  FOR TESTS =================================
 
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
@@ -111,5 +100,13 @@ public class UserManagerConnector {
         logger.debug("insertTokenGetHeaderStr()");
         checkActiveProfiles(env);
         return userMockManager.insertAuthTkGetNewAuthTkStr(userName, appIDIn);
+    }
+
+    @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL, MAIL_PRE})
+    boolean deleteUser(String userName)
+    {
+        logger.debug("deleteUser()");
+        checkActiveProfiles(env);
+        return usuarioManager.deleteUser(userName);
     }
 }

@@ -17,7 +17,7 @@ public class UsuarioMailServiceForTest implements UsuarioMailServiceIf {
 
     private JavaMailSenderImpl mailSender;
 
-    public UsuarioMailServiceForTest()
+    UsuarioMailServiceForTest()
     {
         mailSender = new JavaMailSenderImpl();
         mailSender.setJavaMailProperties(doProperties());

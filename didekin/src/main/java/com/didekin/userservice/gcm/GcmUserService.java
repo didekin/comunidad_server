@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 import static com.didekinlib.gcm.model.common.GcmServConstant.GCM_ERROR_CODE;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -22,9 +24,9 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  * Time: 18:57
  */
 @Service
-class GcmUserComuService implements GcmUserComuServiceIf {
+class GcmUserService implements GcmUserComuServiceIf {
 
-    private static final Logger logger = LoggerFactory.getLogger(GcmUserComuService.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(GcmUserService.class.getCanonicalName());
 
     private String didekin_package = "com.didekindroid";
     private String didekin_firebase_project_key =
@@ -34,15 +36,15 @@ class GcmUserComuService implements GcmUserComuServiceIf {
     private UsuarioManager usuarioService;
 
     @Autowired
-    public GcmUserComuService(GcmEndPointImp gcmEndPoint, UsuarioManager usuarioService)
+    public GcmUserService(GcmEndPointImp gcmEndPoint, UsuarioManager usuarioService)
     {
         this.gcmEndPoint = gcmEndPoint;
         this.usuarioService = usuarioService;
     }
 
-    public void sendGcmMsgToUserComu(final GcmToComunidadHelper tokensHelper, final GcmRequestData requestData)
+    public CompletableFuture<Integer> sendGcmMsgToUserComu(final GcmToComunidadHelper tokensHelper, final GcmRequestData requestData)
     {
-        supplyAsync(() -> usuarioService.getGcmTokensByComunidad(tokensHelper.getComunidadId()))
+        return supplyAsync(() -> usuarioService.getGcmTokensByComunidad(tokensHelper.getComunidadId()))
                 .thenApply(
                         tokens -> new GcmMulticastRequest.Builder(tokens, new GcmRequest.Builder(requestData, didekin_package).build()).build()
                 )

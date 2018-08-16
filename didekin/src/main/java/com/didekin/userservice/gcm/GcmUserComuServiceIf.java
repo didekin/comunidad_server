@@ -3,6 +3,8 @@ package com.didekin.userservice.gcm;
 import com.didekinlib.gcm.model.common.GcmRequestData;
 import com.didekinlib.model.common.gcm.GcmToComunidadHelper;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * User: pedro
  * Date: 29/07/16
@@ -10,5 +12,5 @@ import com.didekinlib.model.common.gcm.GcmToComunidadHelper;
  */
 public interface GcmUserComuServiceIf {
 
-    void sendGcmMsgToUserComu(GcmToComunidadHelper tokensHelper, GcmRequestData requestData);
+    CompletableFuture<Integer> sendGcmMsgToUserComu(GcmToComunidadHelper tokensHelper, GcmRequestData requestData);
 }

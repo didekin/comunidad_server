@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -40,7 +41,6 @@ import static java.util.stream.Stream.of;
  * Date: 20/04/15
  * Time: 15:41
  */
-@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @Service
 public class IncidenciaManager {
 
@@ -245,7 +245,7 @@ public class IncidenciaManager {
                                 .build()
                         )
                 )
-                .findFirst().getAsInt();
+                .findFirst().orElse(0);
     }
 
 
@@ -329,7 +329,7 @@ public class IncidenciaManager {
                         )
                 )
                 .map(rowsUpdated -> (incidencia.getIncidenciaId() == 0L) ? ++rowsUpdated : rowsUpdated)
-                .findFirst().get();
+                .findFirst().orElse(0);
     }
 
     /**
@@ -447,7 +447,7 @@ public class IncidenciaManager {
         return Stream.of(comunidadId)
                 .filter(comunidadIdIn -> getUsuarioConnector().checkUserInComunidad(userNameInSession, comunidadIdIn))
                 .map(incidenciaDao::seeIncidsClosedByComu)
-                .findFirst().get();
+                .findFirst().orElse(new ArrayList<>(0));
     }
 
     /**
@@ -466,7 +466,7 @@ public class IncidenciaManager {
         return Stream.of(comunidadId)
                 .filter(comunidadIdIn -> getUsuarioConnector().checkUserInComunidad(userNameInSession, comunidadIdIn))
                 .map(incidenciaDao::seeIncidsOpenByComu)
-                .findFirst().get();
+                .findFirst().orElse(new ArrayList<>(0));
     }
 
     /**
@@ -522,7 +522,7 @@ public class IncidenciaManager {
         return of(incidenciaId)
                 .filter(incidenciaPk -> usuarioConnector.checkUserInComunidad(userName, seeIncidenciaById(incidenciaPk).getComunidad().getC_Id()))
                 .map(incidenciaPk -> incidenciaDao.seeUserComusImportancia(incidenciaId))
-                .findFirst().get();
+                .findFirst().orElse(new ArrayList<>(0));
     }
 
     /* ================================ HELPERS ===================================*/

@@ -5,7 +5,6 @@ import com.didekin.userservice.auth.TkProducerConfig;
 import com.didekin.userservice.gcm.GcmConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -19,10 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 @Import(value = {RepositoryConfig.class, GcmConfiguration.class, TkProducerConfig.class})
 public class IncidenciaManagerConfiguration {
-
-    @SuppressWarnings({"unused", "SpringJavaAutowiredFieldsWarningInspection"})
-    @Autowired
-    JdbcTemplate jdbcTemplate;
 
     @Bean
     public IncidenciaDao incidenciaDao(JdbcTemplate jdbcTemplate)

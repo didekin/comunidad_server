@@ -22,8 +22,13 @@ public class GcmConfiguration {
     // Firebase gcm URL.
     private static final String FCM_HOST_PORT = "https://fcm.googleapis.com";
 
+    private final UsuarioManager usuarioService;
+
     @Autowired
-    private UsuarioManager usuarioService;
+    public GcmConfiguration(UsuarioManager usuarioService)
+    {
+        this.usuarioService = usuarioService;
+    }
 
     @Bean
     public GcmRetrofitHandler gcmRetrofitHandler()
@@ -40,6 +45,6 @@ public class GcmConfiguration {
     @Bean
     public GcmUserComuServiceIf gcmUserComuServiceIf()
     {
-        return new GcmUserComuService(gcmEndPointImp(), usuarioService);
+        return new GcmUserService(gcmEndPointImp(), usuarioService);
     }
 }

@@ -49,7 +49,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
  * Date: 02/04/15
  * Time: 11:22
  */
-@SuppressWarnings({"SpringAutowiredFieldsWarningInspection", "unused"})
+@SuppressWarnings("unused")
 @RestController
 class IncidenciaController extends AppControllerAbstract {
 
