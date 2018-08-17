@@ -3,10 +3,9 @@ package com.didekin.userservice.gcm;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.gcm.model.common.GcmMulticastRequest;
 import com.didekinlib.gcm.model.common.GcmRequest;
-import com.didekinlib.gcm.model.common.GcmRequestData;
 import com.didekinlib.gcm.model.common.GcmResponse;
+import com.didekinlib.gcm.model.incidservice.GcmRequestData;
 import com.didekinlib.gcm.retrofit.GcmEndPointImp;
-import com.didekinlib.model.common.gcm.GcmToComunidadHelper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,9 @@ class GcmUserService implements GcmUserComuServiceIf {
         this.usuarioService = usuarioService;
     }
 
-    public CompletableFuture<Integer> sendGcmMsgToUserComu(final GcmToComunidadHelper tokensHelper, final GcmRequestData requestData)
+    public CompletableFuture<Integer> sendGcmMsgToUserComu(final GcmRequestData requestData)
     {
-        return supplyAsync(() -> usuarioService.getGcmTokensByComunidad(tokensHelper.getComunidadId()))
+        return supplyAsync(() -> usuarioService.getGcmTokensByComunidad(requestData.getComunidadId()))
                 .thenApply(
                         tokens -> new GcmMulticastRequest.Builder(tokens, new GcmRequest.Builder(requestData, didekin_package).build()).build()
                 )

@@ -43,7 +43,7 @@ public class TkAuthClaims {
     // Time to expire in seconds.
     static final long TK_VALIDITY_SECONDS = TK_VALIDITY_DAYS * 24 * 60 * 60;
     // Message for invariants.
-    public static final String invalid_claim_values = " No valid claim list of values ";
+    static final String invalid_claim_values = " No valid claim list of values ";
     // Claims map.
     private final Map<TkParamNames, Object> claimsMap;
 

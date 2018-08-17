@@ -1,7 +1,6 @@
 package com.didekin.userservice.gcm;
 
-import com.didekinlib.gcm.model.common.GcmRequestData;
-import com.didekinlib.model.common.gcm.GcmToComunidadHelper;
+import com.didekinlib.gcm.model.incidservice.GcmRequestData;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -12,5 +11,5 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface GcmUserComuServiceIf {
 
-    CompletableFuture<Integer> sendGcmMsgToUserComu(GcmToComunidadHelper tokensHelper, GcmRequestData requestData);
+    CompletableFuture<Integer> sendGcmMsgToUserComu(GcmRequestData requestData);
 }

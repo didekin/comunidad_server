@@ -43,7 +43,7 @@ public class GcmConfiguration {
     }
 
     @Bean
-    public GcmUserComuServiceIf gcmUserComuServiceIf()
+    public GcmUserComuServiceIf gcmUserComuService()
     {
         return new GcmUserService(gcmEndPointImp(), usuarioService);
     }

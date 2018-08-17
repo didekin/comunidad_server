@@ -3,7 +3,7 @@ package com.didekin.incidservice.repository;
 
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserComuServiceIf;
-import com.didekinlib.gcm.model.incidservice.GcmIncidRequestData;
+import com.didekinlib.gcm.model.incidservice.GcmRequestData;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
@@ -94,8 +94,7 @@ public class IncidenciaManager {
                 modifyResolucion(userName, resolucion) + incidenciaDao.closeIncidencia(resolucion.getIncidencia().getIncidenciaId());
 
         // Asynchronous GCM notification.
-        GcmIncidRequestData requestData = new GcmIncidRequestData(incidencia_closed_type, resolucionFull.getComunidadId());
-        gcmUserComuService.sendGcmMsgToUserComu(resolucionFull, requestData);
+        gcmUserComuService.sendGcmMsgToUserComu(new GcmRequestData(incidencia_closed_type, resolucionFull.getComunidadId()));
 
         return rowsUpdated;
     }
@@ -279,10 +278,9 @@ public class IncidenciaManager {
                             .incidenciaId(pK)
                             .build();
                 })
-                .peek(incidencia1 -> {
-                    GcmIncidRequestData requestData = new GcmIncidRequestData(incidencia_open_type, incidencia1.getComunidadId());
-                    gcmUserComuService.sendGcmMsgToUserComu(incidencia1, requestData);
-                }).findFirst().orElse(incidencia);  // Return original parameter if incidenciaId != 0
+                .peek(incidencia1 -> gcmUserComuService.sendGcmMsgToUserComu(new GcmRequestData(incidencia_open_type, incidencia1.getComunidadId())))
+                .findFirst()
+                .orElse(incidencia);  // Return original parameter if incidenciaId != 0
     }
 
     /**
@@ -360,8 +358,7 @@ public class IncidenciaManager {
                 .findFirst().orElseThrow(() -> new ServiceException(UNAUTHORIZED_TX_TO_USER));
 
         // Asynchronous GCM notification.
-        GcmIncidRequestData requestData = new GcmIncidRequestData(resolucion_open_type, resolucion.getComunidadId());
-        gcmUserComuService.sendGcmMsgToUserComu(resolucion, requestData);
+        gcmUserComuService.sendGcmMsgToUserComu(new GcmRequestData(resolucion_open_type, resolucion.getComunidadId()));
 
         return rowsUpdated;
     }

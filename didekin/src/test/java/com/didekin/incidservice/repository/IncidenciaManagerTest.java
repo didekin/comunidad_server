@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
@@ -72,7 +75,6 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 20/11/15
  * Time: 11:29
  */
-@SuppressWarnings("unchecked")
 public abstract class IncidenciaManagerTest {
 
     @Autowired
@@ -884,6 +886,7 @@ public abstract class IncidenciaManagerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
     @Category({DbPre.class})
+    @ActiveProfiles(value = {MAIL_PRE})
     public static class IncidenciaManagerPreTest extends IncidenciaManagerTest {
     }
 
@@ -894,6 +897,7 @@ public abstract class IncidenciaManagerTest {
      */
     @RunWith(SpringJUnit4ClassRunner.class)
     @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     public static class IncidenciaManagerDevTest extends IncidenciaManagerTest {
     }
