@@ -2,7 +2,7 @@ package com.didekin.userservice.controller;
 
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.userservice.gcm.GcmUserComuServiceIf;
+import com.didekin.userservice.gcm.GcmUserServiceIf;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.model.usuario.Usuario;
@@ -51,7 +51,7 @@ public class UsuarioController extends AppControllerAbstract {
     private final UsuarioManager usuarioManager;
 
     @Autowired
-    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserComuServiceIf gcmUserComuServiceIf, UsuarioManager usuarioManager)
+    public UsuarioController(UsuarioMailService usuarioMailService, GcmUserServiceIf gcmUserService, UsuarioManager usuarioManager)
     {
         this.usuarioManager = usuarioManager;
     }

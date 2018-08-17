@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
  * Date: 29/07/16
  * Time: 13:59
  */
-public interface GcmUserComuServiceIf {
+public interface GcmUserServiceIf {
 
     CompletableFuture<Integer> sendGcmMsgToUserComu(GcmRequestData requestData);
 }

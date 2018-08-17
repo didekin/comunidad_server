@@ -23,7 +23,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  * Time: 18:57
  */
 @Service
-class GcmUserService implements GcmUserComuServiceIf {
+class GcmUserService implements GcmUserServiceIf {
 
     private static final Logger logger = LoggerFactory.getLogger(GcmUserService.class.getCanonicalName());
 

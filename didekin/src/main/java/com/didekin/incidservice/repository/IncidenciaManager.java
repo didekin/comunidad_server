@@ -2,7 +2,7 @@ package com.didekin.incidservice.repository;
 
 
 import com.didekin.common.repository.ServiceException;
-import com.didekin.userservice.gcm.GcmUserComuServiceIf;
+import com.didekin.userservice.gcm.GcmUserServiceIf;
 import com.didekinlib.gcm.model.incidservice.GcmRequestData;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
@@ -48,7 +48,7 @@ public class IncidenciaManager {
 
     private final IncidenciaDao incidenciaDao;
     @Autowired
-    private GcmUserComuServiceIf gcmUserComuService;
+    private GcmUserServiceIf gcmUserComuService;
     @Autowired
     private UserManagerConnector usuarioConnector;
 
