@@ -52,6 +52,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUN
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static java.lang.Boolean.TRUE;
 import static java.sql.JDBCType.INTEGER;
+import static java.util.Objects.requireNonNull;
 
 /**
  * User: pedro
@@ -97,7 +98,7 @@ public class UsuarioDao {
 
     int deleteGcmToken(String originalGcmTk)
     {
-        logger.info("deleteGcmToken(),jdbcUrl: " + jdbcTemplate.getDataSource().toString());
+        logger.info("deleteGcmToken(),jdbcUrl: " + requireNonNull(jdbcTemplate.getDataSource()).toString());
         return jdbcTemplate.update(DELETE_GCM_TOKEN.toString(), originalGcmTk);
     }
 
@@ -114,7 +115,7 @@ public class UsuarioDao {
 
     int deleteUserComunidad(UsuarioComunidad usuarioComunidad) throws ServiceException
     {
-        logger.info("deleteUserComunidad(),jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("deleteUserComunidad(),jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         Comunidad comunidad = usuarioComunidad.getComunidad();
 
@@ -130,7 +131,7 @@ public class UsuarioDao {
 
     List<String> getAllRolesFunctionalUser(String userName)
     {
-        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         List<String> roles = jdbcTemplate.queryForList(
                 ROLES_ALL_FUNC.toString(), String.class, userName);
@@ -152,14 +153,14 @@ public class UsuarioDao {
 
     List<Comunidad> getComusByUser(String userName)
     {
-        logger.info("getComusByUser() ,jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getComusByUser() ,jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         return jdbcTemplate.query(COMUS_BY_USER.toString(), new Object[]{userName},
                 new ComunidadDao.ComunidadMapper());
     }
 
     List<String> getGcmTokensByComunidad(long comunidadId)
     {
-        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("getGcmTokensByComunidad(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         return jdbcTemplate.queryForList(GCM_TOKENS_BY_COMUNIDAD.toString(), String.class, comunidadId);
     }
 
@@ -171,18 +172,18 @@ public class UsuarioDao {
 
     long getOldestUserComuId(long comunidadId)
     {
-        logger.debug("getOldestUserComuId(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("getOldestUserComuId(), jdbcUrl: " + requireNonNull(jdbcTemplate.getDataSource()).toString());
 
-        return jdbcTemplate.queryForObject(
+        return requireNonNull(jdbcTemplate.queryForObject(
                 OLDEST_USER_COMU.toString(),
                 new Long[]{comunidadId},
-                (resultSet, rowNum) -> resultSet.getLong("u_id")
+                (resultSet, rowNum) -> resultSet.getLong("u_id"))
         );
     }
 
     Usuario getUserDataByName(String userName)
     {
-        logger.info("getUserData(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserData(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         Usuario usuario;
         try {
@@ -196,7 +197,7 @@ public class UsuarioDao {
 
     Usuario getUserDataById(long idUsuario) throws ServiceException
     {
-        logger.info("getUserDataById(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("getUserDataById(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         Usuario usuario;
         try {
@@ -214,7 +215,7 @@ public class UsuarioDao {
      */
     UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws ServiceException
     {
-        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         try {
             return jdbcTemplate.queryForObject(USERCOMU_BY_COMU.toString(),
                     new UsuarioFullComunidadMapper(), userName, comunidadId);
@@ -260,7 +261,7 @@ public class UsuarioDao {
      */
     long insertUsuario(final Usuario usuario, Connection conn) throws SQLException
     {
-        logger.info("insertUsuario(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("insertUsuario(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         ResultSet rs;
         long usuarioId;
 
@@ -284,10 +285,10 @@ public class UsuarioDao {
     boolean isUserInComunidad(String userName, long comunidadId)
     {
         logger.debug("isUserInComunidad()");
-        return jdbcTemplate.queryForObject(
+        return requireNonNull(jdbcTemplate.queryForObject(
                 IS_USER_IN_COMUNIDAD.toString(),
                 new Object[]{userName, comunidadId},
-                Integer.class) > 0;
+                Integer.class)) > 0;
     }
 
     /**
@@ -295,7 +296,7 @@ public class UsuarioDao {
      */
     int modifyUser(Usuario usuario)
     {
-        logger.debug("modifyUser(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("modifyUser(), jdbcUrl: " + requireNonNull(jdbcTemplate.getDataSource()).toString());
 
         return jdbcTemplate.update(MODIFY_USER.toString(),
                 usuario.getAlias(),
@@ -315,7 +316,7 @@ public class UsuarioDao {
 
     int modifyUserGcmToken(Usuario usuario)
     {
-        logger.debug("modifyGcmToken(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.debug("modifyGcmToken(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
                 usuario.getGcmToken(), usuario.getuId());
     }
@@ -328,7 +329,7 @@ public class UsuarioDao {
 
     List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
     {
-        logger.info("seeUserComusByComu(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("seeUserComusByComu(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(),
                 new Object[]{idComunidad},
                 new UsuarioComunidadMapper());
@@ -338,7 +339,7 @@ public class UsuarioDao {
 
     int passwordChange(Usuario usuario)
     {
-        logger.info("passwordChange(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("passwordChange(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         return jdbcTemplate.update(NEW_PASSWORD.toString(),
                 usuario.getPassword(),
@@ -347,7 +348,7 @@ public class UsuarioDao {
 
     List<UsuarioComunidad> seeUserComusByUser(String userName)
     {
-        logger.info("seeUserComusByUser(), jdbcUrl: " + (jdbcTemplate.getDataSource()).toString());
+        logger.info("seeUserComusByUser(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
         return jdbcTemplate.query(
                 USERCOMUS_BY_USER.toString(),
