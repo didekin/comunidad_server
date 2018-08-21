@@ -66,7 +66,6 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
@@ -689,15 +688,11 @@ abstract class IncidenciaControllerTest {
     public void testSeeResolucion_2()
     {
         // Caso OK: no hay resolución.
-        try {
-            ENDPOINT.seeResolucion(
-                    getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
-                    1L)
-                    .blockingGet().body();
-            fail();
-        } catch (Exception e){
-            assertThat(e.getMessage(), containsString("java.io.EOFException"));
-        }
+        assertThat(ENDPOINT
+                        .seeResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 1L)
+                        .blockingGet()
+                        .body(),
+                nullValue());
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})

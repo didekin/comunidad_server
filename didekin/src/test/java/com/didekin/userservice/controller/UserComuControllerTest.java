@@ -64,12 +64,10 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -155,12 +153,7 @@ public abstract class UserComuControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
 
         // No existe el par usuario-comunidad.
-        try {
-            USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader,  calle_plazuela_23.getC_Id()).blockingGet().body();
-            fail();
-        } catch (Exception e){
-            assertThat(e.getMessage(), containsString("java.io.EOFException"));
-        }
+        assertThat(USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader,  calle_plazuela_23.getC_Id()).blockingGet().body(), nullValue());
 
         // Comunidad asociada a usuario.
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
