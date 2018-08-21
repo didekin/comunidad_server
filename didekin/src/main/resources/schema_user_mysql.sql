@@ -78,7 +78,7 @@ CREATE TABLE usuario
   ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (u_id),
   UNIQUE (user_name),
-  UNIQUE (gcm_token)
+  UNIQUE (gcm_token)  -- TODO: debiera ser una relacion usuario 1 --> ..n tokens
 );
 
 CREATE TABLE usuario_comunidad

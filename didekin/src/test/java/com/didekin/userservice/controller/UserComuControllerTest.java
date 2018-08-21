@@ -79,7 +79,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 02/04/15
  * Time: 12:12
  */
-@SuppressWarnings("ResultOfMethodCallIgnored")
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
 public abstract class UserComuControllerTest {
 
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
