@@ -135,6 +135,21 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
+    public void testCloseIncidencia_2() throws ServiceException, IOException
+    {
+        Resolucion resolucion = incidenciaManager.seeResolucion(pedro.getUserName(), 3L);
+        assertThat(incidenciaManager.closeIncidencia(pedro.getUserName(), resolucion), is(2));
+        // Premisas.
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        Response<Integer> response = ENDPOINT.closeIncidencia(accessToken, resolucion).blockingGet();
+        assertThat(response.isSuccessful(), is(false));
+        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
+    }
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
+    @Sql(executionPhase = AFTER_TEST_METHOD,
+            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
+    @Test
     public void testDeleteIncidencia_1() throws IOException
     {
         // Caso OK: existe incidencia.
