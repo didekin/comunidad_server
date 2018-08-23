@@ -88,7 +88,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * cannot autowire controllers in the tests.
  */
 
-@SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored", "ConstantConditions"})
+@SuppressWarnings("ConstantConditions")
 abstract class IncidenciaControllerTest {
 
     private IncidenciaServEndPoints ENDPOINT;
