@@ -169,29 +169,6 @@ public abstract class IncidenciaManagerTest {
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testCloseIncidencia_3()
-    {
-        // Premise: la incidencia is closed.
-        Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
-        assertThat(incidencia.getFechaCierre(), notNullValue());
-        try {
-            incidenciaManager.closeIncidencia(
-                    paco.getUserName(),
-                    doResolucion(new Incidencia.IncidenciaBuilder().copyIncidencia(incidencia).build(),
-                            paco.getUserName(),
-                            "resol_incid_5_4",
-                            111,
-                            now().plus(12, DAYS))
-            );
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
-        }
-    }
-
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})

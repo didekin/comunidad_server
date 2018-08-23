@@ -137,9 +137,9 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testCloseIncidencia_2() throws ServiceException, IOException
     {
-        Resolucion resolucion = incidenciaManager.seeResolucion(pedro.getUserName(), 3L);
+        Resolucion resolucion = incidenciaManager.seeResolucion(pedro.getUserName(), 4L);
         assertThat(incidenciaManager.closeIncidencia(pedro.getUserName(), resolucion), is(2));
-        // Premisas.
+        // Premisas: incidencia ya cerrada.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
         Response<Integer> response = ENDPOINT.closeIncidencia(accessToken, resolucion).blockingGet();
         assertThat(response.isSuccessful(), is(false));
