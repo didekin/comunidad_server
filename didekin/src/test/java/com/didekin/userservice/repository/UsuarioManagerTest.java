@@ -8,7 +8,6 @@ import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
-import com.didekinlib.gcm.model.common.GcmTokensHolder;
 import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
@@ -28,7 +27,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -299,28 +297,9 @@ public abstract class UsuarioManagerTest {
     @Test
     public void testGetGcmTokensByComunidad() throws ServiceException
     {
-        // Insertamos tokens en tres usuarios.
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), "pedro_gcm_token"), notNullValue());
-        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), "luis_gcm_token"), notNullValue());
-        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), "juan_gcm_token"), notNullValue());
-
         List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getC_Id());
-        assertThat(tokens.size(), is(2));
-        assertThat(tokens, hasItems("pedro_gcm_token", "luis_gcm_token"));
-
-        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(2L).build().getC_Id());
-        assertThat(tokens.size(), is(2));
-        assertThat(tokens, hasItems("pedro_gcm_token", "juan_gcm_token"));
-
-        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(3L).build().getC_Id());
         assertThat(tokens.size(), is(1));
-        assertThat(tokens, hasItems("pedro_gcm_token"));
-
-        // Caso: comunidad con usuario sin token.
-        tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(4L).build().getC_Id());
-        assertThat(tokens, notNullValue());
-        assertThat(tokens.size(), is(1));
-        assertThat(tokens, hasItems("juan_gcm_token"));
+        assertThat(tokens, hasItem(luis.getGcmToken()));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -548,55 +527,6 @@ public abstract class UsuarioManagerTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_DATA_NOT_MODIFIED));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_ModifyUserGcmToken_1() throws ServiceException
-    {
-        Usuario luisMod = new Usuario.UsuarioBuilder().copyUsuario(usuarioManager.getUserData(luis.getUserName()))
-                .gcmToken("GCMtoKen1234X")
-                .build();
-        // Insertamos token y verificamos devolución de nuevo authToken.
-        String newAuthToken = usuarioManager.modifyUserGcmToken(luisMod.getUserName(), luisMod.getGcmToken());
-        assertThat(newAuthToken, notNullValue());
-        assertThat(checkpw(newAuthToken, usuarioManager.getUserData(luis.getUserName()).getTokenAuth()), is(true));
-        // Verificamos cambio gcmToken.
-        assertThat(usuarioManager.getUserData(luisMod.getUserName()).getGcmToken(), is("GCMtoKen1234X"));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_ModifyUserGcmToken_2() throws ServiceException
-    {
-        // Caso: no existe usuario.
-        try {
-            usuarioManager.modifyUserGcmToken("noexist_user", "GCMtoKen1234X");
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USER_NOT_FOUND));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_ModifyUserGcmTokens()
-    {
-        assertThat(usuarioManager.modifyUserGcmToken(pedro.getUserName(), pedro.getGcmToken()), notNullValue());
-        assertThat(usuarioManager.modifyUserGcmToken(luis.getUserName(), luis.getGcmToken()), notNullValue());
-        assertThat(usuarioManager.modifyUserGcmToken(juan.getUserName(), juan.getGcmToken()), notNullValue());
-
-        List<GcmTokensHolder> holders = new ArrayList<>(3);
-        holders.add(new GcmTokensHolder(null, luis.getGcmToken()));
-        holders.add(new GcmTokensHolder(null, pedro.getGcmToken()));
-        holders.add(new GcmTokensHolder("new_juan_token", juan.getGcmToken()));
-        assertThat(usuarioManager.modifyUserGcmTokens(holders), is(3));
-
-        assertThat(usuarioManager.usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
-        assertThat(usuarioManager.usuarioDao.getUserDataById(pedro.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")

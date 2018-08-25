@@ -31,7 +31,6 @@ import static com.didekin.userservice.repository.UsuarioSql.GCM_TOKENS_BY_COMUNI
 import static com.didekin.userservice.repository.UsuarioSql.INSERT;
 import static com.didekin.userservice.repository.UsuarioSql.IS_USER_IN_COMUNIDAD;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_GCM_TOKEN_BY_TOKEN;
-import static com.didekin.userservice.repository.UsuarioSql.MODIFY_GCM_TOKEN_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USERCOMU;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER_ALIAS;
@@ -314,16 +313,9 @@ public class UsuarioDao {
                 user.getuId());
     }
 
-    int modifyUserGcmToken(Usuario usuario)
-    {
-        logger.debug("modifyGcmToken(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
-        return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_USER.toString(),
-                usuario.getGcmToken(), usuario.getuId());
-    }
-
     int modifyUserGcmToken(GcmTokensHolder holder)
     {
-        logger.debug("modifyGcmToken()");
+        logger.debug("modifyUserGcmToken()");
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
 

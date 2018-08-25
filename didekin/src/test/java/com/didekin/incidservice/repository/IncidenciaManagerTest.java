@@ -51,7 +51,6 @@ import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_N
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
@@ -84,9 +83,6 @@ public abstract class IncidenciaManagerTest {
     private IncidenciaDao incidenciaDao;
     @Autowired
     private UsuarioManager usuarioManager;
-
-    private static final String tokenId_1 =
-            "eHjO7v0yDv0:APA91bFe9Zzc2wh2F4uk5zr1KWHDQRbP9LQYv1WJ6LvVZ268xO-7B_oK1knt7_opdbUyUImg4ptOwKI-SienVZ0zT2O4ErhDOYc--HPH_qbuXIEfhG5FeQr14wcVEA1g5lPpjaXEfZiE";
 
     // ======================================  HELPERS ========================================
 
@@ -166,7 +162,6 @@ public abstract class IncidenciaManagerTest {
                 .build();
         // Devuelve 2: no modifica avances.
         assertThat(incidenciaManager.closeIncidencia(luis.getUserName(), resolucion), is(2));
-        assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -465,18 +460,14 @@ public abstract class IncidenciaManagerTest {
     @Test
     public void testRegIncidencia_1()
     {
-        // Premisas: gcmTokens for pedro and luis are NOT NULL.
-        String pedroTokenStr = usuarioManager.modifyUserGcmToken(pedro.getUserName(), tokenId_1);
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(pedroTokenStr), is(true));
-        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(2));
+        // Premisas: gcmToken for luis is NOT NULL.
+        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(1));
         assertThat(usuarioManager.getUserData(luis.getUserName()).getGcmToken(), notNullValue());
-        assertThat(usuarioManager.getUserData(pedro.getUserName()).getGcmToken(), is(tokenId_1));
         // Exec.
-        Incidencia incidencia = doIncidencia(pedro.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
+        Incidencia incidencia = doIncidencia(luis.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
         // Check incidencia returned.
         assertThat(incidenciaManager.regIncidencia(incidencia).getDescripcion(), is("incid_test"));
         // Check update of gcm tokens in DB.
-        waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserData(pedro.getUserName()).getGcmToken() == null);
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserData(luis.getUserName()).getGcmToken() == null);
     }
 

@@ -55,7 +55,7 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * Date: 31/03/15
  * Time: 15:16
  */
-@SuppressWarnings({"ThrowFromFinallyBlock"})
+@SuppressWarnings({"ThrowFromFinallyBlock", "ConstantConditions"})
 public abstract class UsuarioDaoTest {
 
     @Autowired
@@ -66,10 +66,9 @@ public abstract class UsuarioDaoTest {
     @Test()
     public void testDeleteGcmToken()
     {
-        assertThat(usuarioDao.modifyUserGcmToken(UsuarioTestUtils.paco), is(1));
-        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), is(UsuarioTestUtils.paco.getGcmToken()));
-        assertThat(usuarioDao.deleteGcmToken(UsuarioTestUtils.paco.getGcmToken()), is(1));
-        assertThat(usuarioDao.getUserDataById(11L).getGcmToken(), nullValue());
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), is(luis.getGcmToken()));
+        assertThat(usuarioDao.deleteGcmToken(luis.getGcmToken()), is(1));
+        assertThat(usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")

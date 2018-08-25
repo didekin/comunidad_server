@@ -308,27 +308,9 @@ public class UsuarioManager {
         return usuarioDao.modifyUserComu(userComu);
     }
 
-    /**
-     * @return new authToken.
-     * @throws ServiceException if rows affected < 1.
-     */
-    public @NotNull String modifyUserGcmToken(String userName, String gcmToken) throws ServiceException
-    {
-        logger.debug("modifyGcmToken(String userName, String gcmToken): %s, %s", userName, gcmToken);
-        Usuario usuario = new Usuario.UsuarioBuilder()
-                .copyUsuario(getUserData(userName))
-                .password(null)
-                .gcmToken(gcmToken)
-                .build();
-        if (usuarioDao.modifyUserGcmToken(usuario) > 0) {
-            return updateTokenAuthInDb(usuario);
-        }
-        throw new ServiceException(USER_NOT_FOUND);
-    }
-
     public int modifyUserGcmTokens(List<GcmTokensHolder> holdersList)
     {
-        logger.debug("modifyGcmToken(List<GcmTokensHolder> holdersList)");
+        logger.debug("modifyGcmTokens(List<GcmTokensHolder> holdersList)");
         return (int) holdersList.parallelStream()
                 .filter(holder -> holder.getOriginalGcmTk() != null)
                 .map(holder -> holder.getNewGcmTk() == null ? usuarioDao.deleteGcmToken(holder.getOriginalGcmTk()) : usuarioDao.modifyUserGcmToken(holder))

@@ -30,7 +30,6 @@ import static com.didekinlib.http.usuario.UsuarioServConstant.USER_DELETE;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_READ;
 import static com.didekinlib.http.usuario.UsuarioServConstant.USER_WRITE;
-import static com.didekinlib.http.usuario.UsuarioServConstant.USER_WRITE_GCM_TOKEN;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -82,14 +81,6 @@ public class UsuarioController extends AppControllerAbstract {
     {
         logger.debug("login()");
         return usuarioManager.login(new Usuario.UsuarioBuilder().userName(userName).password(password).gcmToken(appID).build());
-    }
-
-    @RequestMapping(value = USER_WRITE_GCM_TOKEN, method = POST, consumes = FORM_URLENCODED)
-    public String modifyGcmToken(@RequestHeader("Authorization") String authHeader,
-                                 @RequestParam(APP_ID_PARAM) final String gcmToken) throws ServiceException
-    {
-        logger.debug("modifyGcmToken()");
-        return usuarioManager.modifyUserGcmToken(usuarioManager.checkHeaderGetUserName(authHeader), gcmToken);
     }
 
     @RequestMapping(value = USER_WRITE, method = PUT, consumes = MIME_JSON)

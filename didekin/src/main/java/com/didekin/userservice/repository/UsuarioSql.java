@@ -60,10 +60,6 @@ enum UsuarioSql {
             " gcm_token = ? " +
             " WHERE gcm_token = ?"),
 
-    MODIFY_GCM_TOKEN_BY_USER("UPDATE usuario SET " +
-            " gcm_token = ? " +
-            " WHERE u_id = ?"),
-
     MODIFY_USERCOMU("UPDATE usuario_comunidad SET " +
             " portal = ?," +
             " escalera = ?," +

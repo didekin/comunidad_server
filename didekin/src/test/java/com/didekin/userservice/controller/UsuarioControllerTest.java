@@ -169,17 +169,6 @@ public abstract class UsuarioControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testModifyUserGcmToken()
-    {
-        final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
-        USER_ENDPOINT.modifyGcmToken(authHeader, "new_luis_gcm_token")
-                .test()
-                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void testPasswordChange() throws ServiceException
     {
         // Call the controller.
