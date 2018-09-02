@@ -74,7 +74,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testDeleteUserByName() throws ServiceException
+    public void testDeleteUserByName() throws ServiceException    // TODO: fail.
     {
         List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName());
         assertThat(usuarioComunidades.size(), is(3));
@@ -168,7 +168,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComusByUser_1()
+    public void testGetComusByUser_1()  // TODO: fail.
     {
         List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");
         assertThat(comunidades, CoreMatchers.hasItem(UsuarioTestUtils.COMU_LA_FUENTE));
