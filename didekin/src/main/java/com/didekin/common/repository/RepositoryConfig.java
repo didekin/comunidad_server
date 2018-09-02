@@ -30,7 +30,7 @@ public class RepositoryConfig {
      *  By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
      */
     @Bean @Primary
-    public DataSource dataSource()
+    public DataSource dataSource()          // jdbc:mysql://127.0.0.1:3306/didekin?useSSL=false     jdbc:mysql://didekin-pro.cu9zb7cpbns1.eu-central-1.rds.amazonaws.com:3306/didekin?useSSL=false
     {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://"
