@@ -3,6 +3,8 @@ package com.didekin.common.repository;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,12 +28,17 @@ public class RepositoryConfig {
     private static final String DB_NAME = "didekin";
     private static final String jdbcUrlPort = getenv("RDS_LOCAL_PORT") != null ? getenv("RDS_LOCAL_PORT") : JDBC_URL_DEFAULT_PORT;
 
+    private static final Logger logger = LoggerFactory.getLogger(RepositoryConfig.class.getCanonicalName());
+
     /**
-     *  By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
+     * By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
      */
-    @Bean @Primary
+    @Bean
+    @Primary
     public DataSource dataSource()
     {
+        logger.debug("dataSource()");
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://"
                 + getenv("RDS_HOSTNAME")
