@@ -150,7 +150,7 @@ public class UsuarioDao {
         return functionalRoles;
     }
 
-    List<Comunidad> getComusByUser(String userName)
+    List<Comunidad> getComusByUser(String userName)     // TODO: fail.
     {
         logger.info("getComusByUser() ,jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         return jdbcTemplate.query(COMUS_BY_USER.toString(), new Object[]{userName},
@@ -212,7 +212,7 @@ public class UsuarioDao {
     /**
      * @return a fully initialized UsuarioComuidad instance or null if the pair usuario-comunidad is not in DB.
      */
-    UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws ServiceException
+    UsuarioComunidad getUserComuFullByUserAndComu(String userName, long comunidadId) throws ServiceException      // TODO: fail.
     {
         logger.debug("getUserComuFullByUserAndComu(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         try {
@@ -319,7 +319,7 @@ public class UsuarioDao {
         return jdbcTemplate.update(MODIFY_GCM_TOKEN_BY_TOKEN.toString(), holder.getNewGcmTk(), holder.getOriginalGcmTk());
     }
 
-    List<UsuarioComunidad> seeUserComusByComu(long idComunidad)
+    List<UsuarioComunidad> seeUserComusByComu(long idComunidad)     // TODO: fail.
     {
         logger.info("seeUserComusByComu(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
         List<UsuarioComunidad> usuariosComunidad = jdbcTemplate.query(USERCOMUS_BY_COMU.toString(),
@@ -338,7 +338,7 @@ public class UsuarioDao {
                 usuario.getuId());
     }
 
-    List<UsuarioComunidad> seeUserComusByUser(String userName)
+    List<UsuarioComunidad> seeUserComusByUser(String userName)      // TODO: fail.
     {
         logger.info("seeUserComusByUser(), jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 

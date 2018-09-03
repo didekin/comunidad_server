@@ -26,6 +26,7 @@ import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.ServiceException.GCM_TOKEN_KEY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_LA_FUENTE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PACO;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
@@ -40,6 +41,7 @@ import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -74,9 +76,9 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testDeleteUserByName() throws ServiceException    // TODO: fail.
+    public void testDeleteUserByName() throws ServiceException
     {
-        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName());
+        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName()); // TODO: fail.
         assertThat(usuarioComunidades.size(), is(3));
         boolean isDeleted = usuarioDao.deleteUser(pedro.getUserName());
         assertThat(isDeleted, is(true));
@@ -168,22 +170,22 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComusByUser_1()  // TODO: fail.
+    public void testGetComusByUser_1()
     {
-        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");
-        assertThat(comunidades, CoreMatchers.hasItem(UsuarioTestUtils.COMU_LA_FUENTE));
+        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");   // TODO: fail.
+        assertThat(comunidades, hasItem(COMU_LA_FUENTE));
 
         comunidades = usuarioDao.getComusByUser(pedro.getUserName());
-        assertThat(comunidades, CoreMatchers.hasItems(UsuarioTestUtils.COMU_LA_PLAZUELA_10bis, UsuarioTestUtils.COMU_LA_FUENTE, UsuarioTestUtils.COMU_EL_ESCORIAL));
+        assertThat(comunidades, CoreMatchers.hasItems(UsuarioTestUtils.COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, UsuarioTestUtils.COMU_EL_ESCORIAL));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComusByUser_2()    // TODO: fail.
+    public void testGetComusByUser_2()
     {
         // No existe el usuario en DB.
-        List<Comunidad> comunidades = usuarioDao.getComusByUser("noexisto@muerto.com");
+        List<Comunidad> comunidades = usuarioDao.getComusByUser("noexisto@muerto.com");   // TODO: fail.
         assertThat(comunidades.isEmpty(), is(true));
     }
 
@@ -271,7 +273,7 @@ public abstract class UsuarioDaoTest {
 
         // UsuarioComunidad no existe en BD. Devuelve null.
         UsuarioComunidad usuarioComunidad;
-        assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());
+        assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());   // TODO: fail.
 
         // UsuarioComunidad existe en BD.
         usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(pedro.getUserName(), 1L);
@@ -408,7 +410,7 @@ public abstract class UsuarioDaoTest {
                 "portal_a", null, "PL-1", "J", "adm,pro,pre");
 
         assertThat(usuarioDao.modifyUserComu(uc_1), is(1));
-        List<UsuarioComunidad> userComus = usuarioDao.seeUserComusByUser("paco@paco.com");
+        List<UsuarioComunidad> userComus = usuarioDao.seeUserComusByUser("paco@paco.com");   // TODO: fail.
         assertThat(userComus.get(0).getPortal(), is(uc_1.getPortal()));
         assertThat(userComus.get(0).getEscalera(), is(uc_1.getEscalera()));
         assertThat(userComus.get(0).getPlanta(), is(uc_1.getPlanta()));
@@ -436,7 +438,7 @@ public abstract class UsuarioDaoTest {
     public void testSeeUserComusByComu_1()
     {
         // Comunidad 4 con dos usuarios.
-        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(4L);
+        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(4L);    // TODO: fail.
         assertThat(usuariosComu.size(), is(2));
         // Datos usuario:
         assertThat(usuariosComu.get(1).getUsuario().getUserName(), is("paco@paco.com"));
@@ -458,7 +460,7 @@ public abstract class UsuarioDaoTest {
     public void testSeeUserComusByUser()
     {
         // Usuario con 2 comunidades.
-        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser(juan.getUserName());
+        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser(juan.getUserName());   // TODO: fail.
         assertThat(userComunidades.size(), is(2));
         assertThat(userComunidades, hasItems(juan_plazuela23, juan_lafuente));
         // Verificación de datos de comunidad.
