@@ -180,7 +180,7 @@ public abstract class UsuarioDaoTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetComusByUser_2()
+    public void testGetComusByUser_2()    // TODO: fail.
     {
         // No existe el usuario en DB.
         List<Comunidad> comunidades = usuarioDao.getComusByUser("noexisto@muerto.com");
