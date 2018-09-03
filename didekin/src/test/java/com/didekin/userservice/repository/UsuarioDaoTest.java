@@ -78,7 +78,7 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testDeleteUserByName() throws ServiceException
     {
-        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName()); // TODO: fail.
+        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName()); // TODO: fail. view.
         assertThat(usuarioComunidades.size(), is(3));
         boolean isDeleted = usuarioDao.deleteUser(pedro.getUserName());
         assertThat(isDeleted, is(true));
@@ -172,7 +172,7 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testGetComusByUser_1()
     {
-        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");   // TODO: fail.
+        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");   // TODO: fail. view.
         assertThat(comunidades, hasItem(COMU_LA_FUENTE));
 
         comunidades = usuarioDao.getComusByUser(pedro.getUserName());

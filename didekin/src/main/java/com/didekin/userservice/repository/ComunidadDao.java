@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static com.didekin.common.repository.ServiceException.GENERATED_KEY;
+import static com.didekin.userservice.repository.ComunidadSql.BY_ID;
+import static com.didekin.userservice.repository.ComunidadSql.COUNT_BY_USERCOMU;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
@@ -72,7 +74,7 @@ public class ComunidadDao {
     boolean existsUserComu(long comunidadId, long userId)
     {
         logger.debug("existsUserComu()");
-        int rowsCount = jdbcTemplate.queryForObject(ComunidadSql.COUNT_BY_USERCOMU.toString(), new Object[]{comunidadId, userId}, Integer.class);
+        int rowsCount = jdbcTemplate.queryForObject(COUNT_BY_USERCOMU.toString(), new Object[]{comunidadId, userId}, Integer.class);
         return (rowsCount > 0);
     }
 
@@ -81,7 +83,7 @@ public class ComunidadDao {
         logger.info("::getComunidadById");
         Comunidad comunidad;
         try {
-            comunidad = jdbcTemplate.queryForObject(ComunidadSql.BY_ID.toString(),
+            comunidad = jdbcTemplate.queryForObject(BY_ID.toString(),
                     new ComunidadMapperWithCA(), idComunidad);
         } catch (EmptyResultDataAccessException e) {
             logger.info("::getComunidadById(); the comunidad does not exist.");
