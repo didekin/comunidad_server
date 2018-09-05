@@ -65,7 +65,7 @@ public abstract class ComunidadDaoTest {
     @Test(expected = ServiceException.class)
     public void testDeleteComunidadOk() throws ServiceException
     {
-        Comunidad comunidad = comunidadDao.getComunidadById(3L);   // TODO: fail. view
+        Comunidad comunidad = comunidadDao.getComunidadById(3L);
         boolean isDeleted = comunidadDao.deleteComunidad(comunidad);
         assertThat(isDeleted, is(true));
         // Throw an exception if the comunidad does not exist.
@@ -105,7 +105,7 @@ public abstract class ComunidadDaoTest {
     @Test
     public void testGetComunidadByPk() throws ServiceException
     {
-        Comunidad comunidad = comunidadDao.getComunidadById(3L);    // TODO: fail.  view
+        Comunidad comunidad = comunidadDao.getComunidadById(3L);
         assertThat(comunidad.getNombreVia(), is("de El Escorial"));
     }
 
@@ -188,7 +188,7 @@ public abstract class ComunidadDaoTest {
 
         int rowInserted = comunidadDao.insertUsuarioComunidad(usuarioCom);
         assertThat(rowInserted, is(1));
-        List<UsuarioComunidad> usuariosComunidad = usuarioDao.seeUserComusByUser(paco.getUserName());    // TODO: fail. view.
+        List<UsuarioComunidad> usuariosComunidad = usuarioDao.seeUserComusByUser(paco.getUserName());
         // Check.
         assertThat(usuariosComunidad.get(2),
                 allOf(
@@ -210,7 +210,7 @@ public abstract class ComunidadDaoTest {
         boolean insertedRow = sujetosService.regComuAndUserAndUserComu(COMU_REAL_PEPE, oneComponent_local_ES);
         assertThat(insertedRow, is(true));
 
-        Comunidad comunidad = usuarioDao.getComusByUser(USER_PEPE.getUserName()).get(0);    // TODO: fail. view.
+        Comunidad comunidad = usuarioDao.getComusByUser(USER_PEPE.getUserName()).get(0);
         Usuario usuario = usuarioDao.getUserDataByName(USER_PEPE.getUserName());
         UsuarioComunidad userComu = new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
                 .userComuRest(COMU_REAL_PEPE)
@@ -232,7 +232,7 @@ public abstract class ComunidadDaoTest {
                 ("nuevo_nombre_via").numero((short) 22).municipio(new Municipio((short) 2, new Provincia((short) 13)))
                 .build();
         assertThat(comunidadDao.modifyComuData(comunidad), is(1));
-        Comunidad comunidadDb = comunidadDao.getComunidadById(4L);   // TODO: fail.  view.
+        Comunidad comunidadDb = comunidadDao.getComunidadById(4L);
         assertThat(comunidadDb, allOf(
                 hasProperty("nombreVia", equalTo(comunidad.getNombreVia())),
                 hasProperty("tipoVia", equalTo(comunidad.getTipoVia())),
@@ -248,7 +248,7 @@ public abstract class ComunidadDaoTest {
     public void testSearchComuidad_1()
     {
         // Existe comunidad en DB.
-        List<Comunidad> comunidades = comunidadDao.searchComunidadOne(COMU_LA_PLAZUELA_10);    // TODO: fail. view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadOne(COMU_LA_PLAZUELA_10);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(COMU_LA_PLAZUELA_10))); // difieren en el sufijo número.
         assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
@@ -268,7 +268,7 @@ public abstract class ComunidadDaoTest {
                 .numero((short) 10)
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
-        List<Comunidad> comunidades = comunidadDao.searchComunidadOne(comunidad);    // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadOne(comunidad);
         assertThat(comunidades, notNullValue());
         assertThat(comunidades.size(), is(0));
     }
@@ -287,7 +287,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadTwo(comunidad);   // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadTwo(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el sufijo número.
         assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
@@ -313,7 +313,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);   // TODO: fail. view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
         assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
@@ -334,7 +334,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);   // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
         assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
@@ -355,7 +355,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);   // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
         assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
@@ -375,7 +375,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);        // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
         assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
@@ -396,7 +396,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);    // TODO: fail. view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
         assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
@@ -432,7 +432,7 @@ public abstract class ComunidadDaoTest {
                 .municipio(new Municipio((short) 52, new Provincia((short) 2)))
                 .build();
 
-        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidadSearch);   // TODO: fail.  view.
+        List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidadSearch);
         assertThat(comunidades.size(), is(2));
         assertThat(comunidades.get(0).getTipoVia(), is("Calle"));
         assertThat(comunidades.get(0).getNombreVia(), is("de la Mujer de la Plazuela"));

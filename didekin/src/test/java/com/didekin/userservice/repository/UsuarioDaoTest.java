@@ -78,7 +78,7 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testDeleteUserByName() throws ServiceException
     {
-        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName()); // TODO: fail. view.
+        List<UsuarioComunidad> usuarioComunidades = usuarioDao.seeUserComusByUser(pedro.getUserName());
         assertThat(usuarioComunidades.size(), is(3));
         boolean isDeleted = usuarioDao.deleteUser(pedro.getUserName());
         assertThat(isDeleted, is(true));
@@ -172,7 +172,7 @@ public abstract class UsuarioDaoTest {
     @Test
     public void testGetComusByUser_1()
     {
-        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");   // TODO: fail. view.
+        List<Comunidad> comunidades = usuarioDao.getComusByUser("juan@noauth.com");
         assertThat(comunidades, hasItem(COMU_LA_FUENTE));
 
         comunidades = usuarioDao.getComusByUser(pedro.getUserName());
@@ -185,7 +185,7 @@ public abstract class UsuarioDaoTest {
     public void testGetComusByUser_2()
     {
         // No existe el usuario en DB.
-        List<Comunidad> comunidades = usuarioDao.getComusByUser("noexisto@muerto.com");   // TODO: fail.
+        List<Comunidad> comunidades = usuarioDao.getComusByUser("noexisto@muerto.com");
         assertThat(comunidades.isEmpty(), is(true));
     }
 
@@ -273,7 +273,7 @@ public abstract class UsuarioDaoTest {
 
         // UsuarioComunidad no existe en BD. Devuelve null.
         UsuarioComunidad usuarioComunidad;
-        assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());   // TODO: fail.
+        assertThat(usuarioDao.getUserComuFullByUserAndComu("juan@noauth.com", 1L), nullValue());
 
         // UsuarioComunidad existe en BD.
         usuarioComunidad = usuarioDao.getUserComuFullByUserAndComu(pedro.getUserName(), 1L);
@@ -410,7 +410,7 @@ public abstract class UsuarioDaoTest {
                 "portal_a", null, "PL-1", "J", "adm,pro,pre");
 
         assertThat(usuarioDao.modifyUserComu(uc_1), is(1));
-        List<UsuarioComunidad> userComus = usuarioDao.seeUserComusByUser("paco@paco.com");   // TODO: fail.
+        List<UsuarioComunidad> userComus = usuarioDao.seeUserComusByUser("paco@paco.com");
         assertThat(userComus.get(0).getPortal(), is(uc_1.getPortal()));
         assertThat(userComus.get(0).getEscalera(), is(uc_1.getEscalera()));
         assertThat(userComus.get(0).getPlanta(), is(uc_1.getPlanta()));
@@ -438,7 +438,7 @@ public abstract class UsuarioDaoTest {
     public void testSeeUserComusByComu_1()
     {
         // Comunidad 4 con dos usuarios.
-        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(4L);    // TODO: fail.
+        List<UsuarioComunidad> usuariosComu = usuarioDao.seeUserComusByComu(4L);
         assertThat(usuariosComu.size(), is(2));
         // Datos usuario:
         assertThat(usuariosComu.get(1).getUsuario().getUserName(), is("paco@paco.com"));
@@ -460,7 +460,7 @@ public abstract class UsuarioDaoTest {
     public void testSeeUserComusByUser()
     {
         // Usuario con 2 comunidades.
-        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser(juan.getUserName());   // TODO: fail.
+        List<UsuarioComunidad> userComunidades = usuarioDao.seeUserComusByUser(juan.getUserName());
         assertThat(userComunidades.size(), is(2));
         assertThat(userComunidades, hasItems(juan_plazuela23, juan_lafuente));
         // Verificación de datos de comunidad.
