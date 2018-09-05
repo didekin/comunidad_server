@@ -37,8 +37,6 @@ public class Application {
         final JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
         factory.addServerCustomizers((Server server) -> {
             final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
-//            threadPool.setMinThreads(MIN_THREADS_FRONT);
-//            threadPool.setMaxThreads(MAX_THREADS_FRONT);
             threadPool.setIdleTimeout(IDLE_TIMEOUT_FRONT);
             logger.debug(String.format("Max threads = %d min threads = %d idleTimeout = %d %n",
                     threadPool.getMaxThreads(), threadPool.getMinThreads(), threadPool.getIdleTimeout()));

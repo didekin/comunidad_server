@@ -44,7 +44,7 @@ dependencies {
     implementation rootProject.ext.retrofit2
     implementation rootProject.ext.json_4_j
     implementation rootProject.ext.jbcrypt
-    implementation "org.liquibase:liquibase-core:3.6.1"
+    implementation "org.liquibase:liquibase-core:3.6.2"
 
     testImplementation rootProject.ext.rxjava
     testImplementation rootProject.ext.mock_server

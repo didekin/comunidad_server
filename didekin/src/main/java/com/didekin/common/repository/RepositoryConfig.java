@@ -26,6 +26,7 @@ public class RepositoryConfig {
     private static final String JDBC_URL_DEFAULT_PORT = "3306";
     private static final String SSL_DEFAULT_VALUE = "useSSL=false";
     private static final String DB_NAME = "didekin";
+    // RDS_LOCAL_PORT is used for SSH connections, when defined.
     private static final String jdbcUrlPort = getenv("RDS_LOCAL_PORT") != null ? getenv("RDS_LOCAL_PORT") : JDBC_URL_DEFAULT_PORT;
 
     private static final Logger logger = LoggerFactory.getLogger(RepositoryConfig.class.getCanonicalName());

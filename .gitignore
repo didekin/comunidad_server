@@ -16,9 +16,6 @@ gradle.properties
 
 # Elastic Beanstalk configuration
 
-# Keystore for encryption key in server.
-/didekin/src/main/resources/didekin_web_sym.pkcs12
-
 # Build and logs
 logs/
 /**/out
@@ -31,7 +28,5 @@ terminal/*
 
 # SECURITY
 
-# Basurilla
-/**/trash.sql
-
-
+# Dumps of PRE and PRO environments
+didekin/sql_dumps/**
