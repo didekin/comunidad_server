@@ -18,7 +18,7 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 public class RetrofitConfigurationPre {
 
     private static final String jetty_awspre_URL = "https://didekin-web-pre.eu-west-1.elasticbeanstalk.com";
-    private static final String jetty_awspre_jks_appclient = "/Users/pedro/keystores/didekin_web_pre/didekin_web_pre_jks";
+    private static final String jetty_awspre_jks_appclient = "/Users/pedro/keystores/web_services/didekin_web/didekin_web_pre_jks";
     private static final String jetty_awspre_jks_appclient_pswd = "erbutco_1_6102_pre_jks";
     private static final int http_timeOut = 90;
 
