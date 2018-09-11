@@ -158,7 +158,7 @@ public abstract class ComunidadControllerTest {
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
-    public static class ComunidadCtrlerDevDbPreTest extends ComunidadControllerTest {
+    public static class ComunidadCtrlerDbPreDevTest extends ComunidadControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
