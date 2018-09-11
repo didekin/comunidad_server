@@ -1,6 +1,5 @@
 package com.didekin.userservice.repository;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.mail.JavaMailMonitor;
@@ -104,7 +103,13 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * test_GetAccessToken(),
  * test_GetAccessTokenByUserName().
  */
-public abstract class UsuarioManagerTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {UserMockRepoConfiguration.class,
+        UsuarioMailConfigurationPre.class,
+        TkCommonConfig.class})
+@Category({LocalDev.class})
+@ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
+public class UsuarioManagerDbPreDevTest {
 
     @Autowired
     private UsuarioManager usuarioManager;
@@ -962,34 +967,6 @@ public abstract class UsuarioManagerTest {
         // Check login.
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(newUsuario).password(password).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(userIn)), is(true));
-    }
-
-    // ================================= INNER CLASSES ======================================
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/04/15
-     * Time: 16:23
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UserMockRepoConfiguration.class,
-            UsuarioMailConfigurationPre.class,
-            TkCommonConfig.class})
-    @Category({LocalDev.class})
-    @ActiveProfiles(value = {MAIL_PRE})
-    public static class UsuarioManagerDevTest extends UsuarioManagerTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/04/15
-     * Time: 16:23
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UserMockRepoConfiguration.class, UsuarioMailConfigurationPre.class})
-    @Category({DbPre.class})
-    @ActiveProfiles(value = {MAIL_PRE})
-    public static class UsuarioManagerDbPreTest extends UsuarioManagerTest {
     }
 }
 
