@@ -165,6 +165,6 @@ public abstract class ComunidadControllerTest {
     @SpringBootTest(classes = {RetrofitConfigurationPre.class, UsuarioRepoConfiguration.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
-    public static class ComunidadControllerAwsTest extends ComunidadControllerTest {
+    public static class ComunidadCtrlerAwsTest extends ComunidadControllerTest {
     }
 }

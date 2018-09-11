@@ -2,7 +2,6 @@ package com.didekin.incidservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -84,7 +83,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Subclasses:
  * - IncidenciaControlerAutowireTest: set of tests that requires a full application context initialization,
  * for autowiring controllers.
- * - IncidenciaControllerAwsTest: set of test blockingGetd in client mode (server instantiated in AWS) and, therefore,
+ * - IncidenciaCtrlerAwsTest: set of test blockingGetd in client mode (server instantiated in AWS) and, therefore,
  * cannot autowire controllers in the tests.
  */
 
@@ -773,7 +772,7 @@ abstract class IncidenciaControllerTest {
             IncidenciaManagerConfiguration.class})
     @ActiveProfiles({Profiles.NGINX_JETTY_PRE})
     @Category({AwsPre.class})
-    public static class IncidenciaControllerAwsTest extends IncidenciaControllerTest {
+    public static class IncidenciaCtrlerAwsTest extends IncidenciaControllerTest {
     }
 
     /**
@@ -786,20 +785,6 @@ abstract class IncidenciaControllerTest {
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
-    public static class IncidenciaControllerDevTest extends IncidenciaControllerTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/11/15
-     * Time: 11:47
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
-    @ActiveProfiles({NGINX_JETTY_LOCAL})
-    @Category({DbPre.class})
-
-    @DirtiesContext
-    public static class IncidenciaControllerPreTest extends IncidenciaControllerTest {
+    public static class IncidenciaCtrlerDbPreDevTest extends IncidenciaControllerTest {
     }
 }

@@ -3,7 +3,6 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -68,7 +67,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -153,7 +151,7 @@ public abstract class UserComuControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
 
         // No existe el par usuario-comunidad.
-        assertThat(USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader,  calle_plazuela_23.getC_Id()).blockingGet().body(), nullValue());
+        assertThat(USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, calle_plazuela_23.getC_Id()).blockingGet().body(), nullValue());
 
         // Comunidad asociada a usuario.
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
@@ -338,25 +336,14 @@ public abstract class UserComuControllerTest {
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
-    public static class UserComuControllerDevTest extends UserComuControllerTest {
+    public static class UserComuCtrlerDbPreDevTest extends UserComuControllerTest {
     }
-
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class,
-            RetrofitConfigurationDev.class},
-            webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({DbPre.class})
-    @DirtiesContext
-    public static class UserComuControllerPreTest extends UserComuControllerTest {
-    }
-
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
             UsuarioRepoConfiguration.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
-    public static class UserComuControllerAwsTest extends UserComuControllerTest {
+    public static class UserComuCtrlerAwsTest extends UserComuControllerTest {
     }
 }

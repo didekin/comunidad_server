@@ -856,7 +856,7 @@ public abstract class IncidenciaManagerTest {
     @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
     @Category({DbPre.class})
     @ActiveProfiles(value = {MAIL_PRE})
-    public static class IncidenciaManagerPreTest extends IncidenciaManagerTest {
+    public static class IncidenciaManagerDbPreTest extends IncidenciaManagerTest {
     }
 
     /**

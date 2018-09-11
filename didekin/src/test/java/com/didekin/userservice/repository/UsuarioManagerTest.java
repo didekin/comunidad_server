@@ -989,7 +989,7 @@ public abstract class UsuarioManagerTest {
     @ContextConfiguration(classes = {UserMockRepoConfiguration.class, UsuarioMailConfigurationPre.class})
     @Category({DbPre.class})
     @ActiveProfiles(value = {MAIL_PRE})
-    public static class UsuarioManagerPreTest extends UsuarioManagerTest {
+    public static class UsuarioManagerDbPreTest extends UsuarioManagerTest {
     }
 }
 

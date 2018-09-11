@@ -2,7 +2,6 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -51,7 +50,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -209,18 +207,7 @@ public abstract class UsuarioControllerTest {
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class})
     @DirtiesContext
-    public static class UsuarioControllerDevTest extends UsuarioControllerTest {
-    }
-
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class,
-            RetrofitConfigurationDev.class,
-            UsuarioMailConfigurationPre.class},
-            webEnvironment = DEFINED_PORT)
-    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({DbPre.class})
-    @DirtiesContext
-    public static class UsuarioControllerPreTest extends UsuarioControllerTest {
+    public static class UsuarioCtrlerDbPreDevTest extends UsuarioControllerTest {
     }
 
 
@@ -229,6 +216,6 @@ public abstract class UsuarioControllerTest {
             UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
-    public static class UsuarioControllerAwsTest extends UsuarioControllerTest {
+    public static class UsuarioCtrlerAwsTest extends UsuarioControllerTest {
     }
 }
