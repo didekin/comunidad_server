@@ -50,8 +50,11 @@ import static org.junit.Assert.fail;
  * Date: 19/04/15
  * Time: 11:18
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+@Category({LocalDev.class, DbPre.class})
 @SuppressWarnings({"ThrowFromFinallyBlock", "Duplicates", "ConstantConditions"})
-public abstract class ComunidadDaoTest {
+public class ComunidadDaoDbPreDevTest {
 
     @Autowired
     private ComunidadDao comunidadDao;
@@ -438,29 +441,5 @@ public abstract class ComunidadDaoTest {
         assertThat(comunidades.get(0).getNombreVia(), is("de la Mujer de la Plazuela"));
         assertThat(comunidades.get(1).getTipoVia(), is("Ronda"));
         assertThat(comunidades.get(1).getNombreVia(), is("de la Plazuela"));
-    }
-
-    // ======================================  INNER CLASSES ======================================
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/04/15
-     * Time: 11:18
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({LocalDev.class})
-    public static class ComunidadDaoDevTest extends ComunidadDaoTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/04/15
-     * Time: 11:18
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({DbPre.class})
-    public static class ComunidadDaoPreTest extends ComunidadDaoTest {
     }
 }

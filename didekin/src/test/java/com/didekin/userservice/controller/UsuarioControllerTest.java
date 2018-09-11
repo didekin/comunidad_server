@@ -2,6 +2,7 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
+import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -205,7 +206,7 @@ public abstract class UsuarioControllerTest {
             RetrofitConfigurationDev.class,
             UsuarioMailConfigurationPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class})
+    @Category({LocalDev.class, DbPre.class})
     @DirtiesContext
     public static class UsuarioCtrlerDbPreDevTest extends UsuarioControllerTest {
     }

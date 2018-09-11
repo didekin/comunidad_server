@@ -30,7 +30,10 @@ import static org.junit.Assert.fail;
  * Date: 27/08/17
  * Time: 14:21
  */
-public abstract class UserManagerConnectorTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+@Category({LocalDev.class, DbPre.class})
+public class UserManagerConnectorDbPreDevTest {
 
     @Autowired
     private UserManagerConnector connector;
@@ -97,19 +100,5 @@ public abstract class UserManagerConnectorTest {
                         hasProperty("roles", is("adm,pro"))
                 )
         );
-    }
-
-    /*  ==============================================  INNER CLASSES =============================================*/
-
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @Category({LocalDev.class})
-    public static class UsuarioManagerConnectorDevTest extends UserManagerConnectorTest {
-    }
-
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @Category({DbPre.class})
-    public static class UsuarioManagerConnectorPreTest extends UserManagerConnectorTest {
     }
 }

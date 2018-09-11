@@ -58,7 +58,10 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * Time: 15:16
  */
 @SuppressWarnings({"ThrowFromFinallyBlock", "ConstantConditions"})
-public abstract class UsuarioDaoTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+@Category({LocalDev.class, DbPre.class})
+public class UsuarioDaoDbPreDevTest {
 
     @Autowired
     private UsuarioDao usuarioDao;
@@ -566,29 +569,5 @@ public abstract class UsuarioDaoTest {
                 conn.close();
             }
         }
-    }
-
-    // ======================================  INNER CLASSES ======================================
-
-    /**
-     * User: pedro
-     * Date: 31/03/15
-     * Time: 15:16
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({LocalDev.class})
-    public static class UsuarioDaoDevTest extends UsuarioDaoTest {
-    }
-
-    /**
-     * User: pedro
-     * Date: 31/03/15
-     * Time: 15:16
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({DbPre.class})
-    public static class UsuarioDaoPreTest extends UsuarioDaoTest {
     }
 }

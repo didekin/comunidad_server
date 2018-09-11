@@ -1,5 +1,6 @@
 package com.didekin.userservice.repository;
 
+import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.mail.JavaMailMonitor;
@@ -107,7 +108,7 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
 @ContextConfiguration(classes = {UserMockRepoConfiguration.class,
         UsuarioMailConfigurationPre.class,
         TkCommonConfig.class})
-@Category({LocalDev.class})
+@Category({LocalDev.class, DbPre.class})
 @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
 public class UsuarioManagerDbPreDevTest {
 

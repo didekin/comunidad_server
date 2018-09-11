@@ -21,7 +21,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.List;
 
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
-import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_REAL;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_PEPE;
@@ -46,7 +45,11 @@ import static org.mindrot.jbcrypt.BCrypt.checkpw;
  * test_GetAccessToken(),
  * test_GetAccessTokenByUserName().
  */
-public abstract class UserMockManagerTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {UserMockRepoConfiguration.class})
+@Category({LocalDev.class, DbPre.class})
+@ActiveProfiles(value = {NGINX_JETTY_LOCAL})
+public class UserMockManagerDbPreDevTest {
 
     @Autowired
     private UserMockManager userMockManager;
@@ -98,32 +101,6 @@ public abstract class UserMockManagerTest {
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regUserAndUserComu(newPepe)), is(true));
         assertThat(usuarioManager.getComusByUser(newPepe.getUsuario().getUserName()).get(0), is(calle_el_escorial));
-    }
-
-    // ======================================  INNER CLASSES ======================================
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/04/15
-     * Time: 16:23
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UserMockRepoConfiguration.class})
-    @Category({LocalDev.class})
-    @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
-    public static class UserMockManagerDevTest extends UserMockManagerTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/04/15
-     * Time: 16:23
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UserMockRepoConfiguration.class})
-    @Category({DbPre.class})
-    @ActiveProfiles(value = {NGINX_JETTY_PRE})
-    public static class UserMockManagerPreTest extends UserMockManagerTest {
     }
 }
 

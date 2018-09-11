@@ -31,7 +31,6 @@ import java.util.List;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
-import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doComment;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidencia;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithId;
@@ -73,7 +72,11 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Time: 16:10
  */
 @SuppressWarnings({"unchecked"})
-public abstract class IncidenciaDaoTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+@Profile({NGINX_JETTY_LOCAL, MAIL_PRE})
+@Category({LocalDev.class, DbPre.class})
+public class IncidenciaDaoDbPreDevTest {
 
     @Autowired
     private IncidenciaDao incidenciaDao;
@@ -1078,31 +1081,5 @@ public abstract class IncidenciaDaoTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
-    }
-
-    // =================================  Inner classes  ==================================
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/11/15
-     * Time: 16:10
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @Profile({NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class})
-    public static class IncidenciaDaoDevTest extends IncidenciaDaoTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/11/15
-     * Time: 16:10
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @Profile({NGINX_JETTY_PRE})
-    @Category({DbPre.class})
-    public static class IncidenciaDaoPreTest extends IncidenciaDaoTest {
     }
 }

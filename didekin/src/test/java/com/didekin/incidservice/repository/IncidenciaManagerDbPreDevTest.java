@@ -75,7 +75,11 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Time: 11:29
  */
 @SuppressWarnings("unchecked")
-public abstract class IncidenciaManagerTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
+@ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
+@Category({LocalDev.class, DbPre.class})
+public class IncidenciaManagerDbPreDevTest {
 
     @Autowired
     private IncidenciaManager incidenciaManager;
@@ -843,31 +847,5 @@ public abstract class IncidenciaManagerTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(INCIDENCIA_NOT_FOUND));
         }
-    }
-
-//    ================================ HELPER CLASSES =======================
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/11/15
-     * Time: 11:29
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @Category({DbPre.class})
-    @ActiveProfiles(value = {MAIL_PRE})
-    public static class IncidenciaManagerDbPreTest extends IncidenciaManagerTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 20/11/15
-     * Time: 11:29
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {IncidenciaManagerConfiguration.class})
-    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class})
-    public static class IncidenciaManagerDevTest extends IncidenciaManagerTest {
     }
 }

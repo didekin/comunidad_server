@@ -20,14 +20,17 @@ import static org.junit.Assert.assertThat;
  * Date: 28/05/15
  * Time: 18:18
  */
-public abstract class MunicipioDaoTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
+@Category({LocalDev.class, DbPre.class})
+public class MunicipioDaoDbPreDevTest {
 
     @Autowired
     private MunicipioDao municipioDao;
 
     /* We assume the tables of comunidad_autonoma, provincia and municipio are populated.*/
     @Test
-    public void getMunicipioByPrIdAndMcd() throws Exception
+    public void getMunicipioByPrIdAndMcd()
     {
         Municipio municipio = municipioDao.getMunicipioByPrIdAndMcd((short) 13, (short) 3);
         assertThat(municipio.getNombre(), is(equalTo("Alamillo")));
@@ -37,35 +40,11 @@ public abstract class MunicipioDaoTest {
     }
 
     @Test
-    public void getMunicipioCharacterSet() throws Exception
+    public void getMunicipioCharacterSet()
     {
         Municipio municipio = municipioDao.getMunicipioByPrIdAndMcd((short) 13, (short) 1);
         assertThat(municipio.getNombre(), is(equalTo("Abenójar")));
         municipio = municipioDao.getMunicipioByPrIdAndMcd((short) 13, (short) 61);
         assertThat(municipio.getNombre(), is(equalTo("Pedro Muñoz")));
-    }
-
-    // ======================================  INNER CLASSES ======================================
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/04/15
-     * Time: 11:18
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({LocalDev.class})
-    public static class MunicipioDaoDevTest extends MunicipioDaoTest {
-    }
-
-    /**
-     * User: pedro@didekin
-     * Date: 19/04/15
-     * Time: 11:18
-     */
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-    @Category({DbPre.class})
-    public static class MunicipioDaoPreTest extends MunicipioDaoTest {
     }
 }
