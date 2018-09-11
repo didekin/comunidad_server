@@ -976,7 +976,7 @@ public abstract class UsuarioManagerTest {
             UsuarioMailConfigurationPre.class,
             TkCommonConfig.class})
     @Category({LocalDev.class})
-    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
+    @ActiveProfiles(value = {MAIL_PRE})
     public static class UsuarioManagerDevTest extends UsuarioManagerTest {
     }
 
