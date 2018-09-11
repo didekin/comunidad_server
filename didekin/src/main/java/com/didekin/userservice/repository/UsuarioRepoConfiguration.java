@@ -38,7 +38,7 @@ public class UsuarioRepoConfiguration {
     {
         this.jdbcTemplate = jdbcTemplate;
         this.mailService = mailService;
-        this.producerBuilder = producerBuilderIn;
+        producerBuilder = producerBuilderIn;
         consumerBuilder = consumerBuilderIn;
     }
 
