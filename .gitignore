@@ -28,5 +28,3 @@ terminal/*
 
 # SECURITY
 
-# Dumps of PRE and PRO environments
-didekin/sql_dumps/*
