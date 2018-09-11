@@ -3,7 +3,6 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -159,14 +158,6 @@ public abstract class ComunidadControllerTest {
     @Category({LocalDev.class})
     @DirtiesContext
     public static class ComunidadCtrlerDbPreDevTest extends ComunidadControllerTest {
-    }
-
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
-    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({DbPre.class})
-    @DirtiesContext
-    public static class ComunidadControllerPreTest extends ComunidadControllerTest {
     }
 
 
