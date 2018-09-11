@@ -161,6 +161,14 @@ public abstract class ComunidadControllerTest {
     public static class ComunidadCtrlerDevDbPreTest extends ComunidadControllerTest {
     }
 
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
+    @Category({DbPre.class})
+    @DirtiesContext
+    public static class ComunidadControllerPreTest extends ComunidadControllerTest {
+    }
+
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class, UsuarioRepoConfiguration.class})
