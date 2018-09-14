@@ -10,7 +10,7 @@ import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UserMockManager;
-import com.didekin.userservice.repository.UsuarioRepoConfiguration;
+import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.usuario.UsuarioEndPoints;
 import com.didekinlib.model.usuario.Usuario;
@@ -214,7 +214,7 @@ public abstract class UsuarioControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class, UsuarioMailConfigurationPre.class})
+            UserMockRepoConfiguration.class, UsuarioMailConfigurationPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UsuarioCtrlerAwsTest extends UsuarioControllerTest {

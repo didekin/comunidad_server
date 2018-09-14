@@ -32,6 +32,7 @@ import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static java.util.Objects.requireNonNull;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -53,7 +54,6 @@ import static org.junit.Assert.fail;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
 @Category({LocalDev.class, DbPre.class})
-@SuppressWarnings({"ThrowFromFinallyBlock", "Duplicates", "ConstantConditions"})
 public class ComunidadDaoDbPreDevTest {
 
     @Autowired
@@ -143,7 +143,7 @@ public class ComunidadDaoDbPreDevTest {
     public void testInsertComunidad_1() throws Exception
     {
         long pkComunidad;
-        try (Connection conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection()) {
+        try (Connection conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection()) {
             assertThat(COMU_LA_PLAZUELA_10.getC_Id(), is(0L));
             pkComunidad = comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
         }
@@ -154,7 +154,7 @@ public class ComunidadDaoDbPreDevTest {
     @Test
     public void testInsertComunidad_2() throws Exception
     {
-        Connection conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
+        Connection conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
         comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
         if (conn != null) {
             conn.close();

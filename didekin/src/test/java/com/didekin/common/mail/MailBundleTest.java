@@ -1,6 +1,10 @@
 package com.didekin.common.mail;
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -23,10 +27,11 @@ import static org.junit.Assert.assertThat;
  * User: pedro@didekin
  * Date: 04/11/2017
  * Time: 14:25
- *
+ * <p>
  * Remark: If the specified locale's language, script, country, and variant are all empty strings,
  * then the base name is the only candidate bundle name.
  */
+@Category({LocalDev.class, DbPre.class})
 public class MailBundleTest {
 
     @Test

@@ -2,6 +2,7 @@ package com.didekin.common.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
+import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 
 import org.junit.Test;
@@ -10,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.security.Key;
@@ -93,7 +93,7 @@ public abstract class TkKeyServerProviderTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class})
-    @Category({LocalDev.class})
+    @Category({LocalDev.class, DbPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class TkKeyServerProviderDevTest extends TkKeyServerProviderTest {
     }

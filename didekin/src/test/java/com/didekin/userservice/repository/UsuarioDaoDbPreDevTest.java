@@ -38,6 +38,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static java.util.Objects.requireNonNull;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -57,7 +58,6 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * Date: 31/03/15
  * Time: 15:16
  */
-@SuppressWarnings({"ThrowFromFinallyBlock", "ConstantConditions"})
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
 @Category({LocalDev.class, DbPre.class})
@@ -308,7 +308,7 @@ public class UsuarioDaoDbPreDevTest {
     {
         long maxPk = usuarioDao.getMaxPk();
 
-        Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+        Connection conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
         usuarioDao.insertUsuario(USER_PACO, conn);
         assertThat(USER_PACO.getuId() > maxPk, is(true));
 
@@ -324,7 +324,7 @@ public class UsuarioDaoDbPreDevTest {
     @Test
     public void testInsertUsuario_2() throws Exception
     {
-        Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+        Connection conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
         usuarioDao.insertUsuario(USER_PACO, conn);
 
         if (conn != null) {
@@ -341,7 +341,7 @@ public class UsuarioDaoDbPreDevTest {
         Usuario usuario1 = new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).gcmToken("gcm_token_1").build();
         Usuario usuario2 = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).gcmToken("gcm_token_1").build();
 
-        Connection conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+        Connection conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
         assertThat(usuarioDao.insertUsuario(usuario1, conn) > 0L, is(true));
         if (conn != null) {
             conn.close();
@@ -559,7 +559,7 @@ public class UsuarioDaoDbPreDevTest {
     private void tryCheckInsertUser(Usuario usuario2, Connection conn, String exceptionKey) throws SQLException
     {
         try {
-            conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
             usuarioDao.insertUsuario(usuario2, conn);
             fail();
         } catch (Exception e) {

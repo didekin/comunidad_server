@@ -1,6 +1,10 @@
 package com.didekin.userservice.mail;
 
+import com.didekin.common.DbPre;
+import com.didekin.common.LocalDev;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ResourceBundle;
 
@@ -27,16 +31,17 @@ import static org.junit.Assert.assertThat;
  * Date: 04/11/2017
  * Time: 14:25
  */
+@Category({LocalDev.class, DbPre.class})
 public class UsuarioMailBundleTest {
 
     @Test
     public void test_GetBundle()
     {
         ResourceBundle usuarioBundle = getBundle(usuarioMailBundleName, getLocale(oneComponent_local_ES));
-        assertThat(UsuarioMailBundle_es.class.cast(usuarioBundle), isA(UsuarioMailBundle_es.class));
+        assertThat((UsuarioMailBundle_es) usuarioBundle, isA(UsuarioMailBundle_es.class));
 
         usuarioBundle = getBundle(usuarioMailBundleName, getLocale(oneComponent_local_EN));
-        assertThat(UsuarioMailBundle_en.class.cast(usuarioBundle), isA(UsuarioMailBundle_en.class));
+        assertThat((UsuarioMailBundle_en) usuarioBundle, isA(UsuarioMailBundle_en.class));
     }
 
     @Test

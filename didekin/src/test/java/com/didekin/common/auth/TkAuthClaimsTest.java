@@ -1,14 +1,11 @@
 package com.didekin.common.auth;
 
-import com.didekin.common.AwsPre;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.userservice.auth.TkParamNames;
 
-
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
-import org.jose4j.jwt.NumericDate;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,7 +41,7 @@ import static org.junit.Assert.fail;
  * Date: 10/05/2018
  * Time: 12:51
  */
-@Category({LocalDev.class, AwsPre.class, DbPre.class})
+@Category({LocalDev.class, DbPre.class})
 public class TkAuthClaimsTest {
 
     private Map<TkParamNames, Object> claimsMap;
@@ -121,7 +118,7 @@ public class TkAuthClaimsTest {
     {
         initMap();
         TkAuthClaims authClaims = doDefaultAuthClaims(claimsMap);
-        assertThat(authClaims.getExpirationNumDate() instanceof NumericDate, is(true));
+        assertThat(authClaims.getExpirationNumDate() != null, is(true));
         assertThat(authClaims.getExpirationInstant().getEpochSecond(), is(authClaims.getExpirationNumDate().getValue()));
     }
 
@@ -164,6 +161,6 @@ public class TkAuthClaimsTest {
                         hasItem(audience.getName())
                 )
         );
-        assertThat(jwtClaims.getExpirationTime() instanceof NumericDate, is(true));
+        assertThat(jwtClaims.getExpirationTime() != null, is(true));
     }
 }

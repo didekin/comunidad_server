@@ -9,8 +9,8 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.repository.UserMockManager;
+import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.HttpHandler;
 import com.didekinlib.http.comunidad.ComunidadEndPoints;
 import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
@@ -163,7 +163,7 @@ public abstract class ComunidadControllerTest {
 
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {RetrofitConfigurationPre.class, UsuarioRepoConfiguration.class})
+    @SpringBootTest(classes = {RetrofitConfigurationPre.class, UserMockRepoConfiguration.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class ComunidadCtrlerAwsTest extends ComunidadControllerTest {

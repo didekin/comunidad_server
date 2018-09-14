@@ -629,7 +629,7 @@ USE `didekin`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-09-11 11:38:29
+-- Dump completed on 2018-09-13 17:50:55
 -- MySQL dump 10.13  Distrib 5.7.23, for osx10.13 (x86_64)
 --
 -- Host: 127.0.0.1    Database: didekin
@@ -760,4 +760,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-09-11 11:38:35
+-- Dump completed on 2018-09-13 17:51:02

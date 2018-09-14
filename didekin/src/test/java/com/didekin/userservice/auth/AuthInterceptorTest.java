@@ -2,6 +2,7 @@ package com.didekin.userservice.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
+import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.auth.AuthInterceptor;
 import com.didekin.common.controller.RetrofitConfigurationDev;
@@ -20,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.awt.image.DataBuffer;
 import java.io.IOException;
 
 import retrofit2.Response;
@@ -123,7 +125,7 @@ public abstract class AuthInterceptorTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
-    @Category({LocalDev.class})
+    @Category({LocalDev.class, DbPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class AuthInterceptorDevTest extends AuthInterceptorTest {
     }
