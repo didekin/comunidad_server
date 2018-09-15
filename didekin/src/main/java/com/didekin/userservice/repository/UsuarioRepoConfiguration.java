@@ -22,7 +22,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * UsuarioMailConfiguration is used by UsuarioService to send emails.
  */
 @Configuration
-@Import(value = {RepositoryConfig.class, UsuarioMailConfiguration.class, TkCommonConfig.class, TkProducerConfig.class})
+@Import(value = {
+        RepositoryConfig.class,
+        UsuarioMailConfiguration.class,
+        TkProducerConfig.class})
 public class UsuarioRepoConfiguration {
 
     private final JdbcTemplate jdbcTemplate;

@@ -2,7 +2,6 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekin.common.auth.TkCommonConfig;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
@@ -105,9 +104,9 @@ import static org.mindrot.jbcrypt.BCrypt.hashpw;
  * test_GetAccessTokenByUserName().
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {UserMockRepoConfiguration.class,
-        UsuarioMailConfigurationPre.class,
-        TkCommonConfig.class})
+@ContextConfiguration(classes = {
+        UserMockRepoConfiguration.class,
+        UsuarioMailConfigurationPre.class})
 @Category({LocalDev.class, DbPre.class})
 @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
 public class UsuarioManagerDbPreDevTest {
@@ -499,7 +498,7 @@ public class UsuarioManagerDbPreDevTest {
                 .build();
 
         //noinspection SynchronizeOnNonFinalField
-        synchronized (javaMailMonitor){
+        synchronized (javaMailMonitor) {
             javaMailMonitor.extSetUp();
             assertThat(usuarioManager.modifyUser(usuarioNew, "juan@noauth.com", oneComponent_local_ES), is(1));
             // Check new data in DB.
@@ -589,7 +588,7 @@ public class UsuarioManagerDbPreDevTest {
 
         // Exec test.
         //noinspection SynchronizeOnNonFinalField
-        synchronized (javaMailMonitor){
+        synchronized (javaMailMonitor) {
             javaMailMonitor.extSetUp();
             assertThat(usuarioManager.passwordSend(usuarioManager.getUserData(TO).getUserName(), oneComponent_local_ES), is(true));
             // Login no válido una vez generado el nuevo password.
@@ -640,7 +639,7 @@ public class UsuarioManagerDbPreDevTest {
                 "door", ADMINISTRADOR.function);
         // Exec.
         //noinspection SynchronizeOnNonFinalField
-        synchronized (javaMailMonitor){
+        synchronized (javaMailMonitor) {
             javaMailMonitor.extSetUp();
             assertThat(usuarioManager.regComuAndUserAndUserComu(userComu, oneComponent_local_ES), is(true));
             checkPswdSentAndLogin(userIn);
@@ -743,7 +742,7 @@ public class UsuarioManagerDbPreDevTest {
                 "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
 
         //noinspection SynchronizeOnNonFinalField
-        synchronized (javaMailMonitor){
+        synchronized (javaMailMonitor) {
             javaMailMonitor.extSetUp();
             assertThat(usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES), is(true));
             checkPswdSentAndLogin(newPepe.getUsuario());
