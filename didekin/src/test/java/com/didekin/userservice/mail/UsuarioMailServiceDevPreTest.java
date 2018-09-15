@@ -1,6 +1,5 @@
 package com.didekin.userservice.mail;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.mail.JavaMailMonitor;
 import com.didekinlib.model.usuario.Usuario;
@@ -36,7 +35,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioMailConfigurationPre.class})
 @ActiveProfiles({MAIL_PRE})
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class UsuarioMailServiceDevPreTest {
 
     @Autowired

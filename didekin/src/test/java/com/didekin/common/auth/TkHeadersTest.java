@@ -1,6 +1,5 @@
 package com.didekin.common.auth;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.userservice.auth.TkParamNames;
 
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertThat;
  * Date: 09/05/2018
  * Time: 11:59
  */
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class TkHeadersTest {
 
     @Test

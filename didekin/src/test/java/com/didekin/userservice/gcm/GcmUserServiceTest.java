@@ -1,6 +1,5 @@
 package com.didekin.userservice.gcm;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
@@ -42,7 +41,7 @@ import static org.hamcrest.CoreMatchers.is;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {UsuarioRepoConfiguration.class})
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class GcmUserServiceTest {
 
     private MockWebServer server;

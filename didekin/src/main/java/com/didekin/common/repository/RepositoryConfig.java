@@ -61,6 +61,7 @@ public class RepositoryConfig {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
+
         config.addDataSourceProperty("maxLifetime", "180000");
 
         config.addDataSourceProperty("serverTimezone", "UTC");

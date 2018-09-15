@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
  * Date: 10/05/2018
  * Time: 12:51
  */
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class TkAuthClaimsTest {
 
     private Map<TkParamNames, Object> claimsMap;

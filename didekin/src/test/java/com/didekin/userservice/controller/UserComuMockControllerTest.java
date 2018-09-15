@@ -3,7 +3,6 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -132,9 +131,9 @@ public abstract class UserComuMockControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class, DbPre.class})
+    @Category({LocalDev.class})
     @DirtiesContext
-    public static class UserComuMockCtrlerDbPreDevTest extends UserComuMockControllerTest {
+    public static class UserComuMockCtrlerDevTest extends UserComuMockControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

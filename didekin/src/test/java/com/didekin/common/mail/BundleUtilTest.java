@@ -1,7 +1,5 @@
 package com.didekin.common.mail;
 
-import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 
 import org.junit.Test;
@@ -20,7 +18,7 @@ import static org.junit.Assert.assertThat;
  * Date: 03/11/2017
  * Time: 19:32
  */
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class BundleUtilTest {
 
     @Test

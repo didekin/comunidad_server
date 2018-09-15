@@ -1,6 +1,5 @@
 package com.didekin.common.mail;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 
 import org.junit.Test;
@@ -31,7 +30,7 @@ import static org.junit.Assert.assertThat;
  * Remark: If the specified locale's language, script, country, and variant are all empty strings,
  * then the base name is the only candidate bundle name.
  */
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class MailBundleTest {
 
     @Test

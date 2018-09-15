@@ -1,6 +1,5 @@
 package com.didekin.userservice.mail;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 
 import org.junit.Test;
@@ -31,7 +30,7 @@ import static org.junit.Assert.assertThat;
  * Date: 04/11/2017
  * Time: 14:25
  */
-@Category({LocalDev.class, DbPre.class})
+@Category({LocalDev.class})
 public class UsuarioMailBundleTest {
 
     @Test

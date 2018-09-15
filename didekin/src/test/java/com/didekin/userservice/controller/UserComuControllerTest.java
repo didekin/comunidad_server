@@ -3,7 +3,6 @@ package com.didekin.userservice.controller;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
@@ -76,7 +75,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 02/04/15
  * Time: 12:12
  */
-@SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
+@SuppressWarnings("ConstantConditions")
 public abstract class UserComuControllerTest {
 
     private UsuarioComunidadEndPoints USERCOMU_ENDPOINT;
@@ -267,7 +266,7 @@ public abstract class UserComuControllerTest {
     public void testRegUserAndUserComu_1()
     {
         // Preconditions: a comunidad is already associated to other users.
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).blockingGet();
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE);
         Comunidad comunidad = usuarioManager.getComusByUser(USER_PEPE.getUserName()).get(0);
         // Data, exec, check.
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null,
@@ -335,9 +334,9 @@ public abstract class UserComuControllerTest {
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class})
     @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class, DbPre.class})
+    @Category({LocalDev.class})
     @DirtiesContext
-    public static class UserComuCtrlerDbPreDevTest extends UserComuControllerTest {
+    public static class UserComuCtrlerDevTest extends UserComuControllerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

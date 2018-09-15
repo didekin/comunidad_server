@@ -3,7 +3,6 @@ package com.didekin.userservice.auth;
 
 import com.didekin.Application;
 import com.didekin.common.AwsPre;
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.auth.TkAuthClaims;
 import com.didekin.common.auth.TkHeaders;
@@ -116,7 +115,7 @@ public abstract class EncryptedTkProducerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
-    @Category({LocalDev.class, DbPre.class})
+    @Category({LocalDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL})
     public static class EncryptedTkProducerDevTest extends EncryptedTkProducerTest {
     }
