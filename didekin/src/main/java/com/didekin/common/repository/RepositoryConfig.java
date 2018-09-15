@@ -19,6 +19,8 @@ import static java.lang.System.getenv;
  * User: pedro@didekin
  * Date: 05/11/15
  * Time: 15:59
+ *
+ * HikariCP uses milliseconds for all time values.
  */
 @Configuration
 public class RepositoryConfig {
@@ -61,9 +63,7 @@ public class RepositoryConfig {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
-
-        config.addDataSourceProperty("maxLifetime", "180000");
-
+        config.addDataSourceProperty("maxLifetime", "550000"); /* 550 seconds.*/
         config.addDataSourceProperty("serverTimezone", "UTC");
 
         return new HikariDataSource(config);
