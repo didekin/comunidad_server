@@ -261,12 +261,13 @@ public abstract class UserComuControllerTest {
         assertThat(isInserted, is(true));
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegUserAndUserComu_1()
     {
         // Preconditions: a comunidad is already associated to other users.
-        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE);
+        USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).blockingGet();
         Comunidad comunidad = usuarioManager.getComusByUser(USER_PEPE.getUserName()).get(0);
         // Data, exec, check.
         UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null,

@@ -34,7 +34,7 @@ public class RepositoryConfig {
     private static final Logger logger = LoggerFactory.getLogger(RepositoryConfig.class.getCanonicalName());
 
     /**
-     * By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
+     * Note: By default, Liquibase autowires the (@Primary) DataSource in your context and uses that for migrations.
      */
     @Bean
     @Primary
@@ -63,8 +63,14 @@ public class RepositoryConfig {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
-        config.addDataSourceProperty("maxLifetime", "550000"); /* 550 seconds.*/
         config.addDataSourceProperty("serverTimezone", "UTC");
+        // Parameters related to mysql --wait_timeout: they should be about 60 second less.
+        config.addDataSourceProperty("idleTimeout", "540000");
+        config.addDataSourceProperty("maxLifetime", "540000"); /* 540 seconds.*/
+        // Logging.
+        config.addDataSourceProperty("logger", "com.mysql.jdbc.log.StandardLogger");
+        config.addDataSourceProperty("logSlowQueries", "true");
+        config.addDataSourceProperty("dumpQueriesOnException", "true");
 
         return new HikariDataSource(config);
     }
