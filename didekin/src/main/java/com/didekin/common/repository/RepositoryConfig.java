@@ -68,7 +68,6 @@ public class RepositoryConfig {
         config.addDataSourceProperty("idleTimeout", "540000");
         config.addDataSourceProperty("maxLifetime", "540000"); /* 540 seconds.*/
         // Logging.
-        config.addDataSourceProperty("logger", "com.mysql.jdbc.log.StandardLogger");
         config.addDataSourceProperty("logSlowQueries", "true");
         config.addDataSourceProperty("dumpQueriesOnException", "true");
 
