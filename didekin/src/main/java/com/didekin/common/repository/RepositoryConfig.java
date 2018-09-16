@@ -28,8 +28,6 @@ public class RepositoryConfig {
     private static final String JDBC_URL_DEFAULT_PORT = "3306";
     private static final String SSL_DEFAULT_VALUE = "useSSL=false";
     private static final String DB_NAME = "didekin";
-    // RDS_LOCAL_PORT is used for SSH connections, when defined.
-    private static final String jdbcUrlPort = getenv("RDS_LOCAL_PORT") != null ? getenv("RDS_LOCAL_PORT") : JDBC_URL_DEFAULT_PORT;
 
     private static final Logger logger = LoggerFactory.getLogger(RepositoryConfig.class.getCanonicalName());
 
@@ -44,13 +42,13 @@ public class RepositoryConfig {
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://"
-                + getenv("RDS_HOSTNAME")
-                + ":" + jdbcUrlPort
+                + getenv("DB_HOST")
+                + ":" + JDBC_URL_DEFAULT_PORT
                 + "/" + DB_NAME
                 + "?" + SSL_DEFAULT_VALUE
         );
-        config.setUsername(getenv("RDS_USERNAME"));
-        config.setPassword(getenv("RDS_PASSWORD"));
+        config.setUsername(getenv("DB_USERNAME"));
+        config.setPassword(getenv("DB_PASSWORD"));
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "150");
