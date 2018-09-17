@@ -51,7 +51,7 @@ public class RepositoryConfig {
         config.setPassword(getenv("DB_PASSWORD"));
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         config.addDataSourceProperty("serverTimezone", "UTC");
-        config.setMinimumIdle(1);
+        config.addDataSourceProperty("minimumIdle", "1");
         // For optimal throughput this number should be somewhere near (core_count * 2) + effective_spindle_count (Disks)
         config.setMaximumPoolSize(3);
         // Parameters related to mysql --wait_timeout: it should be about 60 second less.
