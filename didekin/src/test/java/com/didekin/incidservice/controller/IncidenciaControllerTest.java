@@ -784,7 +784,7 @@ abstract class IncidenciaControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class, RetrofitConfigurationDev.class})
     @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
-    @Category({LocalDev.class})
+    @Category({LocalDev.class, DbPre.class})
     @DirtiesContext
     public static class IncidenciaCtrlerDbPreDevTest extends IncidenciaControllerTest {
     }
