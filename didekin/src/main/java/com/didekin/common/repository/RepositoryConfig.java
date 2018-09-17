@@ -50,6 +50,15 @@ public class RepositoryConfig {
         config.setUsername(getenv("DB_USERNAME"));
         config.setPassword(getenv("DB_PASSWORD"));
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.addDataSourceProperty("serverTimezone", "UTC");
+        config.setMinimumIdle(1);
+        // For optimal throughput this number should be somewhere near (core_count * 2) + effective_spindle_count (Disks)
+        config.setMaximumPoolSize(3);
+        // Parameters related to mysql --wait_timeout: it should be about 60 second less.
+        config.setMaxLifetime(540000);
+        // Only applies when minimumIdle is defined to be 'substantially' less than maximumPoolSize.
+        config.setMinimumIdle(480000);
+        // Performance
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "150");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "1024");
@@ -61,12 +70,8 @@ public class RepositoryConfig {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
-        config.addDataSourceProperty("serverTimezone", "UTC");
-        // Parameters related to mysql --wait_timeout: they should be about 60 second less.
-        config.addDataSourceProperty("idleTimeout", "540000");
-        config.addDataSourceProperty("maxLifetime", "540000"); /* 540 seconds.*/
         // Logging.
-        config.addDataSourceProperty("logSlowQueries", "true");
+//        config.addDataSourceProperty("logSlowQueries", "true");
         config.addDataSourceProperty("dumpQueriesOnException", "true");
 
         return new HikariDataSource(config);
