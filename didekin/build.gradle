@@ -5,7 +5,7 @@ configurations {
     implementation.exclude module: "spring-boot-starter-tomcat"
 }
 
-jar {
+bootJar {
     baseName = 'didekin-web'
     if(project.hasProperty('versionjar')) {
         version = versionjar

@@ -1,0 +1,25 @@
+branch-defaults:
+  aws_pre:
+    environment: didekin-web-pre
+  master:
+    environment: didekin-web-pro
+environment-defaults:
+  didekin-web-pre:
+    branch: aws_pre
+  didekin-web-pro:
+    branch: master
+deploy:
+    artifact: didekin/build/libs/didekin-web.jar
+global:
+  application_name: didekin-web
+  default_ec2_keyname: aws_ssh_keypair1
+  default_platform: arn:aws:elasticbeanstalk:eu-west-1::platform/Java 8 running on
+    64bit Amazon Linux/2.7.4
+  default_region: eu-west-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: pedro-admaws
+  sc: git
+  workspace_type: Application

@@ -4,6 +4,7 @@
 .idea
 administracion
 didekin
+#!didekin/build/libs/*.jar
 gradle
 logs
 terminal

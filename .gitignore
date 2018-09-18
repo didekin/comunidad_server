@@ -1,12 +1,8 @@
-# AWS related files
-.elasticbeanstalk/
-!.elasticbeanstalk/*.cfg.yml
-
 administracion
 
 # Idea files
 .idea/
-æ
+
 # Mac files
 .DS_Store
 
@@ -28,3 +24,5 @@ terminal/*
 
 # SECURITY
 
+
+# Elastic Beanstalk Files
