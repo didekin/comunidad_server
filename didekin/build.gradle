@@ -12,6 +12,10 @@ jar {
         version = versionjar
     }
     exclude('*.sql')
+    manifest {
+        attributes 'Start-Class': 'com.didekin.Application'
+        attributes 'Main-Class': 'org.springframework.boot.loader.JarLauncher'
+    }
 }
 
 bootJar {
