@@ -5,13 +5,20 @@ configurations {
     implementation.exclude module: "spring-boot-starter-tomcat"
 }
 
-bootJar {
+jar {
+    enabled = true
     baseName = 'didekin-web'
     if(project.hasProperty('versionjar')) {
         version = versionjar
     }
     exclude('*.sql')
 }
+
+bootJar {
+    enabled = false
+    classifier = 'boot'
+}
+
 
 test {
     filter {
