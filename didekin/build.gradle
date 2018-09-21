@@ -15,6 +15,7 @@ jar {
     manifest {
         attributes(
                 'Start-Class': 'com.didekin.Application'
+                'Main-Class': 'org.springframework.boot.loader.JarLauncher'
         )
     }
 }
