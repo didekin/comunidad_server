@@ -13,12 +13,13 @@ jar {
     }
     exclude('*.sql')
     manifest {
-        mainClassName = 'com.didekin.Application'
+        attributes 'Main-Class': 'com.didekin.Application'
     }
 }
 
 bootJar {
     enabled = false
+    classifier = 'boot'
 }
 
 
