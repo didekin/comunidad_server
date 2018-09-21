@@ -14,7 +14,7 @@ jar {
     exclude('*.sql')
     manifest {
         attributes(
-                'Start-Class': 'com.didekin.Application'
+                'Start-Class': 'com.didekin.Application',
                 'Main-Class': 'org.springframework.boot.loader.JarLauncher'
         )
     }
