@@ -5,26 +5,15 @@ configurations {
     implementation.exclude module: "spring-boot-starter-tomcat"
 }
 
-jar {
-    enabled = true
-    baseName = 'didekin-web'
-    if(project.hasProperty('versionjar')) {
+bootJar {
+    if (project.hasProperty('jarfilename')) {
+        baseName = jarfilename
+    }
+    if (project.hasProperty('versionjar')) {
         version = versionjar
     }
     exclude('*.sql')
-    manifest {
-        attributes(
-                'Start-Class': 'com.didekin.Application',
-                'Main-Class': 'org.springframework.boot.loader.JarLauncher'
-        )
-    }
 }
-
-bootJar {
-    enabled = false
-    classifier = 'boot'
-}
-
 
 test {
     filter {
@@ -33,9 +22,9 @@ test {
         includeTestsMatching "com.didekin.incidservice.*Test"
     }
     useJUnit {
-        if(project.hasProperty('testCategory')) {
+        if (project.hasProperty('testCategory')) {
             includeCategories testCategory
-        }else {
+        } else {
             includeCategories "com.didekin.common.LocalDev"
         }
     }
