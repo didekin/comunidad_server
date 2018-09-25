@@ -97,7 +97,7 @@ public abstract class ComunidadControllerTest {
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testSearchComunidades_1()
+    public void testSearcRhComunidades_1()
     {
         // Exige comunidadDao.searchThree. Dos ocurrencias en DB que se ajustan a la regla 3.
 
