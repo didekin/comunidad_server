@@ -3,7 +3,7 @@ package com.didekin.incidservice.repository;
 
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserServiceIf;
-import com.didekinlib.gcm.model.incidservice.GcmRequestData;
+import com.didekinlib.gcm.GcmRequestData;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
 import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
@@ -24,15 +24,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.incidencia.dominio.Resolucion.doResolucionModifiedWithNewAvance;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.resolucion_open_type;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 

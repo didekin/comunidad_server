@@ -128,7 +128,7 @@ public abstract class EncryptedTkConsumerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {RetrofitConfigurationPre.class})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationPre.class})
     @Category({AwsPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE})
     public static class EncryptedTkConsumerAwsTest extends EncryptedTkConsumerTest {

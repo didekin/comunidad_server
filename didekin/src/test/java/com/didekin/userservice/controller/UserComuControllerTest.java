@@ -8,16 +8,15 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.common.repository.ServiceException;
-import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.repository.UserMockManager;
+import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
+import com.didekinlib.http.retrofit.HttpHandler;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadEndPoints;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +35,7 @@ import java.util.List;
 import retrofit2.Response;
 
 import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
+import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.testutils.LocaleConstant.oneComponent_local_ES;
 import static com.didekin.common.testutils.LocaleConstant.twoComponent_local_ES;
@@ -58,9 +58,9 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
+import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
@@ -335,7 +335,7 @@ public abstract class UserComuControllerTest {
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {Application.class,
             RetrofitConfigurationDev.class})
-    @ActiveProfiles(value = {Profiles.NGINX_JETTY_LOCAL, MAIL_PRE})
+    @ActiveProfiles(value = {NGINX_JETTY_LOCAL, MAIL_PRE})
     @Category({LocalDev.class, DbPre.class})
     @DirtiesContext
     public static class UserComuCtrlerDevTest extends UserComuControllerTest {
@@ -343,9 +343,9 @@ public abstract class UserComuControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,
-            UsuarioRepoConfiguration.class})
+            UserMockRepoConfiguration.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE, MAIL_PRE})
     @Category({AwsPre.class})
     public static class UserComuCtrlerAwsTest extends UserComuControllerTest {
     }
-}                                                
+}

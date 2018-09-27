@@ -9,9 +9,9 @@ import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuario.UserMockEndPoints;
+import com.didekinlib.http.retrofit.HttpHandler;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuario.http.UserMockEndPoints;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
@@ -41,9 +41,9 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.checkUserNotFou
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
-import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PATH;
+import static com.didekinlib.http.CommonServConstant.OPEN;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.USER_PATH;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

@@ -1,6 +1,6 @@
 package com.didekin.common.controller;
 
-import com.didekinlib.http.HttpHandler;
+import com.didekinlib.http.retrofit.HttpHandler;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

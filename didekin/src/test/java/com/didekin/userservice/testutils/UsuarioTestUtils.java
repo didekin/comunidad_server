@@ -6,26 +6,26 @@ import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.auth.TkParamNames;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuario.http.AuthHeader;
+import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -277,10 +277,10 @@ public final class UsuarioTestUtils {
 
     // ============================  Checks ====================================
 
-    public static void checkGeneratedPassword(String password, int passwordLength) throws UnsupportedEncodingException
+    public static void checkGeneratedPassword(String password, int passwordLength)
     {
         assertThat(password.length() == passwordLength, is(true));
-        byte[] pswdBytes = password.getBytes("US-ASCII");
+        byte[] pswdBytes = password.getBytes(US_ASCII);
         int pswdInt;
         for (Byte pswdByte : pswdBytes) {
             pswdInt = pswdByte;

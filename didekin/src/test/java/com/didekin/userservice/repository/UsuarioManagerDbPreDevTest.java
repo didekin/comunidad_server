@@ -7,12 +7,12 @@ import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
-import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.http.usuario.AuthHeaderIf;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuario.http.AuthHeader;
+import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
@@ -25,7 +25,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -61,19 +60,19 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pepe;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
-import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_DUPLICATE;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_WRONG_INIT;
-import static com.didekinlib.http.usuario.UsuarioServConstant.IS_USER_DELETED;
+import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
+import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_WRONG;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_DATA_NOT_MODIFIED;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_DUPLICATE;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_WRONG_INIT;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.IS_USER_DELETED;
 import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
@@ -428,7 +427,7 @@ public class UsuarioManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testMakeNewPassword_1() throws ServiceException, UnsupportedEncodingException
+    public void testMakeNewPassword_1() throws ServiceException
     {
         String newPassword = usuarioManager.makeNewPassword();
         checkGeneratedPassword(newPassword, default_password_length);

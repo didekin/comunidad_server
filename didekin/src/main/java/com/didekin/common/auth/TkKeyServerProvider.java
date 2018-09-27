@@ -23,7 +23,7 @@ import static com.didekin.common.auth.TkCommonConfig.aliasKey;
 import static com.didekin.common.auth.TkCommonConfig.default_alg_for_symmetric_keys;
 import static com.didekin.common.auth.TkCommonConfig.default_key_size;
 import static com.didekin.common.auth.TkCommonConfig.storePswd;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static javax.crypto.KeyGenerator.getInstance;
 import static org.slf4j.LoggerFactory.getLogger;
 

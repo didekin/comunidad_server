@@ -18,7 +18,7 @@ import static com.didekin.common.springprofile.Profiles.MAIL_PRE;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 
 /**
  * User: pedro@didekin

@@ -1,6 +1,7 @@
 package com.didekin.userservice.gcm;
 
-import com.didekinlib.gcm.model.incidservice.GcmRequestData;
+
+import com.didekinlib.gcm.GcmRequestData;
 
 import java.util.concurrent.CompletableFuture;
 

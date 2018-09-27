@@ -23,11 +23,11 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.common.springprofile.Profiles.checkActiveProfiles;
 import static com.didekinlib.http.CommonServConstant.FORM_URLENCODED;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
-import static com.didekinlib.http.usuario.UserMockEndPoints.regComu_User_UserComu;
-import static com.didekinlib.http.usuario.UserMockEndPoints.regUser_UserComu;
-import static com.didekinlib.http.usuario.UserMockEndPoints.user_delete;
-import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PARAM;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.closed_paths_REGEX;
+import static com.didekinlib.model.usuario.http.UserMockEndPoints.regComu_User_UserComu;
+import static com.didekinlib.model.usuario.http.UserMockEndPoints.regUser_UserComu;
+import static com.didekinlib.model.usuario.http.UserMockEndPoints.user_delete;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.USER_PARAM;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -39,7 +39,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  * This class allows for certain 'tuned' methods for use in tests in the client apps.
  * It implements methods in UserComuMockEndPoints.
  */
-@SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
+@SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection", "unused"})
 @RestController
 @Profile({NGINX_JETTY_LOCAL, NGINX_JETTY_PRE})
 public class UserComuMockController extends AppControllerAbstract {

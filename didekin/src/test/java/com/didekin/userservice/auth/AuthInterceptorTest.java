@@ -6,9 +6,9 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.auth.AuthInterceptor;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.http.usuario.UserMockEndPoints;
+import com.didekinlib.http.retrofit.HttpHandler;
+import com.didekinlib.model.usuario.http.AuthHeader;
+import com.didekinlib.model.usuario.http.UserMockEndPoints;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,11 +31,11 @@ import static com.didekin.userservice.controller.UserComuMockController.OPEN_ARE
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.usuario.UsuarioServConstant.OPEN;
-import static com.didekinlib.http.usuario.UsuarioServConstant.USER_PATH;
+import static com.didekinlib.http.CommonServConstant.OPEN;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.BAD_REQUEST;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.USER_PATH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -129,7 +129,7 @@ public abstract class AuthInterceptorTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {RetrofitConfigurationPre.class})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationPre.class})
     @Category({AwsPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE})
     public static class AuthInterceptorAwsTest extends AuthInterceptorTest {

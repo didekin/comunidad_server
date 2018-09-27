@@ -52,13 +52,14 @@ import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_CLOSE
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_OPEN_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_RESOLUCION;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_USER_COMUS_IMPORTANCIA;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
-import static com.didekinlib.http.incidencia.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
+import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Stream.of;
 
 /**
@@ -155,6 +156,7 @@ public class IncidenciaDao {
         return rowsUpdated;
     }
 
+    @SuppressWarnings("ConstantConditions")
     int countResolucionByIncid(long incidenciaId)
     {
         logger.debug("countResolucionByIncid()");
@@ -197,12 +199,14 @@ public class IncidenciaDao {
         );
     }
 
+    @SuppressWarnings("ConstantConditions")
     int isImportanciaUser(long userId, long incidenciaId)
     {
         logger.debug("isImportanciaUser()");
         return jdbcTemplate.queryForObject(IS_IMPORTANCIA_USER.toString(), new Object[]{userId, incidenciaId}, Integer.class);
     }
 
+    @SuppressWarnings("ConstantConditions")
     boolean isIncidenciaOpen(long incidenciaId)
     {
         logger.debug("isIncidenciaOpen()");
@@ -292,7 +296,7 @@ public class IncidenciaDao {
                     avance.getAvanceDesc(),
                     avance.getUserName());
         } catch (DataAccessException e) {
-            if (e.getMessage().contains("FOREIGN KEY (`incid_id`)")) {
+            if (requireNonNull(e.getMessage()).contains("FOREIGN KEY (`incid_id`)")) {
                 throw new ServiceException(RESOLUCION_NOT_FOUND);
             }
             throw e;
@@ -325,7 +329,7 @@ public class IncidenciaDao {
         ResultSet rs;
         long incidenciaPk;
 
-        try (Connection conn = jdbcTemplate.getDataSource().getConnection();
+        try (Connection conn = requireNonNull(jdbcTemplate.getDataSource()).getConnection();
              PreparedStatement regIncidencia = conn.prepareStatement(REG_INCID.toString(), RETURN_GENERATED_KEYS)) {
 
             regIncidencia.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
@@ -589,7 +593,7 @@ public class IncidenciaDao {
 
     private void doCatchIncidenciaUserIntegrity(DataAccessException de) throws ServiceException
     {
-        if (de.getMessage().contains("FOREIGN KEY (`c_id`, `u_id`)")) {
+        if (requireNonNull(de.getMessage()).contains("FOREIGN KEY (`c_id`, `u_id`)")) {
             logger.error(de.getMessage());
             throw new ServiceException(USERCOMU_WRONG_INIT);
         }
@@ -601,7 +605,7 @@ public class IncidenciaDao {
 
     private void doCatchDuplicateResolucionForIncid(DataAccessException e) throws ServiceException
     {
-        if (e.getMessage().contains(ServiceException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
+        if (requireNonNull(e.getMessage()).contains(ServiceException.DUPLICATE_ENTRY) && e.getMessage().contains("key 'PRIMARY'")) {
             logger.error(e.getMessage());
             throw new ServiceException(RESOLUCION_DUPLICATE);
         }

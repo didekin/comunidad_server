@@ -27,7 +27,7 @@ import static com.didekin.userservice.repository.ComunidadSql.COUNT_BY_USERCOMU;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
-import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 
@@ -71,6 +71,7 @@ public class ComunidadDao {
         return Boolean.TRUE;
     }
 
+    @SuppressWarnings("ConstantConditions")
     boolean existsUserComu(long comunidadId, long userId)
     {
         logger.debug("existsUserComu()");

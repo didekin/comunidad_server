@@ -1,11 +1,11 @@
 package com.didekin.userservice.gcm;
 
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.gcm.model.common.GcmMulticastRequest;
-import com.didekinlib.gcm.model.common.GcmRequest;
-import com.didekinlib.gcm.model.common.GcmResponse;
-import com.didekinlib.gcm.model.incidservice.GcmRequestData;
-import com.didekinlib.gcm.retrofit.GcmEndPointImp;
+import com.didekinlib.gcm.GcmMulticastRequest;
+import com.didekinlib.gcm.GcmRequest;
+import com.didekinlib.gcm.GcmRequestData;
+import com.didekinlib.gcm.GcmResponse;
+import com.didekinlib.http.retrofit.GcmEndPointImp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 
-import static com.didekinlib.gcm.model.common.GcmServConstant.GCM_ERROR_CODE;
+import static com.didekinlib.gcm.GcmServConstant.GCM_ERROR_CODE;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**

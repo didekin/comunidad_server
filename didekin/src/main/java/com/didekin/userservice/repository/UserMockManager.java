@@ -1,9 +1,9 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.http.usuario.AuthHeader;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuario.http.AuthHeader;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
@@ -22,6 +22,7 @@ import static com.didekin.userservice.repository.UsuarioManager.BCRYPT_SALT;
 import static com.didekin.userservice.repository.UsuarioManager.doCatchSqlException;
 import static com.didekin.userservice.repository.UsuarioManager.doFinallyJdbc;
 import static com.didekin.userservice.repository.UsuarioManager.doUserEncryptPswd;
+import static java.util.Objects.requireNonNull;
 import static org.mindrot.jbcrypt.BCrypt.hashpw;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -81,7 +82,7 @@ public class UserMockManager {
         Connection conn = null;
 
         try {
-            conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
@@ -126,7 +127,7 @@ public class UserMockManager {
         Connection conn = null;
 
         try {
-            conn = usuarioDao.getJdbcTemplate().getDataSource().getConnection();
+            conn = requireNonNull(usuarioDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);

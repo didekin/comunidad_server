@@ -1,8 +1,8 @@
 package com.didekin.common.auth;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.http.usuario.AuthHeader;
-import com.didekinlib.http.usuario.AuthHeaderIf;
+import com.didekinlib.model.usuario.http.AuthHeader;
+import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.google.gson.JsonSyntaxException;
 
 import org.jose4j.jwt.JwtClaims;
@@ -21,11 +21,11 @@ import static com.didekin.common.auth.TkAuthClaims.invalid_claim_values;
 import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
-import static com.didekinlib.http.usuario.TkValidaPatterns.closed_paths_REGEX;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.BAD_REQUEST;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.UNAUTHORIZED;
-import static com.didekinlib.http.usuario.UsuarioServConstant.AUTH_HEADER;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.closed_paths_REGEX;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.BAD_REQUEST;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED;
+import static com.didekinlib.model.usuario.http.UsuarioServConstant.AUTH_HEADER;
 
 /**
  * User: pedro@didekin

@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.gcm.model.common.GcmTokensHolder;
+import com.didekinlib.gcm.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
@@ -46,9 +46,9 @@ import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_BY_ID;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static java.lang.Boolean.TRUE;
 import static java.sql.JDBCType.INTEGER;
 import static java.util.Objects.requireNonNull;

@@ -11,13 +11,13 @@ import com.didekin.common.springprofile.Profiles;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.comunidad.ComunidadEndPoints;
-import com.didekinlib.http.usuariocomunidad.UsuarioComunidadEndPoints;
+import com.didekinlib.http.retrofit.HttpHandler;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.comunidad.http.ComunidadEndPoints;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadEndPoints;
 
 import org.junit.After;
 import org.junit.Before;

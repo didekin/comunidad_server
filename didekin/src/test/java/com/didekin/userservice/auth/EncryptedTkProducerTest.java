@@ -27,8 +27,8 @@ import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.model.common.dominio.BeanBuilder.error_message_bean_building;
+import static com.didekinlib.BeanBuilder.error_message_bean_building;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -121,7 +121,7 @@ public abstract class EncryptedTkProducerTest {
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = {RetrofitConfigurationPre.class})
+    @SpringBootTest(classes = {Application.class, RetrofitConfigurationPre.class})
     @Category({AwsPre.class})
     @ActiveProfiles(value = {NGINX_JETTY_PRE})
     public static class EncryptedTkProducerAwsTest extends EncryptedTkProducerTest {

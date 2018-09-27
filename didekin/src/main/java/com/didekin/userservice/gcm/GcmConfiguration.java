@@ -2,8 +2,8 @@ package com.didekin.userservice.gcm;
 
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.gcm.retrofit.GcmEndPointImp;
-import com.didekinlib.gcm.retrofit.GcmRetrofitHandler;
+import com.didekinlib.http.retrofit.GcmEndPointImp;
+import com.didekinlib.http.retrofit.GcmRetrofitHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

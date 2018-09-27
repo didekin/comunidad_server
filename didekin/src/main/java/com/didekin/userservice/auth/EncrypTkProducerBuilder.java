@@ -4,7 +4,7 @@ import com.didekin.common.auth.TkAuthClaims;
 import com.didekin.common.auth.TkHeaders;
 import com.didekin.common.auth.TkKeyServerProviderIf;
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.common.dominio.BeanBuilder;
+import com.didekinlib.BeanBuilder;
 
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.lang.JoseException;
@@ -20,8 +20,8 @@ import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
 import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**

@@ -1,7 +1,7 @@
 package com.didekin.common.auth;
 
 import com.didekin.userservice.auth.TkParamNames;
-import com.didekinlib.model.common.dominio.BeanBuilder;
+import com.didekinlib.BeanBuilder;
 
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwt.JwtClaims;

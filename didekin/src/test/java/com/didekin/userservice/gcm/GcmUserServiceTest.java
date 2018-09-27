@@ -3,11 +3,11 @@ package com.didekin.userservice.gcm;
 import com.didekin.common.LocalDev;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
-import com.didekinlib.gcm.model.common.GcmResponse;
-import com.didekinlib.gcm.model.common.GcmResponse.Result;
-import com.didekinlib.gcm.model.incidservice.GcmRequestData;
-import com.didekinlib.gcm.retrofit.GcmEndPointImp;
-import com.didekinlib.gcm.retrofit.GcmRetrofitHandler;
+import com.didekinlib.gcm.GcmRequestData;
+import com.didekinlib.gcm.GcmResponse;
+import com.didekinlib.gcm.GcmResponse.Result;
+import com.didekinlib.http.retrofit.GcmEndPointImp;
+import com.didekinlib.http.retrofit.GcmRetrofitHandler;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +28,7 @@ import okhttp3.mockwebserver.MockWebServer;
 
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.http.GsonUtil.objectToJsonStr;
+import static com.didekinlib.http.retrofit.GsonUtil.objectToJsonStr;
 import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.waitAtMost;

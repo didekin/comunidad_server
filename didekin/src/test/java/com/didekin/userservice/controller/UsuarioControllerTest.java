@@ -11,9 +11,9 @@ import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
-import com.didekinlib.http.HttpHandler;
-import com.didekinlib.http.usuario.UsuarioEndPoints;
+import com.didekinlib.http.retrofit.HttpHandler;
 import com.didekinlib.model.usuario.Usuario;
+import com.didekinlib.model.usuario.http.UsuarioEndPoints;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
@@ -43,10 +43,10 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.COMU_PLAZUELA5_
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.http.usuario.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.PASSWORD_WRONG;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
-import static com.didekinlib.http.usuario.UsuarioExceptionMsg.USER_NOT_FOUND;
+import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_WRONG;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
+import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;

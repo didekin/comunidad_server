@@ -28,7 +28,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escori
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
-import static com.didekinlib.http.comunidad.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;

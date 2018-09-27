@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.http.comunidad.ComunidadServConstant.COMUNIDAD_READ;
-import static com.didekinlib.http.comunidad.ComunidadServConstant.COMUNIDAD_SEARCH;
+import static com.didekinlib.model.comunidad.http.ComunidadServConstant.COMUNIDAD_READ;
+import static com.didekinlib.model.comunidad.http.ComunidadServConstant.COMUNIDAD_SEARCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -27,7 +27,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  * Date: 21/11/16
  * Time: 09:46
  */
-@SuppressWarnings("UnusedParameters")
+@SuppressWarnings("unused")
 @RestController
 public class ComunidadController extends AppControllerAbstract {
 
