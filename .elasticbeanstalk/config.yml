@@ -15,7 +15,7 @@ global:
   default_ec2_keyname: aws_ssh_keypair1
   default_platform: arn:aws:elasticbeanstalk:eu-west-1::platform/Java 8 running on
     64bit Amazon Linux/2.7.4
-  default_region: eu-west-1
+  default_region: eu-central-1
   include_git_submodules: true
   instance_profile: null
   platform_name: null
