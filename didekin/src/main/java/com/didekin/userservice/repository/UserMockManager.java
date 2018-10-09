@@ -61,7 +61,7 @@ public class UserMockManager {
         return new AuthHeader.AuthHeaderBuilder()
                 .tokenInDb(requireNonNull(newTokenStr))
                 .build()
-                .toBase64Str();
+                .toBase64FromJsonStr();
     }
 
     public String regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException

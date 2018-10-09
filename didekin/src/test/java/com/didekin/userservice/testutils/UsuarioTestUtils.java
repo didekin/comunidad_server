@@ -257,7 +257,7 @@ public final class UsuarioTestUtils {
 
     public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
-        return doAuthHeader(usuario, producerBuilder).toBase64Str();
+        return doAuthHeader(usuario, producerBuilder).toBase64FromJsonStr();
     }
 
     // ========================================== Métodos ========================================
