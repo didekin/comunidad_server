@@ -59,6 +59,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         try {
+            logger.debug("preHandle(), authHeader not empty");
             AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
 
