@@ -43,9 +43,9 @@ public final class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProduc
         key = keyProviderIn.getCurrentKeyForTk();
     }
 
-    public EncrypTkProducerBuilder defaultHeadersClaims(String userName, String appId)
+    public EncrypTkProducerBuilder defaultHeadersClaims(String userName)
     {
-        claims = doDefaultAuthClaims(userName, appId);
+        claims = TkAuthClaims.doDefaultAuthClaimsFromUserName(userName);
         headers = doHeadersSymmetricKey();
         return this;
     }

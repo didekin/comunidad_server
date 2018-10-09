@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import static com.didekin.common.auth.TkAuthClaims.getDefaultClaim;
 import static com.didekin.common.auth.TkAuthClaims.invalid_claim_values;
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.closed_paths_REGEX;
@@ -63,15 +62,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(authHeader).build();
             JwtClaims claims = consumerBuilder.defaultInit(headerIn.getToken()).build().getClaims();
 
-            if (!headerIn.getAppID().equals(claims.getClaimValue(appId.getName()))
-                    || !claims.getAudience().equals(getDefaultClaim(audience))
+            if (!claims.getAudience().equals(getDefaultClaim(audience))
                     || !claims.getIssuer().equals(getDefaultClaim(issuer))) {
-
                 logger.error(
                         invalid_claim_values
-                        + "\n ========== appId: " + claims.getClaimValue(appId.getName()
-                        + "\n ========== audience: " + claims.getAudience()
-                        + "\n ========== issuer: " + claims.getIssuer())
+                                + "\n ========== audience: " + claims.getAudience()
+                                + "\n ========== issuer: " + claims.getIssuer()
                 );
                 throw new ServiceException(UNAUTHORIZED);
             }

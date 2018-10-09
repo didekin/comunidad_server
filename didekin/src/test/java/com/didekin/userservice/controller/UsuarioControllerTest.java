@@ -83,7 +83,7 @@ public abstract class UsuarioControllerTest {
     @Test()
     public void testDeleteUser()
     {
-        final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
+        final String authHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName());
         assertThat(authHeader, notNullValue());
         USER_ENDPOINT.deleteUser(authHeader).map(Response::body).test().assertResult(true);
     }
@@ -93,7 +93,7 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testGetUserData_1()
     {
-        USER_ENDPOINT.getUserData(userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()))
+        USER_ENDPOINT.getUserData(userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()))
                 .map(Response::body)
                 .test().assertOf(testObserver -> {
                     Usuario usuarioDB = testObserver.values().get(0);
@@ -147,7 +147,7 @@ public abstract class UsuarioControllerTest {
                 .userName("new_paco@new.com")
                 .uId(paco.getuId())
                 .build();
-        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
+        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName()), usuarioIn)
                 .map(Response::body).test().assertValue(1);
     }
 
@@ -161,7 +161,7 @@ public abstract class UsuarioControllerTest {
                 .copyUsuario(paco)
                 .alias("newAlias")
                 .build();
-        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()), usuarioIn)
+        USER_ENDPOINT.modifyUser(oneComponent_local_ES, userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName()), usuarioIn)
                 .map(Response::body).test().assertValue(1);
     }
 
@@ -171,7 +171,7 @@ public abstract class UsuarioControllerTest {
     public void testPasswordChange() throws ServiceException
     {
         // Call the controller.
-        final String accessTk = userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken());
+        final String accessTk = userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName());
         USER_ENDPOINT.passwordChange(accessTk, paco.getPassword(), "newPacoPassword")
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));

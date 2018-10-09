@@ -5,6 +5,8 @@ import com.didekin.userservice.auth.TkParamNames;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 
 import java.time.Instant;
@@ -14,7 +16,6 @@ import java.util.Map;
 
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.expiration;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
@@ -33,6 +34,8 @@ import static java.util.Collections.singletonList;
  * * -- Create a JWS/JWE using the Message as the JWS payload or JWE plaintext.
  */
 public class TkAuthClaims {
+
+    private static final Logger logger = LoggerFactory.getLogger(TkAuthClaims.class.getCanonicalName());
 
     // Default claims map.
     private static final Map<TkParamNames, Object> defaultClaimMap;
@@ -68,6 +71,7 @@ public class TkAuthClaims {
 
     public static TkAuthClaims doDefaultAuthClaims(Map<TkParamNames, ?> initClaims)
     {
+        logger.debug("doDefaultAuthClaimsFromUserName(initClaims)");
         TkAuthClaims claims = new TkAuthClaims(initClaims);
         claims.claimsMap.put(
                 expiration,
@@ -78,17 +82,18 @@ public class TkAuthClaims {
         return claims;
     }
 
-    public static TkAuthClaims doDefaultAuthClaims(String userName, String appId)
+    public static TkAuthClaims doDefaultAuthClaimsFromUserName(String userName)
     {
+        logger.debug("doDefaultAuthClaimsFromUserName(userName)");
         Map<TkParamNames, String> initClaims = new HashMap<>(2);
         initClaims.put(TkParamNames.subject, userName);
-        initClaims.put(TkParamNames.appId, appId);
         return doDefaultAuthClaims(initClaims);
     }
 
     @Profile(value = {NGINX_JETTY_LOCAL, NGINX_JETTY_PRE})
     public static TkAuthClaims doClaimsFromMap(Map<TkParamNames, ?> initClaims)
     {
+        logger.debug("doClaimsFromMap()");
         TkAuthClaims claims = new TkAuthClaims(initClaims);
         defaultClaimMap.forEach(claims.claimsMap::putIfAbsent);
         claims.checkTokenInvariants();
@@ -102,6 +107,7 @@ public class TkAuthClaims {
 
     public JwtClaims getJwtClaimsFromMap()
     {
+        logger.debug("getJwtClaimsFromMap()");
         JwtClaims claims = new JwtClaims();
         claimsMap.forEach((appClaimName, claimValue) -> claims.setClaim(appClaimName.getName(), claimValue));
         return claims;
@@ -114,6 +120,7 @@ public class TkAuthClaims {
      */
     static long doExpirationDate(NumericDate expirationNumDate)
     {
+        logger.debug("doExpirationDate()");
         expirationNumDate.addSeconds(TK_VALIDITY_SECONDS);
         // jose4j requires NumericDate be converted to long for serialization. It assumes the unit is SECONDS.
         return expirationNumDate.getValue();
@@ -122,10 +129,8 @@ public class TkAuthClaims {
     boolean checkTokenInvariants()
     {
         if (!claimsMap.containsKey(subject) || !EMAIL.isPatternOk((String) claimsMap.get(subject))) {
+            logger.error("checkTokenInvariants(): " + invalid_claim_values + ": " + subject.getName());
             throw new IllegalArgumentException(this.getClass().getName() + invalid_claim_values + ": " + subject.getName());
-        }
-        if (!claimsMap.containsKey(appId)) {
-            throw new IllegalArgumentException(this.getClass().getName() + invalid_claim_values + ": " + appId.getName());
         }
         return true;
     }

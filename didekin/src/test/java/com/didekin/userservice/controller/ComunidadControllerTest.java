@@ -89,7 +89,7 @@ public abstract class ComunidadControllerTest {
         assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
         COMU_ENDPOINT
                 .getComuData(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()),
                         calle_el_escorial.getC_Id()
                 ).map(Response::body).test().assertValue(calle_el_escorial);
     }

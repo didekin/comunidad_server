@@ -20,7 +20,6 @@ import static org.jose4j.jwx.HeaderParameterNames.KEY_ID;
  * -- "sub" identifies the principal that is the subject of the JWT: userName of the recipient.
  * -- "aud" identifies the recipients that the JWT is intended for. The "aud" value is a list of case-sensitive strings.
  * -- "exp" identifies the expiration time on or after which the JWT MUST NOT be accepted for processing.
- * -- "appId" identifies the app instance installed in the client.
  * <p>
  * HEADER NAMES:
  * -- "alg" identifies the cryptographic algorithm used to encrypt or determine the value of the content encryption key (CEK).
@@ -35,8 +34,6 @@ import static org.jose4j.jwx.HeaderParameterNames.KEY_ID;
  */
 public enum TkParamNames {
 
-    // CLAIMS
-    appId("appId"),
     issuer(ISSUER),
     subject(SUBJECT),
     audience(AUDIENCE),

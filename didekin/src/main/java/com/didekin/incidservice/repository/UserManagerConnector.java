@@ -95,11 +95,11 @@ public class UserManagerConnector {
     // ==================================  FOR TESTS =================================
 
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL})
-    public String insertTokenGetHeaderStr(String userName, String appIDIn)
+    public String insertTokenGetHeaderStr(String userName)
     {
         logger.debug("insertTokenGetHeaderStr()");
         checkActiveProfiles(env);
-        return userMockManager.insertAuthTkGetNewAuthTkStr(userName, appIDIn);
+        return userMockManager.insertAuthTkGetNewAuthTkStr(userName);
     }
 
     @Profile({NGINX_JETTY_PRE, NGINX_JETTY_LOCAL, MAIL_PRE})

@@ -7,6 +7,8 @@ import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.Key;
@@ -25,6 +27,8 @@ import static org.jose4j.jwa.AlgorithmConstraints.ConstraintType.WHITELIST;
  * Time: 12:50
  */
 public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsumerBuilder.EncryptedTkConsumer> {
+
+    private static final Logger logger = LoggerFactory.getLogger(EncrypTkConsumerBuilder.class.getCanonicalName());
 
     private final JwtConsumerBuilder builder;
     private String encryptedTkStr;
@@ -53,6 +57,7 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
     @SuppressWarnings("unchecked")
     public EncrypTkConsumerBuilder defaultInit(String jsonWebTokenStr)
     {
+        logger.debug("defaultInit()");
         tokenToConsume(jsonWebTokenStr)
                 .expectAudience((List<String>) getDefaultClaim(audience))
                 .expectedIssuer((String) getDefaultClaim(TkParamNames.issuer))
@@ -122,10 +127,12 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
         try {
             if (encryptedTkStr == null || decryptionKey == null || audiences == null
                     || issuer == null || keyManagementAlg == null || contentEncryptionAlg == null) {
+                logger.error("build()" + error_message_bean_building);
                 throw new IllegalStateException(error_message_bean_building + this.getClass().getName());
             }
             return new EncryptedTkConsumer(builder.build().processToClaims(encryptedTkStr));
         } catch (InvalidJwtException e) {
+            logger.error("build()" + e.getMessage());
             throw new IllegalStateException(e.getMessage());
         }
     }

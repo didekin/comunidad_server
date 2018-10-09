@@ -28,7 +28,6 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.auth.TkParamNames.algorithm_ce;
 import static com.didekin.userservice.auth.TkParamNames.algorithm_cek;
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
 import static com.didekin.userservice.auth.TkParamNames.subject;
@@ -111,10 +110,9 @@ public abstract class EncryptedTkConsumerTest {
 
     private void checkPlainTxtClaims(JwtClaims claimsDesEnc) throws MalformedClaimException
     {
-        /*{"exp":1531916447000,"aud":["didekin_web"],"sub":"pedro@didekin.es","appId":"appId_mock","iss":"didekin_auth"}*/
+        /*{"exp":1531916447000,"aud":["didekin_web"],"sub":"pedro@didekin.es","iss":"didekin_auth"}*/
         assertThat(claimsDesEnc.getAudience(), is(getDefaultClaim(audience)));
         assertThat(claimsDesEnc.getIssuer(), is(getDefaultClaim(issuer)));
-        assertThat(claimsDesEnc.getClaimsMap().get(appId.getName()), is(getDefaultTestClaims(pedro).get(appId)));
         assertThat(claimsDesEnc.getSubject(), is(getDefaultTestClaims(pedro).get(subject)));
     }
 

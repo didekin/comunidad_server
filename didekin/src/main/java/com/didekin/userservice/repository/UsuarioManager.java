@@ -524,7 +524,7 @@ public class UsuarioManager {
     String updateTokenAuthInDb(Usuario usuarioIn)
     {
         logger.debug("updateTokenAuthInDb(usuarioIn)");
-        String tokenAuthStr = producerBuilder.defaultHeadersClaims(usuarioIn.getUserName(), usuarioIn.getGcmToken()).build().getEncryptedTkStr();
+        String tokenAuthStr = producerBuilder.defaultHeadersClaims(usuarioIn.getUserName()).build().getEncryptedTkStr();
         return updateTokenAuthInDb(usuarioIn, tokenAuthStr);
     }
 

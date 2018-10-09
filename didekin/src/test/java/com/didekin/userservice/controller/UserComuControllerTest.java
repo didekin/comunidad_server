@@ -106,7 +106,7 @@ public abstract class UserComuControllerTest {
         /* Usuario con una comunidad y comunidad con un usuario: paco en comunidad 6.*/
         USERCOMU_ENDPOINT
                 .deleteUserComu(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName(), paco.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName()),
                         calle_olmo_55.getC_Id()
                 ).map(Response::body).test().assertValue(IS_USER_DELETED);
     }
@@ -117,10 +117,7 @@ public abstract class UserComuControllerTest {
     public void testGetComusByUser_1()
     {
         List<Comunidad> comunidades = USERCOMU_ENDPOINT
-                .getComusByUser(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(),
-                                pedro.getGcmToken())
-                )
+                .getComusByUser(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()))
                 .blockingGet().body();
         assertThat(comunidades, hasItems(COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, COMU_EL_ESCORIAL));
     }
@@ -146,7 +143,7 @@ public abstract class UserComuControllerTest {
     public void testGetUserComuByUserAndComu() throws IOException
     {
         // No existe la comunidad.
-        String httpAuthHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken());
+        String httpAuthHeader = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName());
         Response<UsuarioComunidad> response = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 99L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
@@ -172,7 +169,7 @@ public abstract class UserComuControllerTest {
                 .planta("planta2")
                 .puerta("puertaB")
                 .roles(PROPIETARIO.function).build();
-        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName());
         int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).blockingGet().body();
         assertThat(isInserted, is(1));
         assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getC_Id()).blockingGet().body(), is(false));
@@ -184,7 +181,7 @@ public abstract class UserComuControllerTest {
     public void testIsOldestAdmonUserComu_2() throws ServiceException, IOException
     {
         Response<Boolean> response = USERCOMU_ENDPOINT
-                .isOldestOrAdmonUserComu(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()), 999L)
+                .isOldestOrAdmonUserComu(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()), 999L)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
@@ -197,7 +194,7 @@ public abstract class UserComuControllerTest {
     {
         assertThat(
                 USERCOMU_ENDPOINT.modifyComuData(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()),
                         calle_el_escorial)
                         .blockingGet().body(),
                 is(1));
@@ -223,7 +220,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         assertThat(
                 USERCOMU_ENDPOINT.modifyUserComu(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName(), pedro.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()),
                         userComuMod)
                         .blockingGet().body(),
                 is(1));
@@ -246,7 +243,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         boolean isRegOk =
                 USERCOMU_ENDPOINT.regComuAndUserComu(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()),
                         usuarioCom)
                         .blockingGet().body();
         // Check.
@@ -290,7 +287,7 @@ public abstract class UserComuControllerTest {
         // Exec.
         int rowInserted =
                 USERCOMU_ENDPOINT.regUserComu(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()),
                         usuarioComunidad)
                         .blockingGet().body();
         // Check.
@@ -305,7 +302,7 @@ public abstract class UserComuControllerTest {
         // This is a registered user not asssociated to the comunidad 1 used in the tesst.
         List<UsuarioComunidad> usuarioComus =
                 USERCOMU_ENDPOINT.seeUserComusByComu(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()),
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()),
                         calle_la_fuente_11.getC_Id())
                         .blockingGet().body();
         assertThat(usuarioComus.size(), is(2));
@@ -321,7 +318,7 @@ public abstract class UserComuControllerTest {
         // The password in data base is encrypted.
         List<UsuarioComunidad> comunidades =
                 USERCOMU_ENDPOINT.seeUserComusByUser(
-                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName(), luis.getGcmToken()))
+                        userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()))
                         .blockingGet().body();
         assertThat(comunidades.size(), is(3));
         assertThat(comunidades.get(0).getUsuario(), is(luis));

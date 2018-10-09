@@ -23,7 +23,6 @@ import static com.didekin.common.auth.TkHeaders.doHeadersSymmetricKey;
 import static com.didekin.common.auth.TkHeadersTest.checkMap;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.getDefaultTestClaims;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
@@ -90,13 +89,12 @@ public abstract class EncryptedTkProducerTest {
     @Test
     public void test_defaultHeadersClaims_1() throws MalformedClaimException
     {
-        EncrypTkProducerBuilder builder = producerBuilder.defaultHeadersClaims("user@name.com", "appId_1234");
+        EncrypTkProducerBuilder builder = producerBuilder.defaultHeadersClaims("user@name.com");
         TkHeaders headers = builder.getHeaders();
         checkMap(headers);
         TkAuthClaims claims = builder.getClaims();
         checkMap(claims);
         assertThat(claims.getAuthClaim(TkParamNames.subject), is("user@name.com"));
-        assertThat(claims.getAuthClaim(appId), is("appId_1234"));
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(builder.build().getEncryptedTkStr()), is(true));
     }

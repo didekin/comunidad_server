@@ -29,7 +29,6 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_PRE;
 import static com.didekin.userservice.controller.UserComuMockController.CLOSED_AREA_MSG;
 import static com.didekin.userservice.controller.UserComuMockController.OPEN_AREA_MSG;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.CommonServConstant.OPEN;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.BAD_REQUEST;
@@ -94,8 +93,8 @@ public abstract class AuthInterceptorTest {
     public void test_PreHandle_3() throws IOException
     {
         // Path in closed area and token well formed but with cross-validation errors.
-        String tokenInLocal = builder.defaultHeadersClaims(pedro.getUserName(), pedro.getGcmToken()).build().getEncryptedTkStr();
-        String headerStr = new AuthHeader.AuthHeaderBuilder().appId(luis.getGcmToken()).tokenInLocal(tokenInLocal).build().getBase64Str();
+        String tokenInLocal = builder.defaultHeadersClaims(pedro.getUserName()).build().getEncryptedTkStr();
+        String headerStr = new AuthHeader.AuthHeaderBuilder().tokenInLocal(tokenInLocal).build().getBase64Str();
         // Check.
         Response<String> response = userComuMockEndPoint.tryTokenInterceptor(headerStr, USER_PATH.substring(1), "read").execute();
         assertThat(response.isSuccessful(), is(false));

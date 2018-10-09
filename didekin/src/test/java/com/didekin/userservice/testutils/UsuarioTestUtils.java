@@ -17,7 +17,6 @@ import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
 import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
@@ -247,14 +246,13 @@ public final class UsuarioTestUtils {
     {
         Map<TkParamNames, Object> claimsIn = new HashMap<>(2);
         claimsIn.putIfAbsent(subject, usuario.getUserName());
-        claimsIn.putIfAbsent(appId, usuario.getGcmToken());
         return claimsIn;
     }
 
     public static AuthHeaderIf doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
-        String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName(), usuario.getGcmToken()).build().getEncryptedTkStr();
-        return new AuthHeader.AuthHeaderBuilder().appId(usuario.getGcmToken()).tokenInLocal(tokenInLocal).build();
+        String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName()).build().getEncryptedTkStr();
+        return new AuthHeader.AuthHeaderBuilder().tokenInLocal(tokenInLocal).build();
     }
 
     public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)

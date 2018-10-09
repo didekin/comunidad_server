@@ -54,13 +54,12 @@ public class UserMockManager {
         usuarioDao = usuarioManager.usuarioDao;
     }
 
-    public String insertAuthTkGetNewAuthTkStr(String userName, String appIDIn)
+    public String insertAuthTkGetNewAuthTkStr(String userName)
     {
         logger.debug("insertAuthTkGetNewAuthTkStr()");
-        String newTokenStr = updateTokenAuthInDb(userName, appIDIn);
+        String newTokenStr = updateTokenAuthInDb(userName);
         return new AuthHeader.AuthHeaderBuilder()
-                .appId(appIDIn)
-                .tokenInLocal(newTokenStr)
+                .tokenInLocal(requireNonNull(newTokenStr))
                 .build()
                 .getBase64Str();
     }
@@ -156,10 +155,10 @@ public class UserMockManager {
 
     // ...................................  HELPERS  .........................................
 
-    private String updateTokenAuthInDb(String userName, String appId)
+    private String updateTokenAuthInDb(String userName)
     {
         logger.debug("updateTokenAuthInDb()");
-        String tokenAuthStr = usuarioManager.producerBuilder.defaultHeadersClaims(userName, appId).build().getEncryptedTkStr();
+        String tokenAuthStr = usuarioManager.producerBuilder.defaultHeadersClaims(userName).build().getEncryptedTkStr();
         return usuarioDao.updateTokenAuthByUserName(userName, hashpw(tokenAuthStr, BCRYPT_SALT.get())) ? tokenAuthStr : null;
     }
 }

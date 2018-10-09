@@ -118,7 +118,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: cierra la incidencia sin añadir avance.
         // Premisas.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();
         Incidencia incidencia = ENDPOINT.seeIncidImportancia(accessToken, 3L).blockingGet().body().getIncidImportancia().getIncidencia();
         assertThat(incidencia.getFechaCierre(), nullValue());
@@ -140,7 +140,7 @@ abstract class IncidenciaControllerTest {
         Resolucion resolucion = incidenciaManager.seeResolucion(pedro.getUserName(), 4L);
         assertThat(incidenciaManager.closeIncidencia(pedro.getUserName(), resolucion), is(2));
         // Premisas: incidencia ya cerrada.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName());
         Response<Integer> response = ENDPOINT.closeIncidencia(accessToken, resolucion).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
@@ -154,12 +154,12 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: existe incidencia.
         assertThat(ENDPOINT.deleteIncidencia(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 2L)
                 .blockingGet().body(), is(1));
         /* Caso: no existe incidencia (es la incidencia borrada).*/
         assertThat(isIncidenciaFound(ENDPOINT.deleteIncidencia(
-                getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                 2L)
                 .blockingGet()), is(false));
     }
@@ -182,7 +182,7 @@ abstract class IncidenciaControllerTest {
         // Caso: incidencia con resolución abierta.
         assertThat(isIncidenciaFound(
                 ENDPOINT.deleteIncidencia(
-                        getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                         3L)
                         .blockingGet()), is(false));
     }
@@ -196,7 +196,7 @@ abstract class IncidenciaControllerTest {
         // Caso OK: usuario 'adm', con incidImportancia NO registrada, modifica incidencia e inserta importancia.
         // Premisas.
         assertThat(luis_plazuelas_10bis.hasAdministradorAuthority(), is(true));
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(accessToken, 3L).blockingGet().body().getIncidImportancia();
         // No hay registro: fechaAlta == null.
         assertThat(incidImportancia0.getFechaAlta(), nullValue());
@@ -235,7 +235,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_1() throws ServiceException
     {
         // Caso OK: modifica resolucion y añade un avance: devuelve 2.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();// Nuevos datos.
         List<Avance> avances = new ArrayList<>(1);
         avances.add(new Avance.AvanceBuilder()
@@ -259,7 +259,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_2() throws IOException
     {
         // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 4L).blockingGet().body();
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
         // Nuevos datos.
@@ -281,7 +281,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso USERCOMU_WRONG_INIT: el usuario no está asociado a la comunidad.
         Resolucion resolucion = ENDPOINT.seeResolucion(
-                getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                 3L)
                 .blockingGet().body();
         try {
@@ -298,7 +298,7 @@ abstract class IncidenciaControllerTest {
                 .build();
         // Check.
         Response<Integer> response = ENDPOINT.modifyResolucion(
-                getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(paco.getUserName()),
                 resolucion)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -312,7 +312,7 @@ abstract class IncidenciaControllerTest {
     public void testModifyResolucion_4() throws ServiceException
     {
         // Caso OK: avance con descripción vacía; devuelve 1.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 3L).blockingGet().body();
 
         // Nuevos datos.
@@ -339,7 +339,7 @@ abstract class IncidenciaControllerTest {
 
         IncidComment comment = doComment("newComment", incidUserComu.getIncidencia(), pedro);
         assertThat(ENDPOINT.regIncidComment(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 comment)
                 .blockingGet().body(), is(1));
     }
@@ -355,7 +355,7 @@ abstract class IncidenciaControllerTest {
         IncidComment comment = doComment("Comment_DESC", incidUserComu.getIncidencia(), pedro);
 
         Response<Integer> response = ENDPOINT.regIncidComment(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 comment)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -373,7 +373,7 @@ abstract class IncidenciaControllerTest {
                 doIncidenciaWithId(luis.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 24), luis);
         IncidComment comment = doComment("Comment_DESC", incidUserComu.getIncidencia(), luis);
         Response<Integer> response = ENDPOINT.regIncidComment(
-                getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                 comment)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -387,7 +387,7 @@ abstract class IncidenciaControllerTest {
     public void testRegIncidComment_4() throws ServiceException
     {
         // Caso: incidencia está cerrada.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(paco.getUserName());
         Incidencia incidencia = ENDPOINT.seeIncidsClosedByComu(accessToken, 6L).blockingGet().body().get(0).getIncidencia();
         IncidComment comment = doComment("Comment_DESC", incidencia, pedro);
         assertThat(ENDPOINT.regIncidComment(accessToken, comment).blockingGet().body(), is(1));
@@ -408,7 +408,7 @@ abstract class IncidenciaControllerTest {
                 .build();
         // Exec and check: inserta incidencia e incidenciImportancia.
         assertThat(
-                ENDPOINT.regIncidImportancia(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                ENDPOINT.regIncidImportancia(getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                         incidImportancia).blockingGet().body(),
                 is(2));
     }
@@ -427,7 +427,7 @@ abstract class IncidenciaControllerTest {
 
         Response<Integer> response =
                 ENDPOINT.regIncidImportancia(
-                        getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()),
+                        getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
                         incidImportancia
                 ).blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -441,7 +441,7 @@ abstract class IncidenciaControllerTest {
     public void testRegIncidImportancia_3() throws ServiceException
     {
         // Caso: incidencia ya dada de alta en BD. Registro devuelve '1', en lugar de '2'.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Incidencia incidencia = ENDPOINT
                 .seeIncidImportancia(accessToken, 3L)
                 .blockingGet().body().getIncidImportancia().getIncidencia();
@@ -464,7 +464,7 @@ abstract class IncidenciaControllerTest {
                 1111,
                 now().plus(12, DAYS));
         assertThat(ENDPOINT.
-                        regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion)
+                        regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), resolucion)
                         .blockingGet().body(),
                 is(1));
     }
@@ -485,7 +485,7 @@ abstract class IncidenciaControllerTest {
                 22222,
                 now().plus(12, DAYS));
         Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), resolucion)
+                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(luis.getUserName()), resolucion)
                         .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
@@ -506,7 +506,7 @@ abstract class IncidenciaControllerTest {
                 22222,
                 now().plus(12, DAYS));
         Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), resolucion)
+                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), resolucion)
                         .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
@@ -519,12 +519,12 @@ abstract class IncidenciaControllerTest {
     public void testSeeCommentsByIncid_1()
     {
         // Caso OK.
-        final String tokenLuis = getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken());
+        final String tokenLuis = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         List<IncidComment> comments = ENDPOINT.seeCommentsByIncid(tokenLuis, 1L).blockingGet().body();
         assertThat(comments.size(), is(2));
         // Diferente usuario misma comunidad.
         comments =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 1L)
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), 1L)
                         .blockingGet().body();
         assertThat(comments.size(), is(2));
         // Diferente incidencia.
@@ -540,7 +540,7 @@ abstract class IncidenciaControllerTest {
     {
         // Usuario no asociado a la comunidad de la incidencia.
         Response<List<IncidComment>> response =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 5L)
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), 5L)
                         .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
@@ -554,7 +554,7 @@ abstract class IncidenciaControllerTest {
     {
         // No existe la incidencia; existe la comunidad.
         Response<List<IncidComment>> response =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 999L)
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName()), 999L)
                         .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
@@ -568,7 +568,7 @@ abstract class IncidenciaControllerTest {
     {
         // Existe la incidencia; no tiene comentarios.
         List<IncidComment> comments =
-                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName(), luis.getGcmToken()), 3L)
+                ENDPOINT.seeCommentsByIncid(getUserConnector().insertTokenGetHeaderStr(luis.getUserName()), 3L)
                         .blockingGet().body();
         assertThat(comments, notNullValue());
         assertThat(comments.size(), is(0));
@@ -585,7 +585,7 @@ abstract class IncidenciaControllerTest {
                 ENDPOINT.
                         seeIncidImportancia(
                                 getUserConnector()
-                                        .insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()
+                                        .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getC_Id()
                         )
                         .blockingGet().body();
         IncidImportancia incidImportancia = bundle.getIncidImportancia();
@@ -600,7 +600,7 @@ abstract class IncidenciaControllerTest {
     public void testSeeIncidImportancia_2() throws IOException
     {
         // 1. No existe incidencia en BD, existe usuario. Es irrelevante la relación usuario_comunidad.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken());
+        final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName());
         Response<IncidAndResolBundle> response =
                 ENDPOINT.seeIncidImportancia(accessToken, 999L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -620,7 +620,7 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()), calle_olmo_55.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName()), calle_olmo_55.getC_Id()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(1));
     }
@@ -633,7 +633,7 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), calle_el_escorial.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), calle_el_escorial.getC_Id()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(0));
     }
@@ -648,7 +648,7 @@ abstract class IncidenciaControllerTest {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsOpenByComu(
                         getUserConnector()
-                                .insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), ronda_plazuela_10bis.getC_Id()
+                                .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getC_Id()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(2));
     }
@@ -661,7 +661,7 @@ abstract class IncidenciaControllerTest {
     {
         // ComunidadId no existe.
         Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 999L)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -676,7 +676,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuario no relacionado con la comunidad.
         Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 calle_plazuela_23.getC_Id())
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -691,7 +691,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: resolución con avances.
         assertThat(ENDPOINT.seeResolucion(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 3L)
                 .blockingGet().body().getAvances().size(), is(2));
     }
@@ -704,7 +704,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: no hay resolución.
         assertThat(ENDPOINT
-                        .seeResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()), 1L)
+                        .seeResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), 1L)
                         .blockingGet()
                         .body(),
                 nullValue());
@@ -718,7 +718,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuario no asociado a la comunidad.
         Response<Resolucion> response = ENDPOINT.seeResolucion(
-                getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(paco.getUserName()),
                 3L)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
@@ -733,7 +733,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK.
         assertThat(ENDPOINT.seeUserComusImportancia(
-                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName(), pedro.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
                 4L)
                 .blockingGet().body().size(), is(2));
     }
@@ -746,7 +746,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuario no pertenece a la comunidad.
         Response<List<ImportanciaUser>> response = ENDPOINT.seeUserComusImportancia(
-                getUserConnector().insertTokenGetHeaderStr(paco.getUserName(), paco.getGcmToken()),
+                getUserConnector().insertTokenGetHeaderStr(paco.getUserName()),
                 4L)
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));

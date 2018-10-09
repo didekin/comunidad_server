@@ -1,6 +1,5 @@
 package com.didekin.common.auth;
 
-import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.userservice.auth.TkParamNames;
 
@@ -19,7 +18,6 @@ import static com.didekin.common.auth.TkAuthClaims.default_issuer_value;
 import static com.didekin.common.auth.TkAuthClaims.doClaimsFromMap;
 import static com.didekin.common.auth.TkAuthClaims.doDefaultAuthClaims;
 import static com.didekin.common.auth.TkAuthClaims.doExpirationDate;
-import static com.didekin.userservice.auth.TkParamNames.appId;
 import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.expiration;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
@@ -79,9 +77,8 @@ public class TkAuthClaimsTest {
     @Test
     public void test_doDefaultAuthClaims_3() throws MalformedClaimException
     {
-        TkAuthClaims claims = doDefaultAuthClaims("user@name.com", "appId_abcde");
+        TkAuthClaims claims = TkAuthClaims.doDefaultAuthClaimsFromUserName("user@name.com");
         assertThat(claims.getJwtClaimsFromMap().getSubject(), is("user@name.com"));
-        assertThat(claims.getJwtClaimsFromMap().getClaimValue(appId.getName()), is("appId_abcde"));
         checkMap(claims);
     }
 
@@ -122,27 +119,12 @@ public class TkAuthClaimsTest {
         assertThat(authClaims.getExpirationInstant().getEpochSecond(), is(authClaims.getExpirationNumDate().getValue()));
     }
 
-    @Test
-    public void test_checkTokenInvariants()
-    {
-        initMap();
-        claimsMap.remove(appId);
-        try {
-            doDefaultAuthClaims(claimsMap);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // First exception is related to appId: email correct.
-            assertThat(e.getMessage(), containsString(appId.getName()));
-        }
-    }
-
     // ============================ Helper methods =========================
 
     private void initMap()
     {
         claimsMap = new HashMap<>(1);
         claimsMap.putIfAbsent(subject, "pedro@didekin.es");
-        claimsMap.putIfAbsent(appId, "appId_mock");
     }
 
     public static void checkMap(TkAuthClaims authClaims) throws MalformedClaimException
@@ -157,7 +139,6 @@ public class TkAuthClaimsTest {
                         hasItem(subject.getName()),
                         hasItem(issuer.getName()),
                         hasItem(expiration.getName()),
-                        hasItem(appId.getName()),
                         hasItem(audience.getName())
                 )
         );
