@@ -252,12 +252,12 @@ public final class UsuarioTestUtils {
     public static AuthHeaderIf doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
         String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName()).build().getEncryptedTkStr();
-        return new AuthHeader.AuthHeaderBuilder().tokenInLocal(tokenInLocal).build();
+        return new AuthHeader.AuthHeaderBuilder().tokenInDb(tokenInLocal).build();
     }
 
     public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
-        return doAuthHeader(usuario, producerBuilder).getBase64Str();
+        return doAuthHeader(usuario, producerBuilder).toBase64Str();
     }
 
     // ========================================== Métodos ========================================

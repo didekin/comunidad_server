@@ -908,7 +908,7 @@ public class UsuarioManagerDbPreDevTest {
     public void test_checkHeaderGetUserName()
     {
         String httpAuthHeader = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpAuthHeader).build();
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpAuthHeader).build();
         // Premises: token in BD.
         assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerIn.getToken()), notNullValue());
         // Exec, check.

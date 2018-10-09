@@ -63,7 +63,7 @@ public class UserMockManagerDbPreDevTest {
     {
         String httpAuthHeaderIn = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName());
         // Check values from authHeader obtained from DB.
-        AuthHeaderIf httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder(httpAuthHeaderIn).build();
+        AuthHeaderIf httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpAuthHeaderIn).build();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
         assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
     }

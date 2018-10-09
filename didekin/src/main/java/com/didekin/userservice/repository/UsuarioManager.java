@@ -647,7 +647,7 @@ public class UsuarioManager {
 
     private <T> T getUser(String httpHeaderIn, Function<Usuario, T> mapToUserReturn)
     {
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder(httpHeaderIn).build();
+        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpHeaderIn).build();
         return of(headerIn)
                 .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
                 .map(getUsuarioFromHeaderFunc())

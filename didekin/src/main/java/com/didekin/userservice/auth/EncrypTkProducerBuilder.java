@@ -72,7 +72,13 @@ public final class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProduc
     @Override
     public EncryptedTkProducer build()
     {
+        logger.debug("build()");
+
         if (headers == null || claims == null || key == null) {
+            logger.error(error_message_bean_building
+                    + " headers = " + headers
+                    + " claims = " + claims
+                    + " key = " + key);
             throw new IllegalStateException(error_message_bean_building + this.getClass().getName());
         }
 

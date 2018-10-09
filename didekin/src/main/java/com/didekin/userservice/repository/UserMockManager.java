@@ -59,9 +59,9 @@ public class UserMockManager {
         logger.debug("insertAuthTkGetNewAuthTkStr()");
         String newTokenStr = updateTokenAuthInDb(userName);
         return new AuthHeader.AuthHeaderBuilder()
-                .tokenInLocal(requireNonNull(newTokenStr))
+                .tokenInDb(requireNonNull(newTokenStr))
                 .build()
-                .getBase64Str();
+                .toBase64Str();
     }
 
     public String regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
