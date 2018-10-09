@@ -7,7 +7,6 @@ import com.didekin.common.auth.AuthInterceptor;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekinlib.http.retrofit.HttpHandler;
-import com.didekinlib.model.usuario.http.AuthHeader;
 import com.didekinlib.model.usuario.http.UserMockEndPoints;
 
 import org.junit.Before;
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
@@ -33,7 +31,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.CommonServConstant.OPEN;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.BAD_REQUEST;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
-import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED;
 import static com.didekinlib.model.usuario.http.UsuarioServConstant.USER_PATH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -85,20 +82,6 @@ public abstract class AuthInterceptorTest {
         Response<String> response = userComuMockEndPoint.tryTokenInterceptor("", USER_PATH.substring(1), "read").execute();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(BAD_REQUEST.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_PreHandle_3() throws IOException
-    {
-        // Path in closed area and token well formed but with cross-validation errors.
-        String tokenInLocal = builder.defaultHeadersClaims(pedro.getUserName()).build().getEncryptedTkStr();
-        String headerStr = new AuthHeader.AuthHeaderBuilder().tokenInLocal(tokenInLocal).build().getBase64Str();
-        // Check.
-        Response<String> response = userComuMockEndPoint.tryTokenInterceptor(headerStr, USER_PATH.substring(1), "read").execute();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED.getHttpMessage()));
     }
 
     @Test

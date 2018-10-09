@@ -17,7 +17,7 @@ import static com.didekin.common.springprofile.Profiles.NGINX_JETTY_LOCAL;
 @Configuration
 public class RetrofitConfigurationDev {
 
-    private static final String jetty_local_URL = "https://didekinspring.pagekite.me/";
+    private static final String jetty_local_URL = "https://didekinspring.pagekite.me/" /*"http://127.0.0.1:8080"*/;
     private static final String local_jks_appclient = "/Users/pedro/keystores/web_services/didekin_web/didekin_web_local_jks";
     private static final String local_jks_appclient_pswd = "octubre_5_2016_dev_jks";
     private static final int http_timeOut = 120;

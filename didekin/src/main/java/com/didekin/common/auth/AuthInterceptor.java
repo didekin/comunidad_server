@@ -72,7 +72,6 @@ public class AuthInterceptor implements HandlerInterceptor {
                 );
                 throw new ServiceException(UNAUTHORIZED);
             }
-
             return true;
         } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException e) {
             logger.debug(e.getMessage());
