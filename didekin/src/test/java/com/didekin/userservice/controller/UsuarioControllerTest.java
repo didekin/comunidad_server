@@ -109,7 +109,7 @@ public abstract class UsuarioControllerTest {
 
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testGetUserData_2() throws IOException
+    public void testGetUserData_2() throws IOException   // TODO: fail.
     {
         // We send an invailid token.
         Response<Usuario> response = USER_ENDPOINT.getUserData("faked_token").test().values().get(0);
