@@ -165,7 +165,7 @@ abstract class IncidenciaControllerTest {
     }
 
     @Test
-    public void testDeleteIncidencia_2() throws IOException    // TODo: fail.
+    public void testDeleteIncidencia_2() throws IOException
     {
         // Caso: token inválido.
         Response<Integer> response = ENDPOINT.deleteIncidencia("token_faked", 2L).blockingGet();
@@ -215,7 +215,7 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_2() throws ServiceException, IOException   // TODO: fail
+    public void testModifyIncidImportancia_2() throws ServiceException, IOException
     {
         /* Caso NOT OK: token inválido.*/
         Incidencia incidencia =

@@ -85,7 +85,7 @@ public abstract class AuthInterceptorTest {
     }
 
     @Test
-    public void test_PreHandle_4() throws IOException      // TODO: fail.
+    public void test_PreHandle_4() throws IOException
     {
         // Path in closed area and header faked.
         Response<String> response = userComuMockEndPoint.tryTokenInterceptor("HEADER_FAKED", USER_PATH.substring(1), "read").execute();
