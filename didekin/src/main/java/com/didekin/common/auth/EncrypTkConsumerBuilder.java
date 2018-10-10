@@ -127,12 +127,12 @@ public final class EncrypTkConsumerBuilder implements BeanBuilder<EncrypTkConsum
         try {
             if (encryptedTkStr == null || decryptionKey == null || audiences == null
                     || issuer == null || keyManagementAlg == null || contentEncryptionAlg == null) {
-                logger.error("build()" + error_message_bean_building);
+                logger.error("build(), ERROR: " + error_message_bean_building);
                 throw new IllegalStateException(error_message_bean_building + this.getClass().getName());
             }
             return new EncryptedTkConsumer(builder.build().processToClaims(encryptedTkStr));
         } catch (InvalidJwtException e) {
-            logger.error("build()" + e.getMessage());
+            logger.error("build(), ERROR: " + e.getMessage());
             throw new IllegalStateException(e.getMessage());
         }
     }

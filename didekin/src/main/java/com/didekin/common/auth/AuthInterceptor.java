@@ -69,7 +69,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 throw new ServiceException(UNAUTHORIZED);
             }
             return true;
-        } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException e) {
+        } catch (JsonSyntaxException | MalformedClaimException | IllegalArgumentException | IllegalStateException e) {
             logger.debug(e.getMessage());
             throw new ServiceException(TOKEN_ENCRYP_DECRYP_ERROR);
         }
