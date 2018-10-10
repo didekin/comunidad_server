@@ -127,6 +127,13 @@ public abstract class UsuarioControllerTest {
         String passwordOk = "password3";
         String passwordWrong = "passwordWrong";
 
+        /*
+        eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0   // <header>
+        .                                                 // <encrypted key>
+        .pLPBxVRxc5sQWqBEeDJ0DA                           // <initialization vector>
+        .VnFJrAin6PEtGdV_LU9k1sZrrWlO6Sew4owFQNpCzo3MyvQ3nUybI1E8SPiamGnZi9ZLNyJcuW8kDJMfv0R6MqNK5X3xMBFxiwCZpvLfkVUmdEhuo9L689t61scVrsYh  // <ciphertext>
+        .i7-w4JR6n0oh7_lEy9ptLw                           // <authentication tag>
+        */
         USER_ENDPOINT.login(userNameOk, passwordOk, pedro.getGcmToken())
                 .test()
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));

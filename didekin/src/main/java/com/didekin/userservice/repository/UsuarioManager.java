@@ -8,8 +8,7 @@ import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.GcmTokensHolder;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuario.http.AuthHeader;
-import com.didekinlib.model.usuario.http.AuthHeaderIf;
+import com.didekinlib.model.usuario.http.AuthHeaderToken;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.jose4j.jwt.MalformedClaimException;
@@ -632,7 +631,7 @@ public class UsuarioManager {
         throw new ServiceException(PASSWORD_NOT_SENT);
     }
 
-    private Function<AuthHeaderIf, Usuario> getUsuarioFromHeaderFunc()
+    private Function<AuthHeaderToken, Usuario> getUsuarioFromHeaderFunc()
     {
         return header -> {
             try {
@@ -647,7 +646,7 @@ public class UsuarioManager {
 
     private <T> T getUser(String httpHeaderIn, Function<Usuario, T> mapToUserReturn)
     {
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpHeaderIn).build();
+        AuthHeaderToken headerIn = new AuthHeaderToken(httpHeaderIn);
         return of(headerIn)
                 .filter(header -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(header.getToken()))
                 .map(getUsuarioFromHeaderFunc())

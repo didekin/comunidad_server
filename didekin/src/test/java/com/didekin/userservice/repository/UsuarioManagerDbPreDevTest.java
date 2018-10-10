@@ -11,8 +11,6 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuario.http.AuthHeader;
-import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
@@ -48,7 +46,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escori
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkBeanUsuario;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.doAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
@@ -908,16 +905,15 @@ public class UsuarioManagerDbPreDevTest {
     public void test_checkHeaderGetUserName()
     {
         String httpAuthHeader = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
-        AuthHeaderIf headerIn = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpAuthHeader).build();
         // Premises: token in BD.
-        assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerIn.getToken()), notNullValue());
+        assertThat(usuarioManager.updateTokenAuthInDb(pedro, httpAuthHeader), notNullValue());
         // Exec, check.
         assertThat(usuarioManager.checkHeaderGetUserName(httpAuthHeader), is(pedro.getUserName()));
 
         // Premises: token are not the same.
-        AuthHeaderIf headerDb = doAuthHeader(pedro, usuarioManager.producerBuilder);
-        assertThat(headerIn.getToken().equals(headerDb.getToken()), is(false));
-        assertThat(usuarioManager.updateTokenAuthInDb(pedro, headerDb.getToken()), notNullValue());
+        String newAuthToken = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
+        assertThat(httpAuthHeader.equals(newAuthToken), is(false));
+        assertThat(usuarioManager.updateTokenAuthInDb(pedro, newAuthToken), notNullValue());
         // Exec, check.
         try {
             usuarioManager.checkHeaderGetUserName(httpAuthHeader);

@@ -5,8 +5,6 @@ import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuario.http.AuthHeader;
-import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
@@ -63,9 +61,8 @@ public class UserMockManagerDbPreDevTest {
     {
         String httpAuthHeaderIn = userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName());
         // Check values from authHeader obtained from DB.
-        AuthHeaderIf httpHeaderFromDb = new AuthHeader.AuthHeaderBuilder().tokenFromJsonBase64Header(httpAuthHeaderIn).build();
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpHeaderFromDb.getToken()), is(true));
-        assertThat(checkpw(httpHeaderFromDb.getToken(), usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(httpAuthHeaderIn), is(true));
+        assertThat(checkpw(httpAuthHeaderIn, usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

@@ -10,8 +10,6 @@ import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.comunidad.Municipio;
 import com.didekinlib.model.comunidad.Provincia;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuario.http.AuthHeader;
-import com.didekinlib.model.usuario.http.AuthHeaderIf;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import java.util.HashMap;
@@ -249,15 +247,9 @@ public final class UsuarioTestUtils {
         return claimsIn;
     }
 
-    public static AuthHeaderIf doAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
-    {
-        String tokenInLocal = producerBuilder.defaultHeadersClaims(usuario.getUserName()).build().getEncryptedTkStr();
-        return new AuthHeader.AuthHeaderBuilder().tokenInDb(tokenInLocal).build();
-    }
-
     public static String doHttpAuthHeader(Usuario usuario, EncrypTkProducerBuilder producerBuilder)
     {
-        return doAuthHeader(usuario, producerBuilder).toBase64FromJsonStr();
+        return producerBuilder.defaultHeadersClaims(usuario.getUserName()).build().getEncryptedTkStr();
     }
 
     // ========================================== Métodos ========================================

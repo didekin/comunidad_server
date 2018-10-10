@@ -3,7 +3,6 @@ package com.didekin.userservice.repository;
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.model.comunidad.Comunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuario.http.AuthHeader;
 import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
@@ -57,11 +56,7 @@ public class UserMockManager {
     public String insertAuthTkGetNewAuthTkStr(String userName)
     {
         logger.debug("insertAuthTkGetNewAuthTkStr()");
-        String newTokenStr = updateTokenAuthInDb(userName);
-        return new AuthHeader.AuthHeaderBuilder()
-                .tokenInDb(requireNonNull(newTokenStr))
-                .build()
-                .toBase64FromJsonStr();
+        return updateTokenAuthInDb(userName);
     }
 
     public String regComuAndUserAndUserComu(final UsuarioComunidad usuarioCom) throws ServiceException
