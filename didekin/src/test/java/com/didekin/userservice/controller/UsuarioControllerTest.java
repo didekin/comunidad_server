@@ -130,14 +130,14 @@ public abstract class UsuarioControllerTest {
         // Preconditions:
         Usuario usuario1 = usuarioManager.getUserData(luis.getUserName());
         // Exec 1
-        String tokenAuth_2 = USER_ENDPOINT.login(pedro.getUserName(), "password5", "gcm_token_login1").blockingGet().body();
+        String tokenAuth_2 = USER_ENDPOINT.login(luis.getUserName(), "password5", "gcm_token_login1").blockingGet().body();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(tokenAuth_2), is(true));
         Usuario usuario2 = usuarioManager.getUserData(luis.getUserName());
         assertThat(checkpw(tokenAuth_2, usuario2.getTokenAuth()), is(true));
         assertThat(usuario2.getTokenAuth().equals(usuario1.getTokenAuth()), is(false));
         assertThat(usuario2.getGcmToken().equals(usuario1.getGcmToken()), is(false));
         // Exec 2.
-        String tokenAuth_3 = USER_ENDPOINT.login(pedro.getUserName(), "password5", "gcm_token_login2").blockingGet().body();
+        String tokenAuth_3 = USER_ENDPOINT.login(luis.getUserName(), "password5", "gcm_token_login2").blockingGet().body();
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(tokenAuth_3), is(true));
         assertThat(tokenAuth_3.equals(tokenAuth_2), is(false));
         Usuario usuario3 = usuarioManager.getUserData(luis.getUserName());
