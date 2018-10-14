@@ -96,7 +96,7 @@ public class UserMockManager {
 
         // Return new authTokenStr. The parameter usuarioCom contains an usuario withh gcmToken.
         return (pkUsuario > 0L && pkComunidad > 0L && userComuInserted == 1) ?
-                usuarioManager.updateTokenAuthInDb(
+                usuarioManager.updateUserTokensInDb(
                         new Usuario.UsuarioBuilder()
                                 .copyUsuario(usuarioCom.getUsuario())
                                 .uId(pkUsuario)  // this is what is needed this new instance.
@@ -139,7 +139,7 @@ public class UserMockManager {
         }
         // Return new authTokenStr. The parameter usuarioCom contains an usuario withh gcmToken.
         return (pkUsuario > 0L && userComuInserted == 1) ?
-                usuarioManager.updateTokenAuthInDb(
+                usuarioManager.updateUserTokensInDb(
                         new Usuario.UsuarioBuilder()
                                 .copyUsuario(userComu.getUsuario())
                                 .uId(pkUsuario)  // this is what is needed this new instance.
@@ -152,7 +152,7 @@ public class UserMockManager {
 
     private String updateTokenAuthInDb(String userName)
     {
-        logger.debug("updateTokenAuthInDb()");
+        logger.debug("updateUserTokensInDb()");
         String tokenAuthStr = usuarioManager.producerBuilder.defaultHeadersClaims(userName).build().getEncryptedTkStr();
         return usuarioDao.updateTokenAuthByUserName(userName, hashpw(tokenAuthStr, BCRYPT_SALT.get())) ? tokenAuthStr : null;
     }

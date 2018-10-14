@@ -126,6 +126,9 @@ public final class UsuarioTestUtils {
             .municipio(new Municipio((short) 54, new Provincia((short) 2)))
             .build();
 
+    public static final String gcm_token_1 =
+            "cuOPgcbcLOk:APA91bG5SNHM79UP_4-Du1p3aRL1aphofK5GcTKjNslh3Zgm1fPH2yI031w1BV6ukVfCQtfdpAk-OlKo2hS6_zY0fEx9ZWpDWNPMWmCIRPK-XMOpysWFlswa0k3ou8_78zvl5doGUam9";
+
     public static final UsuarioComunidad pedro_plazuelas_10bis = makeUsuarioComunidad(
             ronda_plazuela_10bis, pedro, "Centro", null, "3", "J", ADMINISTRADOR.function);
 

@@ -47,6 +47,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkBeanUsuario;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.checkGeneratedPassword;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.doHttpAuthHeader;
+import static com.didekin.userservice.testutils.UsuarioTestUtils.gcm_token_1;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
@@ -387,17 +388,34 @@ public class UsuarioManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testLogin_1() throws ServiceException   // TODO: gcm_token and token_auth are updated.
+    public void testLogin_1() throws ServiceException
     {
-        Usuario pedroOk = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("password3").build();
+        // Preconditions:
+        Usuario luisOld = usuarioManager.getUserData(luis.getUserName());
+        assertThat(luisOld.getGcmToken() != null && luisOld.getTokenAuth() != null, is(true));
+        // Login data.
+        Usuario luisNew = new Usuario.UsuarioBuilder().userName(luis.getUserName()).password("password5").gcmToken(gcm_token_1).build();
+        String newTokenAuth = usuarioManager.login(luisNew);
+        assertThat(
+                tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(newTokenAuth)
+                        && !newTokenAuth.equals(luisOld.getTokenAuth())
+                , is(true));
+        Usuario luisInDb = usuarioManager.getUserData(luis.getUserName());
+        assertThat(luisInDb.getGcmToken(), is(luisNew.getGcmToken()));
+        assertThat(checkpw(newTokenAuth, luisInDb.getTokenAuth()), is(true));
+    }
+
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testLogin_2() throws ServiceException
+    {
         Usuario pedroWrongUserName = new Usuario.UsuarioBuilder().userName("pedro@wrong.com").password("password3")
                 .build();
         Usuario pedroWrongPassword = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("passwordWrong")
                 .build();
         Usuario pedroInvalidUserName = new Usuario.UsuarioBuilder().userName("pedro_invalid_name").password("password4")
                 .build();
-
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(usuarioManager.login(pedroOk)), is(true));
 
         try {
             usuarioManager.login(pedroWrongPassword);
@@ -420,6 +438,7 @@ public class UsuarioManagerDbPreDevTest {
             assertThat(e.getExceptionMsg(), is(USER_WRONG_INIT));
         }
     }
+
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
@@ -866,16 +885,27 @@ public class UsuarioManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_UpdateTokenAuthInDb()    // TODO: test token out different token in.
+    public void test_UpdateTokenAuthInDb()
     {
         // Premises: user in DB.
-        String authToken = usuarioManager.updateTokenAuthInDb(pedro);
-        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(authToken), is(true));
-        assertThat(checkpw(authToken, usuarioManager.getUserData(pedro.getUserName()).getTokenAuth()), is(true));
+        Usuario usuarioOld = usuarioManager.getUserData(luis.getUserName());
+        assertThat(usuarioOld.getGcmToken() != null && usuarioOld.getTokenAuth() != null, is(true));
+        // New data.
+        Usuario usuarioNew = new Usuario.UsuarioBuilder().copyUsuario(usuarioOld).gcmToken(gcm_token_1).build();
+        // Exec,
+        String authTokenNew = usuarioManager.updateUserTokensInDb(usuarioNew);
+        // Check.
+        assertThat(
+                tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(authTokenNew)
+                        && !authTokenNew.equals(usuarioOld.getTokenAuth()),
+                is(true));
+        Usuario usuarioInDB = usuarioManager.getUserData(luis.getUserName());
+        assertThat(usuarioInDB.getGcmToken().equals(usuarioNew.getGcmToken()), is(true));
+        assertThat(checkpw(authTokenNew, usuarioInDB.getTokenAuth()), is(true));
 
         // Premises: user not in DB.
         try {
-            usuarioManager.updateTokenAuthInDb(new Usuario.UsuarioBuilder().uId(9999).userName("fake@user.com").gcmToken("fake.gcm_token").build());
+            usuarioManager.updateUserTokensInDb(new Usuario.UsuarioBuilder().uId(9999).userName("fake@user.com").gcmToken("fake.gcm_token").build());
             fail();
         } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));
@@ -906,14 +936,14 @@ public class UsuarioManagerDbPreDevTest {
     {
         String httpAuthHeader = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
         // Premises: token in BD.
-        assertThat(usuarioManager.updateTokenAuthInDb(pedro, httpAuthHeader), notNullValue());
+        assertThat(usuarioManager.updateUserTokensInDb(pedro, httpAuthHeader), notNullValue());
         // Exec, check.
         assertThat(usuarioManager.checkHeaderGetUserName(httpAuthHeader), is(pedro.getUserName()));
 
         // Premises: token are not the same.
         String newAuthToken = doHttpAuthHeader(pedro, usuarioManager.producerBuilder);
         assertThat(httpAuthHeader.equals(newAuthToken), is(false));
-        assertThat(usuarioManager.updateTokenAuthInDb(pedro, newAuthToken), notNullValue());
+        assertThat(usuarioManager.updateUserTokensInDb(pedro, newAuthToken), notNullValue());
         // Exec, check.
         try {
             usuarioManager.checkHeaderGetUserName(httpAuthHeader);

@@ -88,7 +88,8 @@ enum UsuarioSql {
             " token_auth = ? " +
             " WHERE user_name = ?"),
 
-    UPDATE_TOKEN_AUTH_BY_ID("UPDATE usuario SET " +
+    UPDATE_TOKENS_GCM_AUTH_BY_ID("UPDATE usuario SET " +
+            " gcm_token = ?, " +
             " token_auth = ? " +
             " WHERE u_id = ?"),
 

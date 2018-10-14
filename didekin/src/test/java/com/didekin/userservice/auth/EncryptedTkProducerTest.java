@@ -69,7 +69,9 @@ public abstract class EncryptedTkProducerTest {
                 .defaultClaims(getDefaultTestClaims(pedro));
 
         // The same builder produces different tokens.
-        assertThat(builder.build().getEncryptedTkStr().equals(builder.build().getEncryptedTkStr()), is(false));
+        String token_auth_1 =  builder.build().getEncryptedTkStr();
+        String token_auth_2 =  builder.build().getEncryptedTkStr();
+        assertThat(token_auth_1.equals(token_auth_2), is(false));
     }
 
     @Test

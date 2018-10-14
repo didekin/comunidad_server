@@ -11,6 +11,7 @@ import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
+import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.retrofit.HttpHandler;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuario.http.UsuarioEndPoints;
@@ -51,6 +52,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mindrot.jbcrypt.BCrypt.checkpw;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -59,6 +61,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
  * Date: 02/04/15
  * Time: 12:12
  */
+@SuppressWarnings("ConstantConditions")
 public abstract class UsuarioControllerTest {
 
     private UsuarioEndPoints USER_ENDPOINT;
@@ -67,6 +70,8 @@ public abstract class UsuarioControllerTest {
     private HttpHandler retrofitHandler;
     @Autowired
     private UserMockManager userMockManager;
+    @Autowired
+    private UsuarioManager usuarioManager;
     @Autowired
     private JavaMailMonitor javaMailMonitor;
 
@@ -122,21 +127,34 @@ public abstract class UsuarioControllerTest {
     @Test
     public void testLogin_1()
     {
+        // Preconditions:
+        Usuario usuario1 = usuarioManager.getUserData(luis.getUserName());
+        // Exec 1
+        String tokenAuth_2 = USER_ENDPOINT.login(pedro.getUserName(), "password5", "gcm_token_login1").blockingGet().body();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(tokenAuth_2), is(true));
+        Usuario usuario2 = usuarioManager.getUserData(luis.getUserName());
+        assertThat(checkpw(tokenAuth_2, usuario2.getTokenAuth()), is(true));
+        assertThat(usuario2.getTokenAuth().equals(usuario1.getTokenAuth()), is(false));
+        assertThat(usuario2.getGcmToken().equals(usuario1.getGcmToken()), is(false));
+        // Exec 2.
+        String tokenAuth_3 = USER_ENDPOINT.login(pedro.getUserName(), "password5", "gcm_token_login2").blockingGet().body();
+        assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(tokenAuth_3), is(true));
+        assertThat(tokenAuth_3.equals(tokenAuth_2), is(false));
+        Usuario usuario3 = usuarioManager.getUserData(luis.getUserName());
+        assertThat(checkpw(tokenAuth_3, usuario3.getTokenAuth()), is(true));
+        assertThat(usuario3.getTokenAuth().equals(usuario2.getTokenAuth()), is(false));
+        assertThat(usuario3.getGcmToken().equals(usuario2.getGcmToken()), is(false));
+    }
+
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
+    @Test
+    public void testLogin_2()
+    {
         String userNameOk = pedro.getUserName();
         String userNameWrong = "pedro@wrong.com";
-        String passwordOk = "password3";
         String passwordWrong = "passwordWrong";
 
-        /*
-        eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0   // <header>
-        .                                                 // <encrypted key>
-        .pLPBxVRxc5sQWqBEeDJ0DA                           // <initialization vector>
-        .VnFJrAin6PEtGdV_LU9k1sZrrWlO6Sew4owFQNpCzo3MyvQ3nUybI1E8SPiamGnZi9ZLNyJcuW8kDJMfv0R6MqNK5X3xMBFxiwCZpvLfkVUmdEhuo9L689t61scVrsYh  // <ciphertext>
-        .i7-w4JR6n0oh7_lEy9ptLw                           // <authentication tag>
-        */
-        USER_ENDPOINT.login(userNameOk, passwordOk, pedro.getGcmToken())
-                .test()
-                .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
         USER_ENDPOINT.login(userNameOk, passwordWrong, pedro.getGcmToken())
                 .test()
                 .assertValue(response -> retrofitHandler.getErrorBean(response).getMessage().equals(PASSWORD_WRONG.getHttpMessage()));

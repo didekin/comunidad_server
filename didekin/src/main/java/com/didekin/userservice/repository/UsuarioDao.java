@@ -38,7 +38,7 @@ import static com.didekin.userservice.repository.UsuarioSql.NEW_PASSWORD;
 import static com.didekin.userservice.repository.UsuarioSql.OLDEST_USER_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.PK;
 import static com.didekin.userservice.repository.UsuarioSql.ROLES_ALL_FUNC;
-import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY_ID;
+import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKENS_GCM_AUTH_BY_ID;
 import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_USER;
@@ -349,15 +349,15 @@ public class UsuarioDao {
     }
 
     /**
-     * It updates the DB field token_auth with a new BCcripted authorization token.
+     * It updates the DB fields token_auth with a new BCcripted authorization token and the gcm_token.
      *
      * @return true if the data is updated.
      * @throws ServiceException (USER_NOT_FOUND) if the update does not return 1.
      */
-    boolean updateTokenAuthById(long userId, String tokenAuthBCrypted)
+    boolean updateUserTokensById(Usuario usuario, String tokenAuthBCrypted)
     {
-        logger.debug("updateTokenAuthById()");
-        if (jdbcTemplate.update(UPDATE_TOKEN_AUTH_BY_ID.toString(), tokenAuthBCrypted, userId) == 1) {
+        logger.debug("updateUserTokensById()");
+        if (jdbcTemplate.update(UPDATE_TOKENS_GCM_AUTH_BY_ID.toString(),usuario.getGcmToken(), tokenAuthBCrypted, usuario.getuId()) == 1) {
             return TRUE;
         }
         throw new ServiceException(USER_NOT_FOUND);

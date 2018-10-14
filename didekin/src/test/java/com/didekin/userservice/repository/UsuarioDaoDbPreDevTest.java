@@ -534,20 +534,20 @@ public class UsuarioDaoDbPreDevTest {
         // Premises:
         assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), nullValue());
         // Check.
-        assertThat(usuarioDao.updateTokenAuthById(pedro.getuId(), "update_pedro_tokenAuth"), is(true));
+        assertThat(usuarioDao.updateUserTokensById(pedro, "update_pedro_tokenAuth"), is(true));
         assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), is("update_pedro_tokenAuth"));
         // Premises:
         assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), notNullValue());
         // Check.
-        assertThat(usuarioDao.updateTokenAuthById(luis.getuId(), "update_luis_tokenAuth"), is(true));
+        assertThat(usuarioDao.updateUserTokensById(luis, "update_luis_tokenAuth"), is(true));
         assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), is("update_luis_tokenAuth"));
         // Check.
-        assertThat(usuarioDao.updateTokenAuthById(luis.getuId(), null), is(true));
+        assertThat(usuarioDao.updateUserTokensById(luis, null), is(true));
         assertThat(usuarioDao.getUserDataById(luis.getuId()).getTokenAuth(), nullValue());
 
         /* Premises: user not in DB.*/
         try {
-            usuarioDao.updateTokenAuthById(999L, "fake_token");
+            usuarioDao.updateUserTokensById(new Usuario.UsuarioBuilder().uId(999L).build(), "fake_token");
             fail();
         } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(USER_NOT_FOUND));

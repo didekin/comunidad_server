@@ -241,9 +241,12 @@ public class UsuarioManager {
             throw new ServiceException(USER_WRONG_INIT);
         }
 
-        Usuario usuarioDb = getUserData(usuario.getUserName());
-        if (checkpw(usuario.getPassword(), usuarioDb.getPassword())) {
-            return updateTokenAuthInDb(usuarioDb);
+        Usuario newUserToDb = new Usuario.UsuarioBuilder()
+                .copyUsuario(getUserData(usuario.getUserName()))
+                .gcmToken(usuario.getGcmToken())
+                .build();
+        if (checkpw(usuario.getPassword(), newUserToDb.getPassword())) {
+            return updateUserTokensInDb(newUserToDb);
         }
         throw new ServiceException(PASSWORD_WRONG);
     }
@@ -348,7 +351,7 @@ public class UsuarioManager {
                 .build();
 
         if (usuarioDao.passwordChange(usuarioNew) == 1) {
-            return updateTokenAuthInDb(usuarioNew);
+            return updateUserTokensInDb(usuarioNew);
         }
         throw new ServiceException(USER_NOT_FOUND);
     }
@@ -519,20 +522,22 @@ public class UsuarioManager {
 
     /**
      * Authorization tokens are treated as passwords: they are BCrypted before persisted in BD.
+     * It updates gcm_token and token_auth in DB.
      *
-     * @return null if token is not updated in DB; otherwise it returns the token persisted as a String.
+     * @param usuarioIn contains a new gcm_token.
+     * @return null if token is not updated in DB; otherwise it returns the new token_auth.
      */
-    String updateTokenAuthInDb(Usuario usuarioIn)
+    String updateUserTokensInDb(Usuario usuarioIn)
     {
-        logger.debug("updateTokenAuthInDb(usuarioIn)");
+        logger.debug("updateUserTokensInDb(usuarioIn)");
         String tokenAuthStr = producerBuilder.defaultHeadersClaims(usuarioIn.getUserName()).build().getEncryptedTkStr();
-        return updateTokenAuthInDb(usuarioIn, tokenAuthStr);
+        return updateUserTokensInDb(usuarioIn, tokenAuthStr);
     }
 
-    String updateTokenAuthInDb(Usuario usuarioIn, String newTokenAuthStr)
+    String updateUserTokensInDb(Usuario usuarioIn, String newTokenAuthStr)
     {
-        logger.debug("updateTokenAuthInDb(usuarioIn,newTokenAuthStr)");
-        return usuarioDao.updateTokenAuthById(usuarioIn.getuId(), hashpw(newTokenAuthStr, BCRYPT_SALT.get())) ? newTokenAuthStr : null;
+        logger.debug("updateUserTokensInDb(usuarioIn, newTokenAuthStr)");
+        return usuarioDao.updateUserTokensById(usuarioIn, hashpw(newTokenAuthStr, BCRYPT_SALT.get())) ? newTokenAuthStr : null;
     }
 
     // =================================  CHECKERS ======================================
