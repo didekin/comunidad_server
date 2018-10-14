@@ -387,7 +387,7 @@ public class UsuarioManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void testLogin_1() throws ServiceException
+    public void testLogin_1() throws ServiceException   // TODO: gcm_token and token_auth are updated.
     {
         Usuario pedroOk = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("password3").build();
         Usuario pedroWrongUserName = new Usuario.UsuarioBuilder().userName("pedro@wrong.com").password("password3")
@@ -866,7 +866,7 @@ public class UsuarioManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_UpdateTokenAuthInDb()
+    public void test_UpdateTokenAuthInDb()    // TODO: test token out different token in.
     {
         // Premises: user in DB.
         String authToken = usuarioManager.updateTokenAuthInDb(pedro);

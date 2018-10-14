@@ -228,6 +228,8 @@ public class UsuarioManager {
     }
 
     /**
+     * The gcm_token and token_auth are updated in DB.
+     *
      * @return a new security token if the token has been inserted in DB.
      * @throws ServiceException if  USER_WRONG_INIT, USER_NOT_FOUND or PASSWORD_WRONG.
      */
