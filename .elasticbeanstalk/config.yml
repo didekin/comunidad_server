@@ -2,11 +2,11 @@ branch-defaults:
   aws_pre:
     environment: didekin-web-pre
   master:
-    environment: didekin-web-pro
+    environment: didekinweb-pro
 environment-defaults:
   didekin-web-pre:
     branch: aws_pre
-  didekin-web-pro:
+  didekinweb-pro:
     branch: master
 deploy:
     artifact: didekin/build/libs/didekin-web.jar
