@@ -21,8 +21,5 @@ logs/
 
 # Configuración de entornos
 terminal/*
+didekin/src/main/resources/didekin_web_sym.pkcs12
 
-# SECURITY
-
-
-# Elastic Beanstalk Files
