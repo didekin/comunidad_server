@@ -1,11 +1,11 @@
 branch-defaults:
-  aws_pre:
+  awspre:
     environment: didekin-web-pre
   master:
     environment: didekinweb-pro
 environment-defaults:
   didekin-web-pre:
-    branch: aws_pre
+    branch: awspre
   didekinweb-pro:
     branch: master
 deploy:

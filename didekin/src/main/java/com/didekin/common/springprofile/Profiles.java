@@ -13,7 +13,7 @@ public final class Profiles {
 
     /* This variable is hard-coded in env_functions.initDidekinWebCommon(). */
     public static final String NGINX_JETTY_LOCAL = "nginx-jetty-local";
-    /* This variable is hard-coded in didekin_web/terminal/aws_pre/.ebextensions/env-var.config. */
+    /* This variable is hard-coded in didekin_web/terminal/awspre/.ebextensions/env-var.config. */
     public static final String NGINX_JETTY_PRE = "nginx-jetty-pre";
     public static final String MAIL_PRE = "mail-pre";
     private static final Logger logger = LoggerFactory.getLogger(Profiles.class.getCanonicalName());
