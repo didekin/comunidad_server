@@ -13,10 +13,10 @@ import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.retrofit.HttpHandler;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadEndPoints;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
-import com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadEndPoints;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -58,12 +58,9 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
-import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -107,7 +104,7 @@ public abstract class UserComuControllerTest {
         USERCOMU_ENDPOINT
                 .deleteUserComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(paco.getUserName()),
-                        calle_olmo_55.getC_Id()
+                        calle_olmo_55.getId()
                 ).map(Response::body).test().assertValue(IS_USER_DELETED);
     }
 
@@ -149,13 +146,12 @@ public abstract class UserComuControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
 
         // No existe el par usuario-comunidad.
-        assertThat(USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, calle_plazuela_23.getC_Id()).blockingGet().body(), nullValue());
+        assertThat(USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, calle_plazuela_23.getId()).blockingGet().body(), nullValue());
 
         // Comunidad asociada a usuario.
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
-        assertThat(userComu.getComunidad(), is(COMU_LA_FUENTE));
+        assertThat(userComu.getEntidad(), is(COMU_LA_FUENTE));
         assertThat(userComu.getUsuario().getAlias(), is("pedronevado"));
-        assertThat(userComu.getRoles(), is("adm"));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -167,12 +163,11 @@ public abstract class UserComuControllerTest {
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, luis)
                 .portal("portal")
                 .planta("planta2")
-                .puerta("puertaB")
-                .roles(PROPIETARIO.function).build();
+                .puerta("puertaB").build();
         final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName());
         int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).blockingGet().body();
         assertThat(isInserted, is(1));
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getC_Id()).blockingGet().body(), is(false));
+        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getId()).blockingGet().body(), is(false));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -209,7 +204,7 @@ public abstract class UserComuControllerTest {
         assertThat(
                 usuarioManager.getUserComuByUserAndComu(
                         pedro_plazuelas_10bis.getUsuario().getUserName(),
-                        pedro_plazuelas_10bis.getComunidad().getC_Id())
+                        pedro_plazuelas_10bis.getEntidad().getId())
                         .getEscalera(),
                 is(nullValue())
         );
@@ -227,7 +222,7 @@ public abstract class UserComuControllerTest {
         assertThat(usuarioManager
                         .getUserComuByUserAndComu(
                                 pedro_plazuelas_10bis.getUsuario().getUserName(),
-                                pedro_plazuelas_10bis.getComunidad().getC_Id()
+                                pedro_plazuelas_10bis.getEntidad().getId()
                         ).getEscalera(),
                 is("MOD"));
     }
@@ -239,7 +234,7 @@ public abstract class UserComuControllerTest {
     {
         // Preconditions a user already registered: luis en comunidades 1 y 2.
         UsuarioComunidad usuarioCom = new UsuarioComunidad.UserComuBuilder(COMU_OTRA, null).portal("B").escalera
-                ("ESC").planta("11").puerta("puerta").roles(ADMINISTRADOR.function).build();
+                ("ESC").planta("11").puerta("puerta").build();
         // Exec.
         boolean isRegOk =
                 USERCOMU_ENDPOINT.regComuAndUserComu(
@@ -268,8 +263,7 @@ public abstract class UserComuControllerTest {
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(twoComponent_local_ES, COMU_TRAV_PLAZUELA_PEPE).blockingGet();
         Comunidad comunidad = usuarioManager.getComusByUser(USER_PEPE.getUserName()).get(0);
         // Data, exec, check.
-        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null,
-                PRESIDENTE.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portalC", null, "planta3", null);
         boolean isInserted = USERCOMU_ENDPOINT.regUserAndUserComu(oneComponent_local_ES, userComu).blockingGet().body();
         assertThat(isInserted, is(true));
         assertThat(usuarioManager.getComusByUser(USER_JUAN.getUserName()).size(), is(1));
@@ -281,9 +275,9 @@ public abstract class UserComuControllerTest {
     @Test
     public void testRegUserComu()
     {
-        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build();
+        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getId()).build();
         UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(comunidad, null).portal("portal")
-                .planta("planta2").puerta("puertaB").roles(PROPIETARIO.function).build();
+                .planta("planta2").puerta("puertaB").build();
         // Exec.
         int rowInserted =
                 USERCOMU_ENDPOINT.regUserComu(
@@ -303,7 +297,7 @@ public abstract class UserComuControllerTest {
         List<UsuarioComunidad> usuarioComus =
                 USERCOMU_ENDPOINT.seeUserComusByComu(
                         userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName()),
-                        calle_la_fuente_11.getC_Id())
+                        calle_la_fuente_11.getId())
                         .blockingGet().body();
         assertThat(usuarioComus.size(), is(2));
         assertThat(usuarioComus.get(1).getUsuario(), is(pedro));
@@ -322,7 +316,7 @@ public abstract class UserComuControllerTest {
                         .blockingGet().body();
         assertThat(comunidades.size(), is(3));
         assertThat(comunidades.get(0).getUsuario(), is(luis));
-        assertThat(comunidades.get(0).getComunidad(), is(calle_plazuela_23));
+        assertThat(comunidades.get(0).getEntidad(), is(calle_plazuela_23));
     }
 
 // ............................................... HELPER CLASSES AND METHODS .................................

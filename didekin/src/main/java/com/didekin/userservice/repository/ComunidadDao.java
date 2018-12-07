@@ -1,11 +1,11 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.ComunidadAutonoma;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ import static com.didekin.userservice.repository.ComunidadSql.COUNT_BY_USERCOMU;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 
@@ -64,7 +64,7 @@ public class ComunidadDao {
     {
         logger.info("::deleteComunidad()");
 
-        int rowsDeleted = jdbcTemplate.update(ComunidadSql.DELETE_BY_ID.toString(), comunidad.getC_Id());
+        int rowsDeleted = jdbcTemplate.update(ComunidadSql.DELETE_BY_ID.toString(), comunidad.getId());
         if (!(rowsDeleted == 1)) {
             throw new ServiceException(COMUNIDAD_NOT_FOUND);
         }
@@ -105,7 +105,7 @@ public class ComunidadDao {
     {
         logger.info("::getUsuariosIdFromComunidad()");
         return jdbcTemplate.queryForList(ComunidadSql.USERS_ID_BY_COMU.toString(),
-                Long.class, comunidad.getC_Id());
+                Long.class, comunidad.getId());
     }
 
     /**
@@ -121,11 +121,11 @@ public class ComunidadDao {
         try (PreparedStatement insertComunidad = conn.prepareStatement(INSERT.toString(), RETURN_GENERATED_KEYS)) {
 
             insertComunidad.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
-            insertComunidad.setString(2, comunidad.getTipoVia());
-            insertComunidad.setString(3, comunidad.getNombreVia());
-            insertComunidad.setShort(4, comunidad.getNumero());
-            insertComunidad.setString(5, comunidad.getSufijoNumero());
-            insertComunidad.setInt(6, getMunicipioId(comunidad.getMunicipio()));
+            insertComunidad.setString(2, comunidad.getDomicilio().getTipoVia());
+            insertComunidad.setString(3, comunidad.getDomicilio().getNombreVia());
+            insertComunidad.setShort(4, comunidad.getDomicilio().getNumero());
+            insertComunidad.setString(5, comunidad.getDomicilio().getSufijoNumero());
+            insertComunidad.setInt(6, getMunicipioId(comunidad.getDomicilio().getMunicipio()));
             insertComunidad.executeUpdate();
 
             rs = insertComunidad.getGeneratedKeys();
@@ -145,13 +145,12 @@ public class ComunidadDao {
         int rowsInserted;
 
         try (PreparedStatement insertUsuarioCom = conn.prepareStatement(INSERT_USUARIO.toString())) {
-            insertUsuarioCom.setLong(1, usuarioCom.getComunidad().getC_Id());
+            insertUsuarioCom.setLong(1, usuarioCom.getEntidad().getId());
             insertUsuarioCom.setLong(2, usuarioCom.getUsuario().getuId());
             insertUsuarioCom.setString(3, usuarioCom.getPortal());
             insertUsuarioCom.setString(4, usuarioCom.getEscalera());
             insertUsuarioCom.setString(5, usuarioCom.getPlanta());
             insertUsuarioCom.setString(6, usuarioCom.getPuerta());
-            insertUsuarioCom.setString(7, usuarioCom.getRoles());
             rowsInserted = insertUsuarioCom.executeUpdate();
         }
         return rowsInserted;
@@ -164,13 +163,12 @@ public class ComunidadDao {
 
         rowInserted = jdbcTemplate.update(
                 INSERT_USUARIO.toString(),
-                usuarioComunidad.getComunidad().getC_Id(),
+                usuarioComunidad.getEntidad().getId(),
                 usuarioComunidad.getUsuario().getuId(),
                 usuarioComunidad.getPortal(),
                 usuarioComunidad.getEscalera(),
                 usuarioComunidad.getPlanta(),
-                usuarioComunidad.getPuerta(),
-                usuarioComunidad.getRoles()
+                usuarioComunidad.getPuerta()
         );
         return rowInserted;
     }
@@ -180,12 +178,12 @@ public class ComunidadDao {
         logger.debug("modifyComuData()");
 
         return jdbcTemplate.update(MODIFY_COMU.toString(),
-                comunidad.getTipoVia(),
-                comunidad.getNombreVia(),
-                comunidad.getNumero(),
-                comunidad.getSufijoNumero(),
-                getMunicipioId(comunidad.getMunicipio()),
-                comunidad.getC_Id());
+                comunidad.getDomicilio().getTipoVia(),
+                comunidad.getDomicilio().getNombreVia(),
+                comunidad.getDomicilio().getNumero(),
+                comunidad.getDomicilio().getSufijoNumero(),
+                getMunicipioId(comunidad.getDomicilio().getMunicipio()),
+                comunidad.getId());
     }
 
     List<Comunidad> searchComunidadOne(Comunidad comunidad)
@@ -193,36 +191,65 @@ public class ComunidadDao {
         logger.info("::searchComunidadOne()");
 
         return jdbcTemplate.query(ComunidadSql.SEARCH_ONE.toString(), new ComunidadMapper(),
-                comunidad.getTipoVia(),
-                comunidad.getNombreVia(),
-                comunidad.getNumero(),
-                comunidad.getMunicipio().getProvincia().getProvinciaId(),
-                comunidad.getMunicipio().getCodInProvincia());
+                comunidad.getDomicilio().getTipoVia(),
+                comunidad.getDomicilio().getNombreVia(),
+                comunidad.getDomicilio().getNumero(),
+                comunidad.getDomicilio().getMunicipio().getProvincia().getProvinciaId(),
+                comunidad.getDomicilio().getMunicipio().getCodInProvincia());
     }
 
     List<Comunidad> searchComunidadTwo(Comunidad comunidad)
     {
         logger.info("::searchComunidadTwo()");
         return jdbcTemplate.query(ComunidadSql.SEARCH_TWO.toString(), new ComunidadMapper(),
-                comunidad.getNombreVia(),
-                comunidad.getNumero(),
-                comunidad.getMunicipio().getProvincia().getProvinciaId(),
-                comunidad.getMunicipio().getCodInProvincia());
+                comunidad.getDomicilio().getNombreVia(),
+                comunidad.getDomicilio().getNumero(),
+                comunidad.getDomicilio().getMunicipio().getProvincia().getProvinciaId(),
+                comunidad.getDomicilio().getMunicipio().getCodInProvincia());
     }
 
     List<Comunidad> searchComunidadThree(Comunidad comunidad)
     {
         logger.info("::searchComunidadThree()");
-        String param3_4 = comunidad.getNombreVia();
-        String param5 = "%" + comunidad.getNombreVia() + "%";
+        String param3_4 = comunidad.getDomicilio().getNombreVia();
+        String param5 = "%" + comunidad.getDomicilio().getNombreVia() + "%";
 
         return jdbcTemplate.query(ComunidadSql.SEARCH_THREE.toString(), new ComunidadMapper(),
                 param3_4,
                 param3_4,
                 param5,
-                comunidad.getNumero(),
-                comunidad.getMunicipio().getProvincia().getProvinciaId(),
-                comunidad.getMunicipio().getCodInProvincia());
+                comunidad.getDomicilio().getNumero(),
+                comunidad.getDomicilio().getMunicipio().getProvincia().getProvinciaId(),
+                comunidad.getDomicilio().getMunicipio().getCodInProvincia());
+    }
+
+    // ............. HELPER METHODS ...............
+
+    static Domicilio doDomicilio(ResultSet resultSet) throws SQLException
+    {
+        return new Domicilio.DomicilioBuilder()
+                .copyDomicilioNonNullValues(doDomicilioNoMunicipio(resultSet))
+                .municipio(
+                        new Municipio(
+                                resultSet.getShort("m_cd"),
+                                resultSet.getString("m_nombre"),
+                                new Provincia(
+                                        resultSet.getShort("pr_id"),
+                                        resultSet.getString("pr_nombre")
+                                )
+                        )
+                )
+                .build();
+    }
+
+    public static Domicilio doDomicilioNoMunicipio(ResultSet resultSet) throws SQLException
+    {
+        return new Domicilio.DomicilioBuilder()
+                .tipoVia(resultSet.getString("tipo_via"))
+                .nombreVia(resultSet.getString("nombre_via"))
+                .numero(resultSet.getShort("numero"))
+                .sufijoNumero(resultSet.getString("sufijo_numero"))
+                .build();
     }
 
     // ............. HELPER CLASSES ...............
@@ -233,21 +260,7 @@ public class ComunidadDao {
         {
             return new Comunidad.ComunidadBuilder()
                     .c_id(resultSet.getLong("c_Id"))
-                    .tipoVia(resultSet.getString("tipo_via"))
-                    .nombreVia(resultSet.getString("nombre_via"))
-                    .numero(resultSet.getShort("numero"))
-                    .sufijoNumero(resultSet.getString("sufijo_numero"))
-                    .fechaAlta(resultSet.getTimestamp("fecha_alta"))
-                    .municipio(
-                            new Municipio(
-                                    resultSet.getShort("m_cd"),
-                                    resultSet.getString("m_nombre"),
-                                    new Provincia(
-                                            resultSet.getShort("pr_id"),
-                                            resultSet.getString("pr_nombre")
-                                    )
-                            )
-                    )
+                    .domicilio(doDomicilio(resultSet))
                     .build();
         }
     }
@@ -259,22 +272,7 @@ public class ComunidadDao {
         {
             return new Comunidad.ComunidadBuilder()
                     .c_id(resultSet.getLong("c_Id"))
-                    .tipoVia(resultSet.getString("tipo_via"))
-                    .nombreVia(resultSet.getString("nombre_via"))
-                    .numero(resultSet.getShort("numero"))
-                    .sufijoNumero(resultSet.getString("sufijo_numero"))
-                    .fechaAlta(resultSet.getTimestamp("fecha_alta"))
-                    .municipio(
-                            new Municipio(
-                                    resultSet.getShort("m_cd"),
-                                    resultSet.getString("m_nombre"),
-                                    new Provincia(
-                                            new ComunidadAutonoma(resultSet.getShort("ca_id")),
-                                            resultSet.getShort("pr_id"),
-                                            resultSet.getString("pr_nombre")
-                                    )
-                            )
-                    )
+                    .domicilio(doDomicilio(resultSet))
                     .build();
         }
     }

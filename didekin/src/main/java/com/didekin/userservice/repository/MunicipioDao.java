@@ -1,7 +1,7 @@
 package com.didekin.userservice.repository;
 
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

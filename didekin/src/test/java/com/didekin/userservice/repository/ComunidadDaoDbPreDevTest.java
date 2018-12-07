@@ -3,11 +3,12 @@ package com.didekin.userservice.repository;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,10 +29,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escori
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
-import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -109,7 +107,7 @@ public class ComunidadDaoDbPreDevTest {
     public void testGetComunidadByPk() throws ServiceException
     {
         Comunidad comunidad = comunidadDao.getComunidadById(3L);
-        assertThat(comunidad.getNombreVia(), is("de El Escorial"));
+        assertThat(comunidad.getDomicilio().getNombreVia(), is("de El Escorial"));
     }
 
     /* Assume municipio table is populated.*/
@@ -144,7 +142,7 @@ public class ComunidadDaoDbPreDevTest {
     {
         long pkComunidad;
         try (Connection conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection()) {
-            assertThat(COMU_LA_PLAZUELA_10.getC_Id(), is(0L));
+            assertThat(COMU_LA_PLAZUELA_10.getId(), is(0L));
             pkComunidad = comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
         }
         assertThat(pkComunidad > 0, is(true));
@@ -186,7 +184,6 @@ public class ComunidadDaoDbPreDevTest {
                 .escalera("esc")
                 .planta("1")
                 .puerta("door")
-                .roles(INQUILINO.function.concat(",").concat(PRESIDENTE.function))
                 .build();
 
         int rowInserted = comunidadDao.insertUsuarioComunidad(usuarioCom);
@@ -231,17 +228,22 @@ public class ComunidadDaoDbPreDevTest {
     @Test
     public void testModifyComuData() throws ServiceException
     {
-        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(4L).tipoVia("nuevo_tipo").nombreVia
-                ("nuevo_nombre_via").numero((short) 22).municipio(new Municipio((short) 2, new Provincia((short) 13)))
+        Comunidad comunidad = new Comunidad.ComunidadBuilder().c_id(4L)
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("nuevo_tipo")
+                        .nombreVia("nuevo_nombre_via")
+                        .numero((short) 22)
+                        .municipio(new Municipio((short) 2, new Provincia((short) 13)))
+                        .build())
                 .build();
         assertThat(comunidadDao.modifyComuData(comunidad), is(1));
         Comunidad comunidadDb = comunidadDao.getComunidadById(4L);
         assertThat(comunidadDb, allOf(
-                hasProperty("nombreVia", equalTo(comunidad.getNombreVia())),
-                hasProperty("tipoVia", equalTo(comunidad.getTipoVia())),
-                hasProperty("numero", equalTo(comunidad.getNumero())),
-                hasProperty("sufijoNumero", equalTo(comunidad.getSufijoNumero())),
-                hasProperty("municipio", equalTo(comunidad.getMunicipio()))
+                hasProperty("nombreVia", equalTo(comunidad.getDomicilio().getNombreVia())),
+                hasProperty("tipoVia", equalTo(comunidad.getDomicilio().getTipoVia())),
+                hasProperty("numero", equalTo(comunidad.getDomicilio().getNumero())),
+                hasProperty("sufijoNumero", equalTo(comunidad.getDomicilio().getSufijoNumero())),
+                hasProperty("municipio", equalTo(comunidad.getDomicilio().getMunicipio()))
         ));
     }
 
@@ -254,11 +256,11 @@ public class ComunidadDaoDbPreDevTest {
         List<Comunidad> comunidades = comunidadDao.searchComunidadOne(COMU_LA_PLAZUELA_10);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(COMU_LA_PLAZUELA_10))); // difieren en el sufijo número.
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNumero(), is((short) 10));
-        assertThat(comunidades.get(0).getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
-        assertThat(comunidades.get(0).getMunicipio().getCodInProvincia(), is((short) 52));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNumero(), is((short) 10));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getCodInProvincia(), is((short) 52));
     }
 
     @Test()
@@ -266,10 +268,12 @@ public class ComunidadDaoDbPreDevTest {
     {
         // NO existe comunidad en DB.
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Ronda")
-                .nombreVia("no existe")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Ronda")
+                        .nombreVia("no existe")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
         List<Comunidad> comunidades = comunidadDao.searchComunidadOne(comunidad);
         assertThat(comunidades, notNullValue());
@@ -284,21 +288,23 @@ public class ComunidadDaoDbPreDevTest {
         // NO consideramos tipo_via en la búsqueda. Resto de datos coincide con entrada en DB.
 
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Travesía")
-                .nombreVia("de la Plazuela")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Travesía")
+                        .nombreVia("de la Plazuela")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadTwo(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el sufijo número.
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
-        assertThat(comunidades.get(0).getNumero(), is((short) 10));
-        assertThat(comunidades.get(0).getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
-        assertThat(comunidades.get(0).getMunicipio().getCodInProvincia(), is((short) 52));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getNumero(), is((short) 10));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getCodInProvincia(), is((short) 52));
 
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda")); // Y no Travesía.
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda")); // Y no Travesía.
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -310,17 +316,19 @@ public class ComunidadDaoDbPreDevTest {
         /*select name from metal where name like '%param'; */
 
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("Plazuela")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("Plazuela")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -331,17 +339,19 @@ public class ComunidadDaoDbPreDevTest {
         /*select name from metal where name = LEFT('namexxx',length(name));*/
 
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Travesía")
-                .nombreVia("de la Plazuela Nueva")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Travesía")
+                        .nombreVia("de la Plazuela Nueva")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
 
     }
 
@@ -352,17 +362,19 @@ public class ComunidadDaoDbPreDevTest {
     {
         /*select name from metal where name like 'param%';*/
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("de la Plazu")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("de la Plazu")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -372,17 +384,19 @@ public class ComunidadDaoDbPreDevTest {
     {
         /*select name from metal where name = RIGHT('xxxname',length(name));*/
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("Atajo de la Plazuela")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("Atajo de la Plazuela")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -393,17 +407,19 @@ public class ComunidadDaoDbPreDevTest {
         /* select name from metal where name like '%param%';*/
 
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("Plazu")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("Plazu")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidad);
         assertThat(comunidades.size(), is(1));
         assertThat(comunidades, not(hasItem(comunidad))); // difieren en el nombre_via.
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -415,31 +431,34 @@ public class ComunidadDaoDbPreDevTest {
         // Diferencia con test_7: datos de password encriptados en DB.
 
         final Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("de la Mujer de la Plazuela")
-                .numero((short) 10)
-                .sufijoNumero("Bis")
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("de la Mujer de la Plazuela")
+                        .numero((short) 10)
+                        .sufijoNumero("Bis")
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
-        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, juan, "portal1", "esc2", "planta3", "puerta12",
-                PROPIETARIO.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, juan, "portal1", "esc2", "planta3", "puerta12");
         boolean rowInserted = sujetosService.regComuAndUserComu(userComu);
         assertThat(rowInserted, is(true));
 
         // Datos de comunidad de búsqueda.
         Comunidad comunidadSearch = new Comunidad.ComunidadBuilder()
-                .tipoVia("Ronda")
-                .nombreVia("de la Plazuela")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Ronda")
+                        .nombreVia("de la Plazuela")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = comunidadDao.searchComunidadThree(comunidadSearch);
         assertThat(comunidades.size(), is(2));
-        assertThat(comunidades.get(0).getTipoVia(), is("Calle"));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Mujer de la Plazuela"));
-        assertThat(comunidades.get(1).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(1).getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Calle"));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Mujer de la Plazuela"));
+        assertThat(comunidades.get(1).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(1).getDomicilio().getNombreVia(), is("de la Plazuela"));
     }
 }

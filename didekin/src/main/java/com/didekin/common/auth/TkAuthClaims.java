@@ -20,7 +20,7 @@ import static com.didekin.userservice.auth.TkParamNames.audience;
 import static com.didekin.userservice.auth.TkParamNames.expiration;
 import static com.didekin.userservice.auth.TkParamNames.issuer;
 import static com.didekin.userservice.auth.TkParamNames.subject;
-import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
+import static com.didekinlib.model.common.ValidDataPatterns.EMAIL;
 import static java.util.Collections.singletonList;
 
 /**

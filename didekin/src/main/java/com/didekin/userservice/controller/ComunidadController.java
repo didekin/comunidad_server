@@ -3,7 +3,7 @@ package com.didekin.userservice.controller;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.model.comunidad.http.ComunidadServConstant.COMUNIDAD_READ;
-import static com.didekinlib.model.comunidad.http.ComunidadServConstant.COMUNIDAD_SEARCH;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadServConstant.COMUNIDAD_READ;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadServConstant.COMUNIDAD_SEARCH;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 

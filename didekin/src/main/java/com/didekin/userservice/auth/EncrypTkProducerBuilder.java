@@ -127,11 +127,11 @@ public final class EncrypTkProducerBuilder implements BeanBuilder<EncrypTkProduc
          * @return string with pattern : <header>.<encrypted key>.<initialization vector>.<ciphertext>.<authentication tag>,
          * where <encrypted key> is in the case of encryption with a DIRECT generated key.
          * Example:
-         *  "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0
-         *  .
-         *  ._L86WbOFHY-3g0E2EXejJg
-         *  .UB1tHZZq0TYFTZKPVZXY83GRxHz770Aq7BuMCEbNnaSC5cVNOLEOgBQrOQVJmVL-9Ke9KRSwuq7MmVcA2EB_0xRBr_YbzmMWbpUcTQUFtE5OZOFiCsxL5Yn0gA_DDLZboivpoSqndQRP-44mWVkM1A
-         *  .RIvTWRrsyoJ1mpl8vUhQDQ"
+         * "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0
+         * .
+         * ._L86WbOFHY-3g0E2EXejJg
+         * .UB1tHZZq0TYFTZKPVZXY83GRxHz770Aq7BuMCEbNnaSC5cVNOLEOgBQrOQVJmVL-9Ke9KRSwuq7MmVcA2EB_0xRBr_YbzmMWbpUcTQUFtE5OZOFiCsxL5Yn0gA_DDLZboivpoSqndQRP-44mWVkM1A
+         * .RIvTWRrsyoJ1mpl8vUhQDQ"
          */
         @Override
         public String getEncryptedTkStr()

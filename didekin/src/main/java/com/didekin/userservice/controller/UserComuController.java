@@ -3,9 +3,9 @@ package com.didekin.userservice.controller;
 import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +20,18 @@ import java.util.List;
 
 import static com.didekinlib.http.CommonServConstant.ACCEPT_LANGUAGE;
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.COMUNIDAD_OLDEST_USER;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.COMUNIDAD_WRITE;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.COMUS_BY_USER;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.REG_COMU_AND_USER_AND_USERCOMU;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.REG_COMU_USERCOMU;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.REG_USERCOMU;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.REG_USER_USERCOMU;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMUS_BY_COMU;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMUS_BY_USER;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_DELETE;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_MODIFY;
-import static com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_READ;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.COMUNIDAD_OLDEST_USER;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.COMUNIDAD_WRITE;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.COMUS_BY_USER;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.REG_COMU_AND_USER_AND_USERCOMU;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.REG_COMU_USERCOMU;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.REG_USERCOMU;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.REG_USER_USERCOMU;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMUS_BY_COMU;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMUS_BY_USER;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_DELETE;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_MODIFY;
+import static com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadServConstant.USERCOMU_READ;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -115,7 +115,7 @@ public class UserComuController extends AppControllerAbstract {
         return usuarioManager.modifyUserComu
                 (
                         new UsuarioComunidad.UserComuBuilder(
-                                userComu.getComunidad(),
+                                userComu.getEntidad(),
                                 usuarioManager.checkHeaderGetUserData(authHeader)
                         ).userComuRest(userComu)
                                 .build()
@@ -138,7 +138,7 @@ public class UserComuController extends AppControllerAbstract {
         logger.debug("regComuAndUserComu()");
 
         Usuario usuario = usuarioManager.checkHeaderGetUserData(accessTk);
-        UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), usuario)
+        UsuarioComunidad usuarioComBis = new UsuarioComunidad.UserComuBuilder(usuarioCom.getEntidad(), usuario)
                 .userComuRest(usuarioCom).build();
         return usuarioManager.regComuAndUserComu(usuarioComBis);
     }
@@ -158,7 +158,7 @@ public class UserComuController extends AppControllerAbstract {
         logger.debug("regUserComu()");
         Usuario usuario = usuarioManager.checkHeaderGetUserData(accessTk);
         UsuarioComunidad usuarioComBis =
-                new UsuarioComunidad.UserComuBuilder(usuarioComunidad.getComunidad(), usuario)
+                new UsuarioComunidad.UserComuBuilder(usuarioComunidad.getEntidad(), usuario)
                         .userComuRest(usuarioComunidad)
                         .build();
         return usuarioManager.regUserComu(usuarioComBis);

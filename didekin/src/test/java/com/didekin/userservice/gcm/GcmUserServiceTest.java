@@ -29,7 +29,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.http.retrofit.GsonUtil.objectToJsonStr;
-import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
+import static com.didekinlib.model.relacion.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.CoreMatchers.is;
@@ -97,7 +97,7 @@ public class GcmUserServiceTest {
         // Precondition:
         Assert.assertThat(luis.getGcmToken(), is("luis_gcm_token"));
         // Exec.
-        gcmService.sendGcmMsgToUserComu(new GcmRequestData(incidencia_open_type, ronda_plazuela_10bis.getC_Id()));
+        gcmService.sendGcmMsgToUserComu(new GcmRequestData(incidencia_open_type, ronda_plazuela_10bis.getId()));
         // Check
         waitAtMost(8, SECONDS).until(() -> usuarioManager.getUserData(luis.getUserName()).getGcmToken().equals(REGISTRATION_ID_1_B));
     }

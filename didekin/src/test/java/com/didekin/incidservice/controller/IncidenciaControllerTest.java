@@ -12,15 +12,15 @@ import com.didekin.incidservice.repository.IncidenciaManager;
 import com.didekin.incidservice.repository.IncidenciaManagerConfiguration;
 import com.didekin.incidservice.repository.UserManagerConnector;
 import com.didekinlib.http.retrofit.HttpHandler;
-import com.didekinlib.model.incidencia.dominio.Avance;
-import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
-import com.didekinlib.model.incidencia.http.IncidenciaServEndPoints;
+import com.didekinlib.model.relacion.incidencia.dominio.Avance;
+import com.didekinlib.model.relacion.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.incidencia.http.IncidenciaServEndPoints;
 import com.didekinlib.model.usuario.Usuario;
 
 import org.junit.Before;
@@ -60,7 +60,7 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
@@ -195,7 +195,6 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK: usuario 'adm', con incidImportancia NO registrada, modifica incidencia e inserta importancia.
         // Premisas.
-        assertThat(luis_plazuelas_10bis.hasAdministradorAuthority(), is(true));
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         IncidImportancia incidImportancia0 = ENDPOINT.seeIncidImportancia(accessToken, 3L).blockingGet().body().getIncidImportancia();
         // No hay registro: fechaAlta == null.
@@ -261,7 +260,7 @@ abstract class IncidenciaControllerTest {
         // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
         Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 4L).blockingGet().body();
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getId()), is(false));
         // Nuevos datos.
         resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
                 .copyResolucion(resolucion)
@@ -335,7 +334,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso OK.
         IncidenciaUser incidUserComu =
-                doIncidenciaUser(doIncidenciaWithId(pedro.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 24), pedro);
+                doIncidenciaUser(doIncidenciaWithId(pedro.getUserName(), 1L, ronda_plazuela_10bis.getId(), (short) 24), pedro);
 
         IncidComment comment = doComment("newComment", incidUserComu.getIncidencia(), pedro);
         assertThat(ENDPOINT.regIncidComment(
@@ -351,7 +350,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso ServiceException: USERCOMU_WRONG_INIT.
         IncidenciaUser incidUserComu =
-                doIncidenciaUser(doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 24), luis);
+                doIncidenciaUser(doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getId(), (short) 24), luis);
         IncidComment comment = doComment("Comment_DESC", incidUserComu.getIncidencia(), pedro);
 
         Response<Integer> response = ENDPOINT.regIncidComment(
@@ -370,7 +369,7 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: la incidencia no existe en BD.
         IncidenciaUser incidUserComu = doIncidenciaUser(
-                doIncidenciaWithId(luis.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 24), luis);
+                doIncidenciaWithId(luis.getUserName(), 999L, calle_plazuela_23.getId(), (short) 24), luis);
         IncidComment comment = doComment("Comment_DESC", incidUserComu.getIncidencia(), luis);
         Response<Integer> response = ENDPOINT.regIncidComment(
                 getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
@@ -402,7 +401,7 @@ abstract class IncidenciaControllerTest {
         // Caso OK: usuario NO adm registrado en comunidad. No existe registro previo de incidencia.
         assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), 4L), is(false));
         // Data.
-        Incidencia incidencia = doIncidencia(luis.getUserName(), "incidencia_6_4", calle_plazuela_23.getC_Id(), (short) 14);
+        Incidencia incidencia = doIncidencia(luis.getUserName(), "incidencia_6_4", calle_plazuela_23.getId(), (short) 14);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
                 .importancia((short) 3)
                 .build();
@@ -458,7 +457,7 @@ abstract class IncidenciaControllerTest {
     public void testRegResolucion_1()
     {
         // Caso OK.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 2L, pedro_lafuente.getComunidad().getC_Id(), (short) 22);
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 2L, pedro_lafuente.getEntidad().getId(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia, pedro.getUserName(),
                 "resol_incid_2_2",
                 1111,
@@ -477,8 +476,8 @@ abstract class IncidenciaControllerTest {
     {
         // Caso: usuario sin funciones administrador.
         // Preconditions
-        assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getC_Id()), is(false));
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
+        assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getId()), is(false));
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getId(), (short) 22);
         Resolucion resolucion = doResolucion(incidencia,
                 luis.getUserName(),
                 "resol_incid_5_4",
@@ -498,7 +497,7 @@ abstract class IncidenciaControllerTest {
     public void testRegResolucion_3() throws IOException
     {
         // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getC_Id(), (short) 22);
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getId(), (short) 22);
         Resolucion resolucion = doResolucion(
                 incidencia,
                 luis.getUserName(),
@@ -585,7 +584,7 @@ abstract class IncidenciaControllerTest {
                 ENDPOINT.
                         seeIncidImportancia(
                                 getUserConnector()
-                                        .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getC_Id()
+                                        .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getId()
                         )
                         .blockingGet().body();
         IncidImportancia incidImportancia = bundle.getIncidImportancia();
@@ -620,7 +619,7 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName()), calle_olmo_55.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(paco.getUserName()), calle_olmo_55.getId()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(1));
     }
@@ -633,7 +632,7 @@ abstract class IncidenciaControllerTest {
     {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsClosedByComu(
-                        getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), calle_el_escorial.getC_Id()
+                        getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), calle_el_escorial.getId()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(0));
     }
@@ -648,7 +647,7 @@ abstract class IncidenciaControllerTest {
         List<IncidenciaUser> incidencias =
                 ENDPOINT.seeIncidsOpenByComu(
                         getUserConnector()
-                                .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getC_Id()
+                                .insertTokenGetHeaderStr(pedro.getUserName()), ronda_plazuela_10bis.getId()
                 ).blockingGet().body();
         assertThat(incidencias.size(), is(2));
     }
@@ -677,7 +676,7 @@ abstract class IncidenciaControllerTest {
         // Caso: usuario no relacionado con la comunidad.
         Response<List<IncidenciaUser>> response = ENDPOINT.seeIncidsOpenByComu(
                 getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()),
-                calle_plazuela_23.getC_Id())
+                calle_plazuela_23.getId())
                 .blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));

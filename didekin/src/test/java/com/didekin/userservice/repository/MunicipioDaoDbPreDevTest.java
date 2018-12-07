@@ -2,7 +2,7 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
-import com.didekinlib.model.comunidad.Municipio;
+import com.didekinlib.model.entidad.Municipio;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

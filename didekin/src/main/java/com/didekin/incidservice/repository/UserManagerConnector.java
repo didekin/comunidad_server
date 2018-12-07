@@ -3,9 +3,8 @@ package com.didekin.incidservice.repository;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,8 @@ public class UserManagerConnector {
     public boolean checkAuthorityInComunidad(String userName, long comunidadId) throws ServiceException
     {
         logger.debug("checkAuthorityInComunidad()");
-        return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();
+        /*return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();*/
+        return false; // TODO
     }
 
     public String checkHeaderGetUserName(String httpHeaderIn)
@@ -84,12 +84,6 @@ public class UserManagerConnector {
                 .copyUsuario(usuarioManager.getUserData(userName))
                 .password(null)
                 .build();
-    }
-
-    UsuarioComunidad completeUserAndComuRoles(String userName, long comunidadId)
-    {
-        logger.debug("completeWithUserComuRoles()");
-        return usuarioManager.completeWithUserComuRoles(userName, comunidadId);
     }
 
     // ==================================  FOR TESTS =================================

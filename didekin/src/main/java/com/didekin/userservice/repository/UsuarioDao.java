@@ -2,11 +2,9 @@ package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
 import com.didekinlib.gcm.GcmTokensHolder;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static com.didekin.userservice.repository.ComunidadDao.doDomicilio;
 import static com.didekin.userservice.repository.UsuarioSql.COMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.DELETE_GCM_TOKEN;
@@ -43,10 +42,8 @@ import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_COMU;
-import static com.didekin.userservice.repository.UsuarioSql.USERCOMU_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_BY_EMAIL;
 import static com.didekin.userservice.repository.UsuarioSql.USER_BY_ID;
-import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static java.lang.Boolean.TRUE;
@@ -73,13 +70,6 @@ public class UsuarioDao {
     //    ============================================================
     //    ..........................  METHODS ........................
     //    ============================================================
-
-    private static UsuarioComunidad doUserComuOnlyRoles(ResultSet rs, Usuario usuario, Comunidad comunidad) throws SQLException
-    {
-        return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
-                .roles(rs.getString("roles"))
-                .build();
-    }
 
     private static Usuario doUsuarioNoPswd(ResultSet rs) throws SQLException
     {
@@ -116,10 +106,10 @@ public class UsuarioDao {
     {
         logger.info("deleteUserComunidad(),jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
 
-        Comunidad comunidad = usuarioComunidad.getComunidad();
+        Comunidad comunidad = usuarioComunidad.getEntidad();
 
         int rowsDeleted = jdbcTemplate.update(DELETE_USER_COMUNIDAD.toString(),
-                comunidad.getC_Id(),
+                comunidad.getId(),
                 usuarioComunidad.getUsuario().getuId());
 
         if (!(rowsDeleted == 1)) {
@@ -223,24 +213,6 @@ public class UsuarioDao {
         }
     }
 
-    UsuarioComunidad getUserComuRolesByUserName(String userName, long comunidadId)
-    {
-        logger.debug("getUserComuRolesByUserName()");
-        try {
-            return jdbcTemplate.queryForObject(
-                    USERCOMU_BY_EMAIL.toString(),
-                    new Object[]{userName, comunidadId},
-                    (rs, rowNum) -> doUserComuOnlyRoles(
-                            rs,
-                            doUsuarioNoPswd(rs),
-                            new Comunidad.ComunidadBuilder().c_id(rs.getLong("c_id")).build()
-                    )
-            );
-        } catch (EmptyResultDataAccessException e) {
-            throw new ServiceException(USERCOMU_WRONG_INIT);
-        }
-    }
-
     int modifyUserComu(UsuarioComunidad userComu)
     {
         logger.info("modifyUserComu()");
@@ -250,8 +222,7 @@ public class UsuarioDao {
                 userComu.getEscalera(),
                 userComu.getPlanta(),
                 userComu.getPuerta(),
-                userComu.getRoles(),
-                userComu.getComunidad().getC_Id(),
+                userComu.getEntidad().getId(),
                 userComu.getUsuario().getuId());
     }
 
@@ -357,7 +328,7 @@ public class UsuarioDao {
     boolean updateUserTokensById(Usuario usuario, String tokenAuthBCrypted)
     {
         logger.debug("updateUserTokensById()");
-        if (jdbcTemplate.update(UPDATE_TOKENS_GCM_AUTH_BY_ID.toString(),usuario.getGcmToken(), tokenAuthBCrypted, usuario.getuId()) == 1) {
+        if (jdbcTemplate.update(UPDATE_TOKENS_GCM_AUTH_BY_ID.toString(), usuario.getGcmToken(), tokenAuthBCrypted, usuario.getuId()) == 1) {
             return TRUE;
         }
         throw new ServiceException(USER_NOT_FOUND);
@@ -381,7 +352,6 @@ public class UsuarioDao {
                 .escalera(rs.getString("escalera"))
                 .planta(rs.getString("planta"))
                 .puerta(rs.getString("puerta"))
-                .roles(rs.getString("roles"))
                 .build();
     }
 
@@ -412,17 +382,7 @@ public class UsuarioDao {
 
             Comunidad comunidad = new Comunidad.ComunidadBuilder()
                     .c_id(rs.getLong("c_id"))
-                    .tipoVia(rs.getString("tipo_via"))
-                    .nombreVia(rs.getString("nombre_via"))
-                    .numero(rs.getShort("numero"))
-                    .sufijoNumero(rs.getString("sufijo_numero"))
-                    .municipio(
-                            new Municipio(
-                                    rs.getShort("m_cd"),
-                                    rs.getString("m_nombre"),
-                                    new Provincia(
-                                            rs.getShort("pr_id"),
-                                            rs.getString("pr_nombre"))))
+                    .domicilio(doDomicilio(rs))
                     .build();
 
             return doUsuarioComunidadFull(rs, usuario, comunidad);

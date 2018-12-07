@@ -4,16 +4,16 @@ package com.didekin.incidservice.repository;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.gcm.GcmUserServiceIf;
 import com.didekinlib.gcm.GcmRequestData;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +24,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import static com.didekinlib.model.incidencia.dominio.Resolucion.doResolucionModifiedWithNewAvance;
-import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
-import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
-import static com.didekinlib.model.incidencia.gcm.GcmKeyValueIncidData.resolucion_open_type;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
+
+import static com.didekinlib.model.relacion.incidencia.dominio.Resolucion.doResolucionModifiedWithNewAvance;
+import static com.didekinlib.model.relacion.incidencia.gcm.GcmKeyValueIncidData.incidencia_closed_type;
+import static com.didekinlib.model.relacion.incidencia.gcm.GcmKeyValueIncidData.incidencia_open_type;
+import static com.didekinlib.model.relacion.incidencia.gcm.GcmKeyValueIncidData.resolucion_open_type;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
@@ -320,7 +321,6 @@ public class IncidenciaManager {
                 })
                 .map(incidenciaOut -> incidenciaDao.regIncidImportancia(
                         new IncidImportancia.IncidImportanciaBuilder(regIncidencia(incidenciaOut))
-                                .usuarioComunidad(usuarioConnector.completeUserAndComuRoles(userName, incidenciaOut.getComunidadId()))
                                 .importancia(incidImportancia.getImportancia())
                                 .build()
                         )
@@ -407,7 +407,6 @@ public class IncidenciaManager {
                 .findFirst()
                 .orElseGet(() -> {
                             Incidencia incidenciaIn = seeIncidenciaById(incidenciaId);
-                            UsuarioComunidad usuarioComunidad = getUsuarioConnector().completeUserAndComuRoles(userNameInSession, incidenciaIn.getComunidadId());
                             return new IncidAndResolBundle(
                                     new IncidImportancia.IncidImportanciaBuilder(incidenciaIn)
                                             .usuarioComunidad(
@@ -416,9 +415,8 @@ public class IncidenciaManager {
                                                                     .copyComunidadNonNullValues(incidenciaIn.getComunidad())
                                                                     .build(),
                                                             new Usuario.UsuarioBuilder()
-                                                                    .copyUsuario(usuarioComunidad.getUsuario())
+                                                                    .copyUsuario(getUsuarioConnector().completeUser(userNameInSession))
                                                                     .build())
-                                                            .roles(usuarioComunidad.getRoles())
                                                             .build()
                                             ).build(),
                                     incidenciaDao.countResolucionByIncid(incidenciaId) > 0
@@ -516,7 +514,7 @@ public class IncidenciaManager {
     {
         logger.debug("seeUserComusImportancia()");
         return of(incidenciaId)
-                .filter(incidenciaPk -> usuarioConnector.checkUserInComunidad(userName, seeIncidenciaById(incidenciaPk).getComunidad().getC_Id()))
+                .filter(incidenciaPk -> usuarioConnector.checkUserInComunidad(userName, seeIncidenciaById(incidenciaPk).getComunidad().getId()))
                 .map(incidenciaPk -> incidenciaDao.seeUserComusImportancia(incidenciaId))
                 .findFirst().orElse(new ArrayList<>(0));
     }

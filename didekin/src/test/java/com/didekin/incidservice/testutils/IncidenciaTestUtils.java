@@ -1,11 +1,10 @@
 package com.didekin.incidservice.testutils;
-
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.incidencia.dominio.AmbitoIncidencia;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.incidencia.dominio.AmbitoIncidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
 import com.didekinlib.model.usuario.Usuario;
 
 import java.sql.Timestamp;
@@ -67,7 +66,7 @@ public final class IncidenciaTestUtils {
     {
         Incidencia incidenciaIn = new Incidencia.IncidenciaBuilder()
                 .incidenciaId(incidencia.getIncidenciaId())
-                .comunidad(new Comunidad.ComunidadBuilder().c_id(incidencia.getComunidad().getC_Id()).build())
+                .comunidad(new Comunidad.ComunidadBuilder().c_id(incidencia.getComunidad().getId()).build())
                 .build();
 
         return new IncidComment.IncidCommentBuilder().descripcion(descComment)

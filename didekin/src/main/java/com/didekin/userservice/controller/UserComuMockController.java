@@ -4,7 +4,7 @@ import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

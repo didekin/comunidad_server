@@ -6,10 +6,10 @@ import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.mail.UsuarioMailService;
 import com.didekin.userservice.mail.UsuarioMailServiceIf;
 import com.didekinlib.gcm.GcmTokensHolder;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuario.http.AuthHeaderToken;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.jose4j.jwt.MalformedClaimException;
 import org.slf4j.Logger;
@@ -20,7 +20,6 @@ import org.springframework.mail.MailException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -33,10 +32,10 @@ import static com.didekin.common.repository.ServiceException.DUPLICATE_ENTRY;
 import static com.didekin.common.repository.ServiceException.GCM_TOKEN_KEY;
 import static com.didekin.common.repository.ServiceException.USER_NAME;
 import static com.didekinlib.http.exception.GenericExceptionMsg.DATABASE_ERROR;
-import static com.didekinlib.model.common.dominio.ValidDataPatterns.EMAIL;
-import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.common.ValidDataPatterns.EMAIL;
+import static com.didekinlib.model.common.ValidDataPatterns.PASSWORD;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_WRONG;
@@ -48,7 +47,6 @@ import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_DUPLICA
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuario.http.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.model.usuariocomunidad.Rol.getRolFromFunction;
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
 import static java.util.stream.Stream.of;
@@ -95,13 +93,7 @@ public class UsuarioManager {
 
     //    ============================================================
     //    ................... Methods ................
-    /*    ============================================================*/
-
-    public UsuarioComunidad completeWithUserComuRoles(String userName, long comunidadId) throws ServiceException
-    {
-        logger.debug("completeWithUserComuRoles()");
-        return usuarioDao.getUserComuRolesByUserName(userName, comunidadId);
-    }
+    //    ============================================================
 
     public boolean deleteUser(String userName) throws ServiceException
     {
@@ -126,7 +118,7 @@ public class UsuarioManager {
     {
         logger.info("deleteUserComunidad()");
 
-        final Comunidad comunidad = usuarioComunidad.getComunidad();
+        final Comunidad comunidad = usuarioComunidad.getEntidad();
         final String userName = usuarioComunidad.getUsuario().getUserName();
 
         int rowsDeleted = usuarioDao.deleteUserComunidad(usuarioComunidad);
@@ -177,7 +169,7 @@ public class UsuarioManager {
     {
         logger.info("getRolesSecurity()");
 
-        List<String> functionalRoles = usuarioDao.getAllRolesFunctionalUser(usuario.getUserName());
+        /*List<String> functionalRoles = usuarioDao.getAllRolesFunctionalUser(usuario.getUserName());
         List<String> authorities = new ArrayList<>();
 
         for (String functionalRole : functionalRoles) {
@@ -186,7 +178,8 @@ public class UsuarioManager {
                 authorities.add(authority);
             }
         }
-        return authorities;
+        return authorities;*/
+        return null; // TODO: descomentar.
     }
 
     /**
@@ -386,7 +379,7 @@ public class UsuarioManager {
         // Generate a new password.
         final Usuario usuarioPswdRaw = doUserRawPswd(usuarioCom.getUsuario());
         final UsuarioComunidad userComEncryptPswd =
-                new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
+                new UsuarioComunidad.UserComuBuilder(usuarioCom.getEntidad(), doUserEncryptPswd(usuarioPswdRaw))
                         .userComuRest(usuarioCom).build();
 
         long pkUsuario = 0;
@@ -398,7 +391,7 @@ public class UsuarioManager {
             conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
-            pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
+            pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getEntidad(), conn);
 
             Usuario userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
@@ -431,7 +424,7 @@ public class UsuarioManager {
         try {
             conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
-            pkComunidad = comunidadDao.insertComunidad(usuarioCom.getComunidad(), conn);
+            pkComunidad = comunidadDao.insertComunidad(usuarioCom.getEntidad(), conn);
 
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
             UsuarioComunidad userComuWithPks = new UsuarioComunidad.UserComuBuilder(comuWithPk, usuario)
@@ -453,7 +446,7 @@ public class UsuarioManager {
 
         final Usuario usuarioPswdRaw = doUserRawPswd(userComu.getUsuario());
         final UsuarioComunidad userComEncryptPswd =
-                new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(usuarioPswdRaw))
+                new UsuarioComunidad.UserComuBuilder(userComu.getEntidad(), doUserEncryptPswd(usuarioPswdRaw))
                         .userComuRest(userComu).build();
 
         long pkUsuario = 0;
@@ -467,7 +460,7 @@ public class UsuarioManager {
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             final Usuario usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             final UsuarioComunidad userComuTris = new UsuarioComunidad.UserComuBuilder(
-                    userComu.getComunidad(), usuarioPk)
+                    userComu.getEntidad(), usuarioPk)
                     .userComuRest(userComu)
                     .build();
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuTris, conn);
@@ -551,7 +544,8 @@ public class UsuarioManager {
     public boolean checkComuDataModificationPower(Usuario user, Comunidad comunidad) throws ServiceException
     {
         logger.debug("checkIncidModificationPower()");
-        return isOldestUserComu(user, comunidad.getC_Id()) || completeWithUserComuRoles(user.getUserName(), comunidad.getC_Id()).hasAdministradorAuthority();
+        /* return isOldestUserComu(user, comunidad.getId()) || completeWithUserComuRoles(user.getUserName(), comunidad.getId()).hasAdministradorAuthority();*/
+        return false; // TODO
     }
 
 

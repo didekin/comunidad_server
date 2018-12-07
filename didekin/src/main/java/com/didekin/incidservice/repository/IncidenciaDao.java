@@ -1,18 +1,21 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.incidencia.dominio.AmbitoIncidencia;
-import com.didekinlib.model.incidencia.dominio.Avance;
-import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.incidencia.dominio.AmbitoIncidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.Avance;
+import com.didekinlib.model.relacion.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +55,12 @@ import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_CLOSE
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_INCIDS_OPEN_BY_COMU;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_RESOLUCION;
 import static com.didekin.incidservice.repository.IncidenciaSql.SEE_USER_COMUS_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekin.userservice.repository.ComunidadDao.doDomicilioNoMunicipio;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Objects.requireNonNull;
@@ -107,12 +111,26 @@ public class IncidenciaDao {
 
     private static IncidAndResolBundle doIncidImpResolView(ResultSet rs) throws SQLException
     {
-        Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .c_id(rs.getLong("c_id"))
+        Domicilio domicilio = new Domicilio.DomicilioBuilder()
                 .tipoVia(rs.getString("comunidad_tipo_via"))
                 .nombreVia(rs.getString("comunidad_nombre_via"))
                 .numero(rs.getShort("comunidad_numero"))
                 .sufijoNumero(rs.getString("comunidad_sufijo"))
+                .municipio(
+                        new Municipio(
+                                rs.getShort("m_cd"),
+                                rs.getString("m_nombre"),
+                                new Provincia(
+                                        rs.getShort("pr_id"),
+                                        rs.getString("pr_nombre")
+                                )
+                        )
+                )
+                .build();
+
+        Comunidad comunidad = new Comunidad.ComunidadBuilder()
+                .c_id(rs.getLong("c_id"))
+                .domicilio(domicilio)
                 .build();
 
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(
@@ -128,7 +146,6 @@ public class IncidenciaDao {
                         new UsuarioComunidad.UserComuBuilder(
                                 comunidad,
                                 doUsuarioFromDb(rs))
-                                .roles(rs.getString("roles"))
                                 .build())
                 .importancia(rs.getShort("importancia"))
                 .fechaAlta(rs.getTimestamp("fecha_alta"))
@@ -282,7 +299,7 @@ public class IncidenciaDao {
         updatedRow = jdbcTemplate.update(MODIFY_INCID_IMPORTANCIA.toString(),
                 incidImportancia.getImportancia(),
                 incidImportancia.getIncidencia().getIncidenciaId(),
-                incidImportancia.getIncidencia().getComunidad().getC_Id(),
+                incidImportancia.getIncidencia().getComunidad().getId(),
                 incidImportancia.getUserComu().getUsuario().getuId());
         return updatedRow;
     }
@@ -310,7 +327,7 @@ public class IncidenciaDao {
         try {
             insertedRow = jdbcTemplate.update(REG_INCID_COMMENT.toString(),
                     comment.getIncidencia().getIncidenciaId(),
-                    comment.getIncidencia().getComunidad().getC_Id(),
+                    comment.getIncidencia().getComunidad().getId(),
                     comment.getRedactor().getuId(),
                     comment.getDescripcion());
         } catch (DataAccessException de) {
@@ -333,7 +350,7 @@ public class IncidenciaDao {
              PreparedStatement regIncidencia = conn.prepareStatement(REG_INCID.toString(), RETURN_GENERATED_KEYS)) {
 
             regIncidencia.setNull(1, JDBCType.INTEGER.getVendorTypeNumber());
-            regIncidencia.setLong(2, incidencia.getComunidad().getC_Id());
+            regIncidencia.setLong(2, incidencia.getComunidad().getId());
             regIncidencia.setString(3, incidencia.getUserName());
             regIncidencia.setString(4, incidencia.getDescripcion());
             regIncidencia.setShort(5, incidencia.getAmbitoIncidencia().getAmbitoId());
@@ -357,7 +374,7 @@ public class IncidenciaDao {
         try {
             rowInserted = jdbcTemplate.update(REG_INCID_IMPORTANCIA.toString(),
                     incidImportancia.getIncidencia().getIncidenciaId(),
-                    incidImportancia.getUserComu().getComunidad().getC_Id(),
+                    incidImportancia.getUserComu().getEntidad().getId(),
                     incidImportancia.getUserComu().getUsuario().getuId(),
                     incidImportancia.getImportancia());
         } catch (DataAccessException de) {
@@ -429,10 +446,7 @@ public class IncidenciaDao {
                             .incidenciaId(rs.getLong("incid_id"))
                             .comunidad(new Comunidad.ComunidadBuilder()
                                     .c_id(rs.getLong("c_id"))
-                                    .tipoVia(rs.getString("tipo_via"))
-                                    .nombreVia(rs.getString("nombre_via"))
-                                    .numero(rs.getShort("numero"))
-                                    .sufijoNumero(rs.getString("sufijo_numero"))
+                                    .domicilio(doDomicilioNoMunicipio(rs))
                                     .build())
                             .userName(rs.getString("user_name"))
                             .descripcion(rs.getString("descripcion"))

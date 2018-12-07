@@ -1,9 +1,9 @@
 package com.didekin.userservice.repository;
 
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class UserMockManager {
 
         // Keep the password passed in the original usuario.
         final UsuarioComunidad userComEncryptPswd =
-                new UsuarioComunidad.UserComuBuilder(usuarioCom.getComunidad(), doUserEncryptPswd(usuarioCom.getUsuario()))
+                new UsuarioComunidad.UserComuBuilder(usuarioCom.getEntidad(), doUserEncryptPswd(usuarioCom.getUsuario()))
                         .userComuRest(usuarioCom).build();
 
         long pkUsuario = 0;
@@ -79,7 +79,7 @@ public class UserMockManager {
             conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
             conn.setAutoCommit(false);
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
-            pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getComunidad(), conn);
+            pkComunidad = comunidadDao.insertComunidad(userComEncryptPswd.getEntidad(), conn);
 
             userWithPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             Comunidad comuWithPk = new Comunidad.ComunidadBuilder().c_id(pkComunidad).build();
@@ -112,7 +112,7 @@ public class UserMockManager {
 
         // Keep the password passed in the original usuario.
         final UsuarioComunidad userComEncryptPswd =
-                new UsuarioComunidad.UserComuBuilder(userComu.getComunidad(), doUserEncryptPswd(userComu.getUsuario()))
+                new UsuarioComunidad.UserComuBuilder(userComu.getEntidad(), doUserEncryptPswd(userComu.getUsuario()))
                         .userComuRest(userComu).build();
 
         long pkUsuario = 0;
@@ -127,7 +127,7 @@ public class UserMockManager {
             pkUsuario = usuarioDao.insertUsuario(userComEncryptPswd.getUsuario(), conn);
             usuarioPk = new Usuario.UsuarioBuilder().uId(pkUsuario).build();
             final UsuarioComunidad userComuTris = new UsuarioComunidad.UserComuBuilder(
-                    userComu.getComunidad(), usuarioPk)
+                    userComu.getEntidad(), usuarioPk)
                     .userComuRest(userComu)
                     .build();
             userComuInserted = comunidadDao.insertUsuarioComunidad(userComuTris, conn);

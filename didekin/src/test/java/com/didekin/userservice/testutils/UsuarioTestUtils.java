@@ -6,22 +6,20 @@ import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.auth.TkParamNames;
 import com.didekin.userservice.repository.PswdGenerator.AsciiInterval;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.didekin.userservice.auth.TkParamNames.subject;
 import static com.didekin.userservice.repository.PswdGenerator.AsciiInterval.values;
-import static com.didekinlib.model.common.dominio.ValidDataPatterns.PASSWORD;
+import static com.didekinlib.model.common.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
-import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
@@ -84,74 +82,84 @@ public final class UsuarioTestUtils {
 
     public static final Comunidad ronda_plazuela_10bis = new Comunidad.ComunidadBuilder()
             .c_id(1L)
-            .tipoVia("Ronda")
-            .nombreVia("de la Plazuela")
-            .numero((short) 10)
-            .sufijoNumero("bis")
-            .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Ronda")
+                    .nombreVia("de la Plazuela")
+                    .numero((short) 10)
+                    .sufijoNumero("bis")
+                    .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                    .build())
             .build();
 
     public static final Comunidad calle_la_fuente_11 = new Comunidad.ComunidadBuilder()
             .c_id(2L)
-            .tipoVia("Calle")
-            .nombreVia("de la Fuente")
-            .numero((short) 11)
-            .sufijoNumero("")
-            .municipio(new Municipio((short) 66, new Provincia((short) 3)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("de la Fuente")
+                    .numero((short) 11)
+                    .sufijoNumero("")
+                    .municipio(new Municipio((short) 66, new Provincia((short) 3)))
+                    .build())
             .build();
 
     public static final Comunidad calle_el_escorial = new Comunidad.ComunidadBuilder()
             .c_id(3L)
-            .tipoVia("Calle")
-            .nombreVia("de El Escorial")
-            .numero((short) 2)
-            .municipio(new Municipio((short) 27, new Provincia((short) 4)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("de El Escorial")
+                    .numero((short) 2)
+                    .municipio(new Municipio((short) 27, new Provincia((short) 4)))
+                    .build())
             .build();
 
     public static final Comunidad calle_plazuela_23 = new Comunidad.ComunidadBuilder()
             .c_id(4L)
-            .tipoVia("Calle")
-            .nombreVia("de la Plazuela")
-            .numero((short) 23)
-            .sufijoNumero("")
-            .municipio(new Municipio((short) 52, "Motilleja", new Provincia((short) 2, "Albacete")))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("de la Plazuela")
+                    .numero((short) 23)
+                    .sufijoNumero("")
+                    .municipio(new Municipio((short) 52, "Motilleja", new Provincia((short) 2, "Albacete")))
+                    .build())
             .build();
 
     public static final Comunidad calle_olmo_55 = new Comunidad.ComunidadBuilder()
             .c_id(6L)
-            .tipoVia("Calle")
-            .nombreVia("del Olmo")
-            .numero((short) 55)
-            .sufijoNumero("")
-            .municipio(new Municipio((short) 54, new Provincia((short) 2)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("del Olmo")
+                    .numero((short) 55)
+                    .sufijoNumero("")
+                    .municipio(new Municipio((short) 54, new Provincia((short) 2)))
+                    .build())
             .build();
 
     public static final String gcm_token_1 =
             "cuOPgcbcLOk:APA91bG5SNHM79UP_4-Du1p3aRL1aphofK5GcTKjNslh3Zgm1fPH2yI031w1BV6ukVfCQtfdpAk-OlKo2hS6_zY0fEx9ZWpDWNPMWmCIRPK-XMOpysWFlswa0k3ou8_78zvl5doGUam9";
 
     public static final UsuarioComunidad pedro_plazuelas_10bis = makeUsuarioComunidad(
-            ronda_plazuela_10bis, pedro, "Centro", null, "3", "J", ADMINISTRADOR.function);
+            ronda_plazuela_10bis, pedro, "Centro", null, "3", "J");
 
     public static final UsuarioComunidad luis_plazuelas_10bis = makeUsuarioComunidad(
-            ronda_plazuela_10bis, luis, null, null, null, null, ADMINISTRADOR.function.concat(",").concat(PROPIETARIO.function));
+            ronda_plazuela_10bis, luis, null, null, null, null);
 
     public static final UsuarioComunidad pedro_lafuente = makeUsuarioComunidad(
-            calle_la_fuente_11, pedro, "A", null, null, null, ADMINISTRADOR.function.concat(",").concat(INQUILINO.function));
+            calle_la_fuente_11, pedro, "A", null, null, null);
 
     public static final UsuarioComunidad juan_lafuente = makeUsuarioComunidad(
-            calle_la_fuente_11, juan, "A", null, null, null, INQUILINO.function);
+            calle_la_fuente_11, juan, "A", null, null, null);
 
     public static final UsuarioComunidad pedro_escorial = makeUsuarioComunidad(
-            calle_el_escorial, pedro, "A", null, null, null, ADMINISTRADOR.function.concat(",").concat(INQUILINO.function));
+            calle_el_escorial, pedro, "A", null, null, null);
 
     public static final UsuarioComunidad juan_plazuela23 = makeUsuarioComunidad(
-            calle_plazuela_23, juan, "JJ", null, null, null, INQUILINO.function);
+            calle_plazuela_23, juan, "JJ", null, null, null);
 
     public static final UsuarioComunidad paco_plazuela23 = makeUsuarioComunidad(
-            calle_plazuela_23, paco, "BC", null, null, null, ADMINISTRADOR.function.concat(",").concat(PROPIETARIO.function));
+            calle_plazuela_23, paco, "BC", null, null, null);
 
     public static final UsuarioComunidad paco_olmo = makeUsuarioComunidad(
-            calle_olmo_55, paco, "B", null, "Planta 0", "11", PROPIETARIO.function);
+            calle_olmo_55, paco, "B", null, "Planta 0", "11");
 
     // ===================================== Datos sin IDs =====================================
 
@@ -188,25 +196,31 @@ public final class UsuarioTestUtils {
             .build();
 
     public static final Comunidad COMU_LA_PLAZUELA_5 = new Comunidad.ComunidadBuilder()
-            .tipoVia("Ronda")
-            .nombreVia("de la Plazuela")
-            .numero((short) 5)
-            .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Ronda")
+                    .nombreVia("de la Plazuela")
+                    .numero((short) 5)
+                    .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                    .build())
             .build();
 
 
     public static final Comunidad COMU_LA_PLAZUELA_10 = new Comunidad.ComunidadBuilder()
-            .tipoVia("Ronda")
-            .nombreVia("de la Plazuela")
-            .numero((short) 10)
-            .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Ronda")
+                    .nombreVia("de la Plazuela")
+                    .numero((short) 10)
+                    .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                    .build())
             .build();
 
     private static final Comunidad COMU_TRAV_PLAZUELA_11 = new Comunidad.ComunidadBuilder()
-            .tipoVia("Travesía")
-            .nombreVia("de la Plazuela")
-            .numero((short) 11)
-            .municipio(new Municipio((short) 13, new Provincia((short) 3)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Travesía")
+                    .nombreVia("de la Plazuela")
+                    .numero((short) 11)
+                    .municipio(new Municipio((short) 13, new Provincia((short) 3)))
+                    .build())
             .build();
 
     public static final Comunidad COMU_EL_ESCORIAL = new Comunidad.ComunidadBuilder()
@@ -215,31 +229,35 @@ public final class UsuarioTestUtils {
             .build();
 
     public static final Comunidad COMU_REAL = new Comunidad.ComunidadBuilder()
-            .tipoVia("Calle")
-            .nombreVia("Real")
-            .numero((short) 5)
-            .sufijoNumero("Bis")
-            .municipio(new Municipio((short) 13, new Provincia((short) 3)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("Real")
+                    .numero((short) 5)
+                    .sufijoNumero("Bis")
+                    .municipio(new Municipio((short) 13, new Provincia((short) 3)))
+                    .build())
             .build();
 
     public static final Comunidad COMU_OTRA = new Comunidad.ComunidadBuilder()
-            .tipoVia("Calle")
-            .nombreVia("Otra")
-            .numero((short) 3)
-            .municipio(new Municipio((short) 14, new Provincia((short) 45)))
+            .domicilio(new Domicilio.DomicilioBuilder()
+                    .tipoVia("Calle")
+                    .nombreVia("Otra")
+                    .numero((short) 3)
+                    .municipio(new Municipio((short) 14, new Provincia((short) 45)))
+                    .build())
             .build();
 
     public static final UsuarioComunidad COMU_REAL_JUAN = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc",
-            "plantaX", "door12", PROPIETARIO.function);
+            "plantaX", "door12");
 
     public static final UsuarioComunidad COMU_PLAZUELA5_JUAN = makeUsuarioComunidad(COMU_LA_PLAZUELA_5, USER_JUAN, null,
-            null, "planta3", "doorA", ADMINISTRADOR.function);
+            null, "planta3", "doorA");
 
     public static final UsuarioComunidad COMU_REAL_PEPE = makeUsuarioComunidad(COMU_REAL, USER_PEPE, "portal",
-            "esc", "plantaY", "door21", PROPIETARIO.function);
+            "esc", "plantaY", "door21");
 
     public static final UsuarioComunidad COMU_TRAV_PLAZUELA_PEPE = makeUsuarioComunidad(COMU_TRAV_PLAZUELA_11, USER_PEPE,
-            "portalA", null, "planta2", null, INQUILINO.function);
+            "portalA", null, "planta2", null);
 
     // ============================  Authorization ====================================
 
@@ -258,14 +276,13 @@ public final class UsuarioTestUtils {
     // ========================================== Métodos ========================================
 
     public static UsuarioComunidad makeUsuarioComunidad(Comunidad comunidad, Usuario usuario, String portal, String escalera,
-                                                        String planta, String puerta, String roles)
+                                                        String planta, String puerta)
     {
         return new UsuarioComunidad.UserComuBuilder(comunidad, usuario)
                 .portal(portal)
                 .escalera(escalera)
                 .planta(planta)
-                .puerta(puerta)
-                .roles(roles).build();
+                .puerta(puerta).build();
     }
 
     // ============================  Checks ====================================

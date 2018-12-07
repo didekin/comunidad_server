@@ -4,15 +4,15 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.repository.UsuarioManager;
-import com.didekinlib.model.incidencia.dominio.Avance;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.incidencia.dominio.Avance;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,13 +47,12 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco_olmo;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -210,7 +209,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.seeIncidenciaById(4L).getUserName(), is(paco.getUserName()));
         assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), 4L), is(true));
         // Data
-        Incidencia incidencia = doIncidenciaWithIdDescUsername(paco.getUserName(), 4L, "desc_mod", calle_plazuela_23.getC_Id(), (short) 12);
+        Incidencia incidencia = doIncidenciaWithIdDescUsername(paco.getUserName(), 4L, "desc_mod", calle_plazuela_23.getId(), (short) 12);
         // Excec and check.
         assertThat(incidenciaManager.modifyIncidencia(paco.getUserName(), incidencia), is(1));
     }
@@ -278,7 +277,7 @@ public class IncidenciaManagerDbPreDevTest {
         Incidencia incidencia = incidImportancia.getIncidencia();
         assertThat(incidencia.getComunidad(), is(calle_olmo_55));
         assertThat(incidencia.getUserName(), is(paco.getUserName()));
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), calle_olmo_55.getC_Id()), is(false));
+        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), calle_olmo_55.getId()), is(false));
         assertThat(incidImportancia.getImportancia(), is((short) 2));
         // Data
         IncidImportancia incidImpIn = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 1).usuarioComunidad(paco_olmo).build();
@@ -326,16 +325,16 @@ public class IncidenciaManagerDbPreDevTest {
 
         // Premisa: usuario not associated to comunidad.
         try {
-            incidenciaManager.getUsuarioConnector().checkUserInComunidad(pedro.getUserName(), calle_olmo_55.getC_Id());
+            incidenciaManager.getUsuarioConnector().checkUserInComunidad(pedro.getUserName(), calle_olmo_55.getId());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
         // Data:
         incidencia = incidenciaManager.seeIncidenciaById(6L);
-        assertThat(incidencia.getComunidadId(), is(calle_olmo_55.getC_Id()));
+        assertThat(incidencia.getComunidadId(), is(calle_olmo_55.getId()));
         incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia)
-                .usuarioComunidad(new UsuarioComunidad.UserComuBuilder(calle_olmo_55, pedro).roles("pro").build())
+                .usuarioComunidad(new UsuarioComunidad.UserComuBuilder(calle_olmo_55, pedro).build())
                 .importancia((short) 1).build();
         // Exec and check
         try {
@@ -409,7 +408,7 @@ public class IncidenciaManagerDbPreDevTest {
     public void testRegIncidComment_1() throws ServiceException
     {
         // Incidencia is closed.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getId(), (short) 28);
         IncidComment comment = doComment("comment_userComu_NoDb", incidencia, pedro);
         incidenciaDao.closeIncidencia(incidencia.getIncidenciaId());
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
@@ -423,7 +422,7 @@ public class IncidenciaManagerDbPreDevTest {
     public void testRegIncidComment_2() throws ServiceException
     {
         // Incidencia is open.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
+        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 1L, ronda_plazuela_10bis.getId(), (short) 28);
         IncidComment comment = doComment("comment_userComu_NoDb", incidencia, pedro);
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), nullValue());
         assertThat(incidenciaManager.regIncidComment(pedro.getUserName(), comment), is(1));
@@ -465,10 +464,10 @@ public class IncidenciaManagerDbPreDevTest {
     public void testRegIncidencia_1()
     {
         // Premisas: gcmToken for luis is NOT NULL.
-        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.getGcmTokensByComunidad(ronda_plazuela_10bis.getId()).size(), is(1));
         assertThat(usuarioManager.getUserData(luis.getUserName()).getGcmToken(), notNullValue());
         // Exec.
-        Incidencia incidencia = doIncidencia(luis.getUserName(), "incid_test", ronda_plazuela_10bis.getC_Id(), (short) 24);
+        Incidencia incidencia = doIncidencia(luis.getUserName(), "incid_test", ronda_plazuela_10bis.getId(), (short) 24);
         // Check incidencia returned.
         assertThat(incidenciaManager.regIncidencia(incidencia).getDescripcion(), is("incid_test"));
         // Check update of gcm tokens in DB.
@@ -674,14 +673,17 @@ public class IncidenciaManagerDbPreDevTest {
                                         hasProperty("incidenciaId", is(4L)),
                                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 37))),
                                         hasProperty("fechaAlta", notNullValue()),
-                                        hasProperty("comunidad",
-                                                allOf(
-                                                        hasProperty("c_Id", is(calle_plazuela_23.getC_Id())),
-                                                        hasProperty("tipoVia", is(calle_plazuela_23.getTipoVia())),
-                                                        hasProperty("nombreVia", is(calle_plazuela_23.getNombreVia())),
-                                                        hasProperty("numero", is(calle_plazuela_23.getNumero())),
-                                                        hasProperty("sufijoNumero", is(calle_plazuela_23.getSufijoNumero()))
+                                        hasProperty("comunidad", hasProperty(
+                                                "domicilio", allOf
+                                                        (
+                                                                hasProperty("c_Id", is(calle_plazuela_23.getId())),
+                                                                hasProperty("tipoVia", is(calle_plazuela_23.getDomicilio().getTipoVia())),
+                                                                hasProperty("nombreVia", is(calle_plazuela_23.getDomicilio().getNombreVia())),
+                                                                hasProperty("numero", is(calle_plazuela_23.getDomicilio().getNumero())),
+                                                                hasProperty("sufijoNumero", is(calle_plazuela_23.getDomicilio().getSufijoNumero()))
+                                                        )
                                                 )
+
                                         )
                                 )
                         ),
@@ -694,8 +696,7 @@ public class IncidenciaManagerDbPreDevTest {
                                                         hasProperty("uId", is(juan.getuId()))
                                                 )
                                         ),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getC_Id()))),
-                                        hasProperty("roles", is(INQUILINO.function))
+                                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getId())))
                                 )
                         ),
                         hasProperty("importancia", is((short) 0)),
@@ -781,12 +782,12 @@ public class IncidenciaManagerDbPreDevTest {
     public void testSeeIncidsOpenByComu_1() throws ServiceException
     {
         // Premisas: una única incidencia en la comunidad; abierta.
-        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(pedro.getUserName(), calle_la_fuente_11.getC_Id());
+        List<IncidenciaUser> incidenciasUser = incidenciaManager.seeIncidsOpenByComu(pedro.getUserName(), calle_la_fuente_11.getId());
         assertThat(incidenciasUser.size(), is(1));
         assertThat(incidenciasUser.get(0).getIncidencia(), hasProperty("descripcion", is("incidencia_2")));
 
         // Premisas: dos incidencias en la comunidad; una abierta, otra cerrada.
-        incidenciasUser = incidenciaManager.seeIncidsOpenByComu(paco.getUserName(), calle_plazuela_23.getC_Id());
+        incidenciasUser = incidenciaManager.seeIncidsOpenByComu(paco.getUserName(), calle_plazuela_23.getId());
         assertThat(incidenciasUser.size(), is(1));
         assertThat(incidenciasUser.get(0).getIncidencia(), hasProperty("descripcion", is("incidencia_4")));
     }
@@ -799,7 +800,7 @@ public class IncidenciaManagerDbPreDevTest {
     {
         // Caso: no incidencias en la comunidad.
         assertThat(incidenciaManager.deleteIncidencia(juan.getUserName(), 2L), is(1));
-        List<IncidenciaUser> incidenciaUsers = incidenciaManager.seeIncidsOpenByComu(juan.getUserName(), calle_la_fuente_11.getC_Id());
+        List<IncidenciaUser> incidenciaUsers = incidenciaManager.seeIncidsOpenByComu(juan.getUserName(), calle_la_fuente_11.getId());
         assertThat(incidenciaUsers.size(), is(0));
     }
 

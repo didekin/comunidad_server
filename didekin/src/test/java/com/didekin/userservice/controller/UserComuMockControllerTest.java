@@ -10,9 +10,9 @@ import com.didekin.common.controller.RetrofitConfigurationPre;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekin.userservice.repository.UsuarioRepoConfiguration;
 import com.didekinlib.http.retrofit.HttpHandler;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuario.http.UserMockEndPoints;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.http.CommonServConstant.OPEN;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuario.http.UsuarioServConstant.USER_PATH;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -99,8 +98,7 @@ public abstract class UserComuMockControllerTest {
         /* Preconditions: a comunidad is already associated to other users.*/
         UsuarioComunidad userComu = makeUsuarioComunidad(calle_plazuela_23,
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PACO).userName("new@paco.com").build(),
-                "portalC", null, "planta3", null,
-                PRESIDENTE.function);
+                "portalC", null, "planta3", null);
 
         userComuMockEndPoint.regUserAndUserComu(userComu)
                 .test()

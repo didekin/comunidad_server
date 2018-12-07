@@ -13,9 +13,9 @@ import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.retrofit.HttpHandler;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
 import com.didekinlib.model.usuario.http.UsuarioEndPoints;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -235,7 +235,6 @@ public abstract class UsuarioControllerTest {
     @DirtiesContext
     public static class UsuarioCtrlerDevTest extends UsuarioControllerTest {
     }
-
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringBootTest(classes = {RetrofitConfigurationPre.class,

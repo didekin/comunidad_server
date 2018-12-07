@@ -3,17 +3,17 @@ package com.didekin.incidservice.repository;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.incidencia.dominio.Avance;
-import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.incidencia.dominio.Avance;
+import com.didekinlib.model.relacion.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -45,12 +45,11 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_DUPLICATE;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.RESOLUCION_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static java.sql.Timestamp.from;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -162,8 +161,8 @@ public class IncidenciaDaoDbPreDevTest {
         assertThat(incidencia.getIncidenciaId(), is(1L));
         assertThat(incidencia.getDescripcion(), is("incidencia_1"));
         assertThat(incidencia.getAmbitoIncidencia().getAmbitoId(), is((short) 41));
-        assertThat(incidencia.getComunidad().getNombreComunidad(), CoreMatchers.is(ronda_plazuela_10bis.getNombreComunidad()));
-        assertThat(incidencia.getComunidad().getC_Id(), CoreMatchers.is(ronda_plazuela_10bis.getC_Id()));
+        assertThat(incidencia.getComunidad().getDomicilio().getDomicilioStr(), CoreMatchers.is(ronda_plazuela_10bis.getDomicilio().getDomicilioStr()));
+        assertThat(incidencia.getComunidad().getId(), CoreMatchers.is(ronda_plazuela_10bis.getId()));
         assertThat(incidencia.getFechaAlta().getTime() > 0L, is(true));
         assertThat(incidencia.getFechaCierre(), nullValue());
     }
@@ -447,7 +446,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegIncidComment_2() throws ServiceException
     {
         // No existe la incidencia en BD. Sí existe la comunidad.
-        Incidencia incidencia = doIncidenciaWithId(null, 999L, ronda_plazuela_10bis.getC_Id(), (short) 28);
+        Incidencia incidencia = doIncidenciaWithId(null, 999L, ronda_plazuela_10bis.getId(), (short) 28);
         IncidComment comment = doComment("comment_incidNODb", incidencia, pedro);
         try {
             incidenciaDao.regIncidComment(comment);
@@ -464,7 +463,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegIncidComment_3() throws ServiceException
     {
         // No existe usuarioComunidad en BD; sí existen usuario y comunidad.
-        Incidencia incidencia = doIncidenciaWithId(null, 1L, ronda_plazuela_10bis.getC_Id(), (short) 28);
+        Incidencia incidencia = doIncidenciaWithId(null, 1L, ronda_plazuela_10bis.getId(), (short) 28);
         IncidComment comment = doComment("comment_userComu_NoDb", incidencia, paco);
         try {
             incidenciaDao.regIncidComment(comment);
@@ -560,7 +559,7 @@ public class IncidenciaDaoDbPreDevTest {
     @Test
     public void testRegIncidencia_1() throws Exception
     {
-        Incidencia incidencia = doIncidencia(juan.getUserName(), "Nueva incidencia en Cámaras de vigilancia", calle_la_fuente_11.getC_Id(), (short) 11);
+        Incidencia incidencia = doIncidencia(juan.getUserName(), "Nueva incidencia en Cámaras de vigilancia", calle_la_fuente_11.getId(), (short) 11);
         assertThat(incidenciaDao.regIncidencia(incidencia) > 0, is(true));
 
         incidencia = incidenciaDao.getIncidenciasByComu(2L).get(0);
@@ -595,7 +594,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegIncidencia_3() throws Exception
     {
         // No existe userName: registra la incidencia; no hay restricción de integridad.
-        Incidencia incidencia = doIncidencia("no_existo", "Nueva incidencia en Cámaras de vigilancia", calle_la_fuente_11.getC_Id(), (short) 11);
+        Incidencia incidencia = doIncidencia("no_existo", "Nueva incidencia en Cámaras de vigilancia", calle_la_fuente_11.getId(), (short) 11);
         assertThat(incidenciaDao.regIncidencia(incidencia) > 0, is(true));
     }
 
@@ -606,7 +605,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegResolucion_1() throws ServiceException
     {
         // Caso OK.
-        Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
+        Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getEntidad().getId(), (short) 31);
         Resolucion resolucion = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4", 111, now().plus(12, DAYS));
         assertThat(incidenciaDao.regResolucion(resolucion), is(1));
     }
@@ -618,7 +617,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegResolucion_2() throws ServiceException
     {
         // Caso: dos resoluciones para una misma incidencia.
-        Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getComunidad().getC_Id(), (short) 31);
+        Incidencia incidencia = doIncidenciaWithId(paco.getUserName(), 4L, paco_plazuela23.getEntidad().getId(), (short) 31);
         Resolucion resolucion_1 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_A", 111, now().plus(12, DAYS));
         Resolucion resolucion_2 = doResolucion(incidencia, paco.getUserName(), "resol_incid_4_4_B", 111, now().plus(13, DAYS));
         assertThat(incidenciaDao.regResolucion(resolucion_1), is(1));
@@ -637,7 +636,7 @@ public class IncidenciaDaoDbPreDevTest {
     public void testRegResolucion_3()
     {
         // Caso: incidencia no existe en BD.
-        Incidencia incidencia = doIncidenciaWithId(juan.getUserName(), 999L, calle_plazuela_23.getC_Id(), (short) 31);
+        Incidencia incidencia = doIncidenciaWithId(juan.getUserName(), 999L, calle_plazuela_23.getId(), (short) 31);
         Resolucion resolucion = doResolucion(incidencia, juan.getUserName(), "resol_incid_4_4", 111, now().plus(12, DAYS));
         try {
             incidenciaDao.regResolucion(resolucion);
@@ -730,10 +729,10 @@ public class IncidenciaDaoDbPreDevTest {
                 hasProperty("comunidad",
                         allOf(
                                 hasProperty("c_Id", is(1L)),
-                                hasProperty("tipoVia", is(ronda_plazuela_10bis.getTipoVia())),
-                                hasProperty("nombreVia", is(ronda_plazuela_10bis.getNombreVia())),
-                                hasProperty("numero", is(ronda_plazuela_10bis.getNumero())),
-                                hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getSufijoNumero()))
+                                hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
+                                hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
+                                hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
+                                hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero()))
                         )
                 ),
                 hasProperty("userName", is(luis.getUserName())),
@@ -765,10 +764,10 @@ public class IncidenciaDaoDbPreDevTest {
                                         hasProperty("comunidad",
                                                 allOf(
                                                         hasProperty("c_Id", is(1L)),
-                                                        hasProperty("tipoVia", is(ronda_plazuela_10bis.getTipoVia())),
-                                                        hasProperty("nombreVia", is(ronda_plazuela_10bis.getNombreVia())),
-                                                        hasProperty("numero", is(ronda_plazuela_10bis.getNumero())),
-                                                        hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getSufijoNumero()))
+                                                        hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
+                                                        hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
+                                                        hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
+                                                        hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero()))
                                                 )
                                         )
                                 )
@@ -782,8 +781,7 @@ public class IncidenciaDaoDbPreDevTest {
                                                         hasProperty("uId", is(pedro.getuId()))
                                                 )
                                         ),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getC_Id()))),
-                                        hasProperty("roles", is(ADMINISTRADOR.function))
+                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId())))
                                 )
                         ),
                         hasProperty("importancia", is((short) 1)),
@@ -854,7 +852,7 @@ public class IncidenciaDaoDbPreDevTest {
         // Premisas: comunidad con 1 incidencia cerrada; con antigüedad inferior a 2 años.
 
         // Check: sólo aparece la incidencia con antigüedad < 2 años.
-        List<IncidenciaUser> incidencias = incidenciaDao.seeIncidsClosedByComu(calle_plazuela_23.getC_Id());
+        List<IncidenciaUser> incidencias = incidenciaDao.seeIncidsClosedByComu(calle_plazuela_23.getId());
         assertThat(incidencias.size(), is(1));
         Incidencia incidencia = incidencias.get(0).getIncidencia();
         assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) > 0, is(true));
@@ -862,7 +860,7 @@ public class IncidenciaDaoDbPreDevTest {
         assertThat(incidencia,
                 allOf(
                         hasProperty("incidenciaId", is(5L)),
-                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getC_Id()))),
+                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getId()))),
                         hasProperty("userName", is(paco.getUserName())),
                         hasProperty("descripcion", is("incidencia_5")),
                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 3))),
@@ -883,7 +881,7 @@ public class IncidenciaDaoDbPreDevTest {
 
         // Verificamos que no muestra incidencias con antigüedad > 2 años.
         incidencia = incidenciaDao.seeIncidenciaById(7L);
-        assertThat(incidencia, hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getC_Id()))));
+        assertThat(incidencia, hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getId()))));
         assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) < 0, is(true));
     }
 
@@ -902,12 +900,12 @@ public class IncidenciaDaoDbPreDevTest {
     {
         // Caso OK: comunidad con 2 incidencias abiertas.
 
-        List<IncidenciaUser> incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(ronda_plazuela_10bis.getC_Id());
+        List<IncidenciaUser> incidenciaUsers = incidenciaDao.seeIncidsOpenByComu(ronda_plazuela_10bis.getId());
         assertThat(incidenciaUsers.size(), is(2));
         assertThat(incidenciaUsers.get(0).getIncidencia(),
                 allOf(
                         hasProperty("incidenciaId", is(1L)),
-                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getC_Id()))),
+                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId()))),
                         hasProperty("userName", is(luis.getUserName())),
                         hasProperty("descripcion", is("incidencia_1")),
                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 41))),
@@ -936,7 +934,7 @@ public class IncidenciaDaoDbPreDevTest {
                         hasProperty("incidencia",
                                 allOf(
                                         hasProperty("incidenciaId", is(3L)),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getC_Id())))
+                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId())))
                                 )
                         ),
                         hasProperty("fechaAltaResolucion", notNullValue())
@@ -951,11 +949,11 @@ public class IncidenciaDaoDbPreDevTest {
     public void testSeeIncidsOpenByComu_2()
     {
         // Premisa: the user who initiates the incidencia is no longer a usuarioComunidad, or an user in didekin.
-        assertThat(incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0).getUsuario(), is(juan));
+        assertThat(incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getId()).get(0).getUsuario(), is(juan));
         // Delete user in comunidad.
         assertThat(userManagerConnector.deleteUser(juan.getUserName()), is(true));
         // Exec
-        IncidenciaUser incidenciaUser = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getC_Id()).get(0);
+        IncidenciaUser incidenciaUser = incidenciaDao.seeIncidsOpenByComu(calle_la_fuente_11.getId()).get(0);
         // Check: usuario data are not longer fulfilled, with the exception of userName (taken for the incidencia record).
         assertThat(incidenciaUser,
                 allOf(

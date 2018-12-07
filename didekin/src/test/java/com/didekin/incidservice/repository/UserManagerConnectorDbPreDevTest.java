@@ -1,9 +1,9 @@
 package com.didekin.incidservice.repository;
 
 import com.didekin.common.DbPre;
-import com.didekin.common.repository.ServiceException;
 import com.didekin.common.LocalDev;
-import com.didekinlib.model.incidencia.dominio.Incidencia;
+import com.didekin.common.repository.ServiceException;
+import com.didekinlib.model.relacion.incidencia.dominio.Incidencia;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -14,7 +14,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
@@ -85,19 +84,6 @@ public class UserManagerConnectorDbPreDevTest {
                         hasProperty("userName", is(paco.getUserName())),
                         hasProperty("alias", is(paco.getAlias())),
                         hasProperty("password", nullValue())
-                )
-        );
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_CompleteUserAndComuRoles()
-    {
-        assertThat(connector.completeUserAndComuRoles(luis.getUserName(), 1L),
-                allOf(
-                        hasProperty("usuario", hasProperty("userName", is("luis@luis.com"))),
-                        hasProperty("roles", is("adm,pro"))
                 )
         );
     }

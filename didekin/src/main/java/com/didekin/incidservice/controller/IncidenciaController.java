@@ -4,12 +4,12 @@ import com.didekin.common.controller.AppControllerAbstract;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.incidservice.repository.IncidenciaManager;
 import com.didekin.incidservice.repository.UserManagerConnector;
-import com.didekinlib.model.incidencia.dominio.ImportanciaUser;
-import com.didekinlib.model.incidencia.dominio.IncidAndResolBundle;
-import com.didekinlib.model.incidencia.dominio.IncidComment;
-import com.didekinlib.model.incidencia.dominio.IncidImportancia;
-import com.didekinlib.model.incidencia.dominio.IncidenciaUser;
-import com.didekinlib.model.incidencia.dominio.Resolucion;
+import com.didekinlib.model.relacion.incidencia.dominio.ImportanciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidAndResolBundle;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidComment;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidImportancia;
+import com.didekinlib.model.relacion.incidencia.dominio.IncidenciaUser;
+import com.didekinlib.model.relacion.incidencia.dominio.Resolucion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,20 +24,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static com.didekinlib.http.CommonServConstant.MIME_JSON;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.CLOSE_INCIDENCIA;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.DELETE_INCID;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.MOD_INCID_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.MOD_RESOLUCION;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.REG_INCID_COMMENT;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.REG_INCID_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.REG_RESOLUCION;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_INCIDS_CLOSED_BY_COMU;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_INCIDS_OPEN_BY_COMU;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_INCID_COMMENTS;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_INCID_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_RESOLUCION;
-import static com.didekinlib.model.incidencia.http.IncidServConstant.SEE_USERCOMUS_IMPORTANCIA;
-import static com.didekinlib.model.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.CLOSE_INCIDENCIA;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.DELETE_INCID;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.MOD_INCID_IMPORTANCIA;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.MOD_RESOLUCION;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.REG_INCID_COMMENT;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.REG_INCID_IMPORTANCIA;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.REG_RESOLUCION;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_INCIDS_CLOSED_BY_COMU;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_INCIDS_OPEN_BY_COMU;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_INCID_COMMENTS;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_INCID_IMPORTANCIA;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_RESOLUCION;
+import static com.didekinlib.model.relacion.incidencia.http.IncidServConstant.SEE_USERCOMUS_IMPORTANCIA;
+import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -140,7 +140,7 @@ class IncidenciaController extends AppControllerAbstract {
         logger.debug("seeCommentsByIncid()");
         incidenciaManager.getUsuarioConnector().checkUserInComunidad(
                 getUsuarioConnector().checkHeaderGetUserName(accessToken),
-                incidenciaManager.seeIncidenciaById(incidenciaId).getComunidad().getC_Id()
+                incidenciaManager.seeIncidenciaById(incidenciaId).getComunidad().getId()
         );
 
         try {

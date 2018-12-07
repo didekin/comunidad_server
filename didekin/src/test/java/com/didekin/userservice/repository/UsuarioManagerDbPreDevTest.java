@@ -7,11 +7,12 @@ import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.mail.UsuarioMailConfigurationPre;
 import com.didekin.userservice.mail.UsuarioMailServiceForTest;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,8 +59,8 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pepe;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
-import static com.didekinlib.model.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
+import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_WRONG;
@@ -71,14 +72,9 @@ import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_DUPLICA
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_WRONG_INIT;
 import static com.didekinlib.model.usuario.http.UsuarioServConstant.IS_USER_DELETED;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
-import static com.didekinlib.model.usuariocomunidad.Rol.INQUILINO;
-import static com.didekinlib.model.usuariocomunidad.Rol.PRESIDENTE;
-import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -117,22 +113,13 @@ public class UsuarioManagerDbPreDevTest {
     @Autowired
     UsuarioMailServiceForTest mailServiceForTest;
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_CompleteWithUserComuRoles()
-    {
-        assertThat(usuarioManager.completeWithUserComuRoles(luis.getUserName(), 1L).getRoles(), is("adm,pro"));
-    }
-
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testDeleteUser_1() throws ServiceException
     {
         Usuario usuario = new Usuario.UsuarioBuilder().userName("user@user.com").alias("alias_user")
                 .password("password_user").build();
-        UsuarioComunidad usuarioComunidad = makeUsuarioComunidad(COMU_REAL, usuario, "portal", "esc", "plantaX",
-                "door", PROPIETARIO.function);
+        UsuarioComunidad usuarioComunidad = makeUsuarioComunidad(COMU_REAL, usuario, "portal", "esc", "plantaX", "door");
 
         boolean isRegOk = usuarioManager.regComuAndUserAndUserComu(usuarioComunidad, oneComponent_local_ES);
         assertThat(isRegOk, is(true));
@@ -162,8 +149,8 @@ public class UsuarioManagerDbPreDevTest {
         int comuDeleted = usuarioManager.deleteUserAndComunidades(pedro.getUserName());
         assertThat(comuDeleted, is(3));
 
-        assertThat(usuarioManager.comunidadDao.getComunidadById(1L).getC_Id(), is(1L));
-        assertThat(usuarioManager.comunidadDao.getComunidadById(2L).getC_Id(), is(2L));
+        assertThat(usuarioManager.comunidadDao.getComunidadById(1L).getId(), is(1L));
+        assertThat(usuarioManager.comunidadDao.getComunidadById(2L).getId(), is(2L));
         try {
             usuarioManager.comunidadDao.getComunidadById(3L);
             fail();
@@ -192,8 +179,8 @@ public class UsuarioManagerDbPreDevTest {
         int isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
 
-        Comunidad comunidadDb = usuarioManager.comunidadDao.getComunidadById(comunidad.getC_Id());
-        assertThat(comunidadDb.getC_Id(), is(comunidad.getC_Id()));
+        Comunidad comunidadDb = usuarioManager.comunidadDao.getComunidadById(comunidad.getId());
+        assertThat(comunidadDb.getId(), is(comunidad.getId()));
 
         // La comunidad tiene 1 usuario.
         comunidad = new Comunidad.ComunidadBuilder().c_id(3L).build();
@@ -201,7 +188,7 @@ public class UsuarioManagerDbPreDevTest {
         isDeleted = usuarioManager.deleteUserComunidad(usuarioComunidad);
         assertThat(isDeleted, is(1));
         try {
-            usuarioManager.comunidadDao.getComunidadById(comunidad.getC_Id());
+            usuarioManager.comunidadDao.getComunidadById(comunidad.getId());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -218,11 +205,11 @@ public class UsuarioManagerDbPreDevTest {
         assertThat(usuarioManager.deleteUserComunidad(pedro_plazuelas_10bis), is(1));
         // Preconditions.
         assertThat(usuarioManager.getComusByUser(luis.getUserName()).size(), is(1));
-        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getId()).size(), is(1));
         // Exec and check.
         assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
         try {
-            usuarioManager.comunidadDao.getComunidadById(ronda_plazuela_10bis.getC_Id());
+            usuarioManager.comunidadDao.getComunidadById(ronda_plazuela_10bis.getId());
             fail();
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
@@ -232,7 +219,7 @@ public class UsuarioManagerDbPreDevTest {
         // El usuario tiene tres comunidades. La comunidad tiene 1 usuario.
         // Preconditions.
         assertThat(usuarioManager.getComusByUser(pedro.getUserName()).size() > 1, is(true));
-        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_el_escorial.getC_Id()).size(), is(1));
+        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_el_escorial.getId()).size(), is(1));
         // Exec.
         assertThat(usuarioManager.deleteUserComunidad(pedro_escorial), is(1));
         // Check.
@@ -256,11 +243,11 @@ public class UsuarioManagerDbPreDevTest {
     {
         // Usuario con una comunidad y comunidad con dos usuarios.
         assertThat(usuarioManager.getComusByUser(luis.getUserName()).size(), is(1));
-        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getC_Id()).size(), is(2));
+        assertThat(usuarioManager.seeUserComusByComu(luis.getUserName(), ronda_plazuela_10bis.getId()).size(), is(2));
         // Exec.
         assertThat(usuarioManager.deleteUserComunidad(luis_plazuelas_10bis), is(IS_USER_DELETED));
         // Check.
-        assertThat(usuarioManager.getComunidadById(ronda_plazuela_10bis.getC_Id()), is(ronda_plazuela_10bis));
+        assertThat(usuarioManager.getComunidadById(ronda_plazuela_10bis.getId()), is(ronda_plazuela_10bis));
         try {
             usuarioManager.getUserData(luis.getUserName());
             fail();
@@ -299,31 +286,9 @@ public class UsuarioManagerDbPreDevTest {
     @Test
     public void testGetGcmTokensByComunidad() throws ServiceException
     {
-        List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getC_Id());
+        List<String> tokens = usuarioManager.getGcmTokensByComunidad(new Comunidad.ComunidadBuilder().c_id(1L).build().getId());
         assertThat(tokens.size(), is(1));
         assertThat(tokens, hasItem(luis.getGcmToken()));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_getRolesSecurity()
-    {
-        List<String> authorities = usuarioManager.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName(pedro.getUserName()).build());
-
-        assertThat(authorities.size(), is(2));
-        assertThat(authorities, hasItems(ADMINISTRADOR.authority, INQUILINO.authority));
-
-        authorities = usuarioManager.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("luis@luis.com").build());
-        assertThat(authorities.size(), is(2));
-        assertThat(authorities, hasItems(PRESIDENTE.authority, PROPIETARIO.authority));
-
-        authorities = usuarioManager.getRolesSecurity(
-                new Usuario.UsuarioBuilder().userName("juan@noauth.com").build());
-        assertThat(authorities.size(), is(1));
-        assertThat(authorities, hasItem(INQUILINO.authority));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -354,7 +319,7 @@ public class UsuarioManagerDbPreDevTest {
         assertThat(luis.getTokenAuth(), notNullValue());
         // Exec.
         usuarioManager.regComuAndUserAndUserComu(makeUsuarioComunidad(
-                COMU_LA_PLAZUELA_5, luis, "portal1", "EE", "3", null, INQUILINO.function), oneComponent_local_ES);
+                COMU_LA_PLAZUELA_5, luis, "portal1", "EE", "3", null), oneComponent_local_ES);
         // Check.
         checkBeanUsuario(
                 usuarioManager.getUserData(luis.getUserName()),
@@ -455,11 +420,15 @@ public class UsuarioManagerDbPreDevTest {
     public void testModifyComuData() throws ServiceException
     {
         // Caso 1: usuario ADM, no 'oldest' in comunidad.
-        Comunidad comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(ronda_plazuela_10bis).sufijoNumero("Tris").build();
+        Comunidad comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(ronda_plazuela_10bis)
+                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("Tris").build())
+                .build();
         assertThat(usuarioManager.checkComuDataModificationPower(luis, ronda_plazuela_10bis), is(true));
         assertThat(usuarioManager.modifyComuData(luis, comunidadChanged), is(1));
         // Caso 2: usuario 'oldest' in comunidad, no ADM.
-        comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_la_fuente_11).sufijoNumero("QAC").build();
+        comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_la_fuente_11)
+                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("QAC").build())
+                .build();
         assertThat(usuarioManager.checkComuDataModificationPower(juan, calle_la_fuente_11), is(true));
         assertThat(usuarioManager.modifyComuData(juan, comunidadChanged), is(1));
 
@@ -467,11 +436,13 @@ public class UsuarioManagerDbPreDevTest {
         UsuarioComunidad userComu = makeUsuarioComunidad(
                 calle_el_escorial,
                 luis,
-                "portalB", "escB", "plantaZ", "door31", INQUILINO.function);
+                "portalB", "escB", "plantaZ", "door31");
         assertThat(usuarioManager.regUserComu(userComu), is(1));
         assertThat(usuarioManager.checkComuDataModificationPower(luis, calle_el_escorial), is(false));
 
-        comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_el_escorial).sufijoNumero("TRAS").build();
+        comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_el_escorial)
+                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("TRAS").build())
+                .build();
         try {
             usuarioManager.modifyComuData(luis, comunidadChanged);
             fail();
@@ -650,8 +621,7 @@ public class UsuarioManagerDbPreDevTest {
     public void testRegComuAndUserAndUserComu_1() throws ServiceException, IOException, MessagingException
     {
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
-        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
-                "door", ADMINISTRADOR.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1", "door");
         // Exec.
         //noinspection SynchronizeOnNonFinalField
         synchronized (javaMailMonitor) {
@@ -670,8 +640,7 @@ public class UsuarioManagerDbPreDevTest {
     public void testRegComuAndUserAndUserComu_2() throws ServiceException
     {
         Usuario userIn = new Usuario.UsuarioBuilder().copyUsuario(USER_JUAN).userName(TO).password(null).build();
-        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1",
-                "door", ADMINISTRADOR.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, userIn, "portal", "esc", "1", "door");
 
         // Exec: mailServiceForTest is wrongly configured.
         try {
@@ -718,8 +687,7 @@ public class UsuarioManagerDbPreDevTest {
         // Preconditions: there is DB a user registered in a comunidad: juan en comunidades 2 y 4.
         assertThat(usuarioManager.getComusByUser(juan.getUserName()).size(), is(2));
 
-        UsuarioComunidad usuarioComunidad2 = makeUsuarioComunidad(COMU_OTRA, juan, "AB", "ESC", "11", "puert",
-                ADMINISTRADOR.function);
+        UsuarioComunidad usuarioComunidad2 = makeUsuarioComunidad(COMU_OTRA, juan, "AB", "ESC", "11", "puert");
 
         boolean isRegOk = usuarioManager.regComuAndUserComu(usuarioComunidad2);
         assertThat(isRegOk, is(true));
@@ -748,13 +716,13 @@ public class UsuarioManagerDbPreDevTest {
     public void testRegUserAndUserComu_1() throws ServiceException, MessagingException, IOException
     {
         // Preconditions: there is a comunidad associated to other users.
-        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
+        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getId()), is(calle_el_escorial));
 
         // Nuevo usuarioComunidad.
         UsuarioComunidad newPepe = makeUsuarioComunidad(
-                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
+                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getId()).build(),
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName(TO).build(),
-                "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
+                "portalB", "escB", "plantaZ", "door31");
 
         //noinspection SynchronizeOnNonFinalField
         synchronized (javaMailMonitor) {
@@ -773,12 +741,12 @@ public class UsuarioManagerDbPreDevTest {
     public void testRegUserAndUserComu_2() throws ServiceException
     {
         // Preconditions: there is a comunidad associated to other users.
-        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
+        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getId()), is(calle_el_escorial));
         // Nuevo usuarioComunidad.
         UsuarioComunidad newPepe = makeUsuarioComunidad(
-                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
+                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getId()).build(),
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName(TO).build(),
-                "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
+                "portalB", "escB", "plantaZ", "door31");
 
         try {
             usuarioManager.regUserAndUserComu(newPepe, oneComponent_local_ES, mailServiceForTest);
@@ -809,23 +777,27 @@ public class UsuarioManagerDbPreDevTest {
     {
         // Criterio de búsqueda. La mantenemos constante.
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Ronda")
-                .nombreVia("de la Plazuela")
-                .numero((short) 5)
-                .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Ronda")
+                        .nombreVia("de la Plazuela")
+                        .numero((short) 5)
+                        .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                        .build())
                 .build();
 
         // Caso 1: no hay coincidencia ni en tipoVia, ni en nombreVia. Se aplica comunidadDao.searchThree.
         final Comunidad comunidad1 = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("de la Mujer de la Plazuela")
-                .numero((short) 5)
-                .sufijoNumero("Bis")
-                .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("de la Mujer de la Plazuela")
+                        .numero((short) 5)
+                        .sufijoNumero("Bis")
+                        .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                        .build())
                 .build();
 
         final UsuarioComunidad usuarioComunidad_1 = makeUsuarioComunidad(comunidad1, USER_JUAN, "portal", "esc",
-                "plantaX", "door12", PROPIETARIO.function);
+                "plantaX", "door12");
         usuarioManager.regComuAndUserAndUserComu(usuarioComunidad_1, oneComponent_local_ES);
         Usuario userWithPk = usuarioManager.getUserData(USER_JUAN.getUserName());
 
@@ -836,14 +808,16 @@ public class UsuarioManagerDbPreDevTest {
 
         // Caso 2: una comunidad con coincidencia en nombre, no en tipoVia. Se aplica searchTwo.
         Comunidad comunidad2 = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("de la Plazuela")
-                .numero((short) 5)
-                .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("de la Plazuela")
+                        .numero((short) 5)
+                        .municipio(new Municipio((short) 2, new Provincia((short) 27)))
+                        .build())
                 .build();
 
         final UsuarioComunidad usuarioComunidad_2 = makeUsuarioComunidad(comunidad2, userWithPk, null,
-                null, "planta3", "doorA", ADMINISTRADOR.function);
+                null, "planta3", "doorA");
         usuarioManager.regComuAndUserComu(usuarioComunidad_2);
 
         // Segunda búsqueda.
@@ -853,7 +827,7 @@ public class UsuarioManagerDbPreDevTest {
 
         // Caso 3: una comunidad con coincidencia completa. Se aplica searchOne.
         final UsuarioComunidad usuarioComunidad_3 = makeUsuarioComunidad(comunidad, userWithPk, null,
-                null, "planta3", "doorA", ADMINISTRADOR.function);
+                null, "planta3", "doorA");
         usuarioManager.regComuAndUserComu(usuarioComunidad_3);
 
         // Tercera búsqueda.
@@ -868,14 +842,14 @@ public class UsuarioManagerDbPreDevTest {
     public void test_SeeUserComusByComu()
     {
         // Premise: user in comunidad.
-        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_la_fuente_11.getC_Id()), is(true));
+        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_la_fuente_11.getId()), is(true));
         // Check.
-        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_la_fuente_11.getC_Id()).size(), is(2));
+        assertThat(usuarioManager.seeUserComusByComu(pedro.getUserName(), calle_la_fuente_11.getId()).size(), is(2));
 
         // Premise: user not in comunidad.
-        assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_la_fuente_11.getC_Id()), is(false));
+        assertThat(usuarioManager.isUserInComunidad(luis.getUserName(), calle_la_fuente_11.getId()), is(false));
         try {
-            usuarioManager.seeUserComusByComu(luis.getUserName(), calle_la_fuente_11.getC_Id());
+            usuarioManager.seeUserComusByComu(luis.getUserName(), calle_la_fuente_11.getId());
             fail();
         } catch (ServiceException se) {
             assertThat(se.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));

@@ -5,9 +5,9 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.testutils.UsuarioTestUtils;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -35,7 +35,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_COMU_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOUND;
 import static java.util.Objects.requireNonNull;
@@ -244,33 +243,6 @@ public class UsuarioDaoDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_GetUserComuRolesByUserName()
-    {
-        assertThat(usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 2L),
-                allOf(
-                        hasProperty("usuario",
-                                allOf(
-                                        hasProperty("uId", is(3L)),
-                                        hasProperty("userName", is(pedro.getUserName())),
-                                        hasProperty("alias", is(pedro.getAlias()))
-                                )
-                        ),
-                        hasProperty("comunidad", hasProperty("c_Id", is(2L))),
-                        hasProperty("roles", is("adm,inq"))
-                )
-        );
-
-        try {
-            usuarioDao.getUserComuRolesByUserName(pedro.getUserName(), 4L);
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
-        }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void test_GetUserFullComuByUserAndComu_1() throws ServiceException
     {
 
@@ -286,15 +258,15 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuario.getUserName(), is(pedro.getUserName()));
         assertThat(usuario.getAlias(), is("pedronevado"));
         // Comunidad.
-        Comunidad comunidad = usuarioComunidad.getComunidad();
-        assertThat(comunidad.getTipoVia(), is("Ronda"));
-        assertThat(comunidad.getNombreVia(), is("de la Plazuela"));
-        assertThat(comunidad.getNumero(), is((short) 10));
-        assertThat(comunidad.getSufijoNumero(), is("bis"));
-        assertThat(comunidad.getMunicipio().getNombre(), is("Motilleja"));
-        assertThat(comunidad.getMunicipio().getCodInProvincia(), is((short) 52));
-        assertThat(comunidad.getMunicipio().getProvincia().getNombre(), is("Albacete"));
-        assertThat(comunidad.getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
+        Comunidad comunidad = usuarioComunidad.getEntidad();
+        assertThat(comunidad.getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidad.getDomicilio().getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidad.getDomicilio().getNumero(), is((short) 10));
+        assertThat(comunidad.getDomicilio().getSufijoNumero(), is("bis"));
+        assertThat(comunidad.getDomicilio().getMunicipio().getNombre(), is("Motilleja"));
+        assertThat(comunidad.getDomicilio().getMunicipio().getCodInProvincia(), is((short) 52));
+        assertThat(comunidad.getDomicilio().getMunicipio().getProvincia().getNombre(), is("Albacete"));
+        assertThat(comunidad.getDomicilio().getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
         // UsuarioComunidad
         assertThat(usuarioComunidad.getPortal(), is("Centro"));
         assertThat(usuarioComunidad.getEscalera(), nullValue());
@@ -410,7 +382,7 @@ public class UsuarioDaoDbPreDevTest {
         UsuarioComunidad uc_1 = UsuarioTestUtils.makeUsuarioComunidad(
                 new Comunidad.ComunidadBuilder().c_id(4L).build(),
                 new Usuario.UsuarioBuilder().uId(11L).build(),
-                "portal_a", null, "PL-1", "J", "adm,pro,pre");
+                "portal_a", null, "PL-1", "J");
 
         assertThat(usuarioDao.modifyUserComu(uc_1), is(1));
         List<UsuarioComunidad> userComus = usuarioDao.seeUserComusByUser("paco@paco.com");
@@ -418,7 +390,6 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(userComus.get(0).getEscalera(), is(uc_1.getEscalera()));
         assertThat(userComus.get(0).getPlanta(), is(uc_1.getPlanta()));
         assertThat(userComus.get(0).getPuerta(), is(uc_1.getPuerta()));
-        assertThat(userComus.get(0).getRoles(), is("adm,pre,pro"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -448,13 +419,12 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuariosComu.get(1).getUsuario().getAlias(), is("paco"));
         assertThat(usuariosComu.get(1).getUsuario().getuId(), is(11L));
         // Datos comunidad:
-        assertThat(usuariosComu.get(1).getComunidad().getC_Id(), is(4L));
+        assertThat(usuariosComu.get(1).getEntidad().getId(), is(4L));
         // Datos usuarioComunidad:
         assertThat(usuariosComu.get(1).getPortal(), is("BC"));
         assertThat(usuariosComu.get(1).getEscalera(), is(nullValue()));
         assertThat(usuariosComu.get(1).getPlanta(), is(nullValue()));
         assertThat(usuariosComu.get(1).getPuerta(), is(nullValue()));
-        assertThat(usuariosComu.get(1).getRoles(), is("adm,pro"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql"})
@@ -467,21 +437,29 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(userComunidades.size(), is(2));
         assertThat(userComunidades, hasItems(juan_plazuela23, juan_lafuente));
         // Verificación de datos de comunidad.
-        assertThat(userComunidades.get(0).getComunidad(),
+        assertThat(userComunidades.get(0).getEntidad(),
                 allOf(
-                        hasProperty("c_Id", is(calle_plazuela_23.getC_Id())),
-                        hasProperty("tipoVia", is(calle_plazuela_23.getTipoVia())),
-                        hasProperty("nombreVia", is(calle_plazuela_23.getNombreVia())),
-                        hasProperty("numero", is(calle_plazuela_23.getNumero())),
-                        hasProperty("sufijoNumero", is(calle_plazuela_23.getSufijoNumero())),
-                        hasProperty("municipio",
-                                allOf(
-                                        hasProperty("codInProvincia", is(calle_plazuela_23.getMunicipio().getCodInProvincia())),
-                                        hasProperty("nombre", is(calle_plazuela_23.getMunicipio().getNombre())),
-                                        hasProperty("provincia",
+                        hasProperty("c_Id", is(calle_plazuela_23.getId())),
+                        hasProperty("domicilio", allOf
+                                (
+                                        hasProperty("tipoVia", is(calle_plazuela_23.getDomicilio().getTipoVia())),
+                                        hasProperty("nombreVia", is(calle_plazuela_23.getDomicilio().getNombreVia())),
+                                        hasProperty("numero", is(calle_plazuela_23.getDomicilio().getNumero())),
+                                        hasProperty("sufijoNumero", is(calle_plazuela_23.getDomicilio().getSufijoNumero())),
+                                        hasProperty("municipio",
                                                 allOf(
-                                                        hasProperty("provinciaId", is(calle_plazuela_23.getMunicipio().getProvincia().getProvinciaId())),
-                                                        hasProperty("nombre", is(calle_plazuela_23.getMunicipio().getProvincia().getNombre()))
+                                                        hasProperty("codInProvincia",
+                                                                is(calle_plazuela_23.getDomicilio().getMunicipio().getCodInProvincia())),
+                                                        hasProperty("nombre",
+                                                                is(calle_plazuela_23.getDomicilio().getMunicipio().getNombre())),
+                                                        hasProperty("provincia",
+                                                                allOf(
+                                                                        hasProperty("provinciaId",
+                                                                                is(calle_plazuela_23.getDomicilio().getMunicipio().getProvincia().getProvinciaId())),
+                                                                        hasProperty("nombre",
+                                                                                is(calle_plazuela_23.getDomicilio().getMunicipio().getProvincia().getNombre()))
+                                                                )
+                                                        )
                                                 )
                                         )
                                 )
@@ -502,8 +480,7 @@ public class UsuarioDaoDbPreDevTest {
                         hasProperty("portal", is(juan_plazuela23.getPortal())),
                         hasProperty("planta", is(juan_plazuela23.getPlanta())),
                         hasProperty("escalera", is(juan_plazuela23.getEscalera())),
-                        hasProperty("puerta", is(juan_plazuela23.getPuerta())),
-                        hasProperty("roles", is(juan_plazuela23.getRoles()))
+                        hasProperty("puerta", is(juan_plazuela23.getPuerta()))
                 )
         );
     }

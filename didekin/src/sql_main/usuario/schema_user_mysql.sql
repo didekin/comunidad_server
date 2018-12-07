@@ -94,7 +94,6 @@ CREATE TABLE usuario_comunidad
   fecha_mod  TIMESTAMP                        NULL
   ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (c_id, u_id),
-  /*UNIQUE (c_id, portal, escalera, planta, puerta),*/
   INDEX id_parent_com (c_id),
   INDEX id_parent_usu (u_id),
   FOREIGN KEY (c_id)

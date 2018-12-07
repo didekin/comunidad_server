@@ -12,12 +12,13 @@ import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
 import com.didekin.userservice.repository.UsuarioManager;
 import com.didekinlib.http.retrofit.HttpHandler;
-import com.didekinlib.model.comunidad.Comunidad;
-import com.didekinlib.model.comunidad.Municipio;
-import com.didekinlib.model.comunidad.Provincia;
-import com.didekinlib.model.comunidad.http.ComunidadEndPoints;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
-import com.didekinlib.model.usuariocomunidad.http.UsuarioComunidadEndPoints;
+import com.didekinlib.model.entidad.Domicilio;
+import com.didekinlib.model.entidad.Municipio;
+import com.didekinlib.model.entidad.Provincia;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.http.ComunidadEndPoints;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.http.UsuarioComunidadEndPoints;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +43,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.USER_JUAN;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
-import static com.didekinlib.model.usuariocomunidad.Rol.PROPIETARIO;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -86,11 +86,11 @@ public abstract class ComunidadControllerTest {
     public void testGetComuData()
     {
         // Premisa: usuario en comunidad.
-        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getC_Id()), is(true));
+        assertThat(usuarioManager.isUserInComunidad(pedro.getUserName(), calle_el_escorial.getId()), is(true));
         COMU_ENDPOINT
                 .getComuData(
                         userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()),
-                        calle_el_escorial.getC_Id()
+                        calle_el_escorial.getId()
                 ).map(Response::body).test().assertValue(calle_el_escorial);
     }
 
@@ -102,24 +102,27 @@ public abstract class ComunidadControllerTest {
         // Exige comunidadDao.searchThree. Dos ocurrencias en DB que se ajustan a la regla 3.
 
         final Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Calle")
-                .nombreVia("de la Mujer de la Plazuela")
-                .numero((short) 10)
-                .sufijoNumero("Bis")
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Calle")
+                        .nombreVia("de la Mujer de la Plazuela")
+                        .numero((short) 10)
+                        .sufijoNumero("Bis")
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
-        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portal1", "esc2",
-                "planta3", "puerta12", PROPIETARIO.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(comunidad, USER_JUAN, "portal1", "esc2", "planta3", "puerta12");
 
         USERCOMU_ENDPOINT.regComuAndUserAndUserComu(oneComponent_local_ES, userComu);
 
         // Datos de comunidad de búsqueda.
         Comunidad comunidadSearch = new Comunidad.ComunidadBuilder()
-                .tipoVia("Ronda")
-                .nombreVia("de la Plazuela")
-                .numero((short) 10)
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Ronda")
+                        .nombreVia("de la Plazuela")
+                        .numero((short) 10)
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         List<Comunidad> comunidades = COMU_ENDPOINT.searchComunidades(comunidadSearch).blockingGet().body();
@@ -127,14 +130,14 @@ public abstract class ComunidadControllerTest {
         // Sólo devuelve la primera ocurrencia, porque se ajusta a la regla_1 de búsqueda.
         assertThat(comunidades.size(), is(1));
 
-        assertThat(comunidades.get(0).getNombreComunidad(), is("Ronda de la Plazuela 10 bis"));
-        assertThat(comunidades.get(0).getNumero(), is((short) 10));
-        assertThat(comunidades.get(0).getNombreVia(), is("de la Plazuela"));
-        assertThat(comunidades.get(0).getTipoVia(), is("Ronda"));
-        assertThat(comunidades.get(0).getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
-        assertThat(comunidades.get(0).getMunicipio().getProvincia().getNombre(), is("Albacete"));
-        assertThat(comunidades.get(0).getMunicipio().getCodInProvincia(), is((short) 52));
-        assertThat(comunidades.get(0).getMunicipio().getNombre(), is("Motilleja"));
+        assertThat(comunidades.get(0).getDomicilio().getDomicilioStr(), is("Ronda de la Plazuela 10 bis"));
+        assertThat(comunidades.get(0).getDomicilio().getNumero(), is((short) 10));
+        assertThat(comunidades.get(0).getDomicilio().getNombreVia(), is("de la Plazuela"));
+        assertThat(comunidades.get(0).getDomicilio().getTipoVia(), is("Ronda"));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getProvincia().getProvinciaId(), is((short) 2));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getProvincia().getNombre(), is("Albacete"));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getCodInProvincia(), is((short) 52));
+        assertThat(comunidades.get(0).getDomicilio().getMunicipio().getNombre(), is("Motilleja"));
     }
 
     @Test
@@ -142,9 +145,11 @@ public abstract class ComunidadControllerTest {
     {
         // NO existe comunidad en DB.
         final Comunidad comunidad = new Comunidad.ComunidadBuilder()
-                .tipoVia("Rincón")
-                .nombreVia("Inexistente")
-                .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .tipoVia("Rincón")
+                        .nombreVia("Inexistente")
+                        .municipio(new Municipio((short) 52, new Provincia((short) 2)))
+                        .build())
                 .build();
 
         // Return a not null list with 0 items.

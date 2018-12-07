@@ -3,9 +3,9 @@ package com.didekin.userservice.repository;
 import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.repository.ServiceException;
-import com.didekinlib.model.comunidad.Comunidad;
+import com.didekinlib.model.entidad.comunidad.Comunidad;
+import com.didekinlib.model.relacion.usuariocomunidad.UsuarioComunidad;
 import com.didekinlib.model.usuario.Usuario;
-import com.didekinlib.model.usuariocomunidad.UsuarioComunidad;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,7 +26,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escori
 import static com.didekin.userservice.testutils.UsuarioTestUtils.makeUsuarioComunidad;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
-import static com.didekinlib.model.usuariocomunidad.Rol.ADMINISTRADOR;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -69,8 +68,7 @@ public class UserMockManagerDbPreDevTest {
     @Test
     public void testRegComuAndUserAndUserComu_1() throws ServiceException
     {
-        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1",
-                "door", ADMINISTRADOR.function);
+        UsuarioComunidad userComu = makeUsuarioComunidad(COMU_REAL, USER_JUAN, "portal", "esc", "1", "door");
         // Exec.
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regComuAndUserAndUserComu(userComu)), is(true));
         // Check alta nueva comunidad.
@@ -87,13 +85,13 @@ public class UserMockManagerDbPreDevTest {
     public void testRegUserAndUserComu_1() throws ServiceException
     {
         // Preconditions: there is a comunidad associated to other users.
-        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getC_Id()), is(calle_el_escorial));
+        assertThat(usuarioManager.getComunidadById(calle_el_escorial.getId()), is(calle_el_escorial));
 
         // Nuevo usuarioComunidad.
         UsuarioComunidad newPepe = makeUsuarioComunidad(
-                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getC_Id()).build(),
+                new Comunidad.ComunidadBuilder().c_id(calle_el_escorial.getId()).build(),
                 new Usuario.UsuarioBuilder().copyUsuario(USER_PEPE).userName("new@pepe.com").build(),
-                "portalB", "escB", "plantaZ", "door31", ADMINISTRADOR.function);
+                "portalB", "escB", "plantaZ", "door31");
 
         assertThat(tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(userMockManager.regUserAndUserComu(newPepe)), is(true));
         assertThat(usuarioManager.getComusByUser(newPepe.getUsuario().getUserName()).get(0), is(calle_el_escorial));
