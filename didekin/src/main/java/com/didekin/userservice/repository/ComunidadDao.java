@@ -249,7 +249,7 @@ public class ComunidadDao {
                 .nombreVia(resultSet.getString("nombre_via"))
                 .numero(resultSet.getShort("numero"))
                 .sufijoNumero(resultSet.getString("sufijo_numero"))
-                .build();
+                .buildNoMunicipio();
     }
 
     // ............. HELPER CLASSES ...............

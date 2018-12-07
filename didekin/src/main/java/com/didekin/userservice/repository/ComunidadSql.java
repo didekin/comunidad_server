@@ -15,7 +15,7 @@ public enum ComunidadSql {
 
     INSERT("INSERT INTO comunidad (c_id, tipo_via, nombre_via, numero, sufijo_numero, m_id) VALUES (?,?,?,?,?,?)"),
 
-    INSERT_USUARIO("INSERT INTO usuario_comunidad (c_id, u_id, portal, escalera, planta, puerta, roles) VALUES (?,?,?,?,?,?,?)"), /* Con PKs.*/
+    INSERT_USUARIO("INSERT INTO usuario_comunidad (c_id, u_id, portal, escalera, planta, puerta) VALUES (?,?,?,?,?,?)"), /* Con PKs.*/
 
     DELETE_BY_ID("DELETE FROM comunidad WHERE c_id = ?"),
 

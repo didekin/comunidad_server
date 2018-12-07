@@ -24,8 +24,8 @@ CREATE VIEW incidencia_comunidad_view AS
   SELECT DISTINCT
     ic.incid_id,
     ic.c_id,
+      -- user who initiates the incidencia.
     ic.user_name,
-    -- user who initiates the incidencia.
     ic.descripcion,
     ic.ambito,
     ic.fecha_alta,
