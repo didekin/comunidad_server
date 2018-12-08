@@ -50,3 +50,13 @@ ALTER VIEW incid_importancia_user_view AS
   FROM incidencia_importancia AS im
          INNER JOIN usuario_comunidad AS uc ON im.u_id = uc.u_id AND im.c_id = uc.c_id
          INNER JOIN usuario AS u ON im.u_id = u.u_id;
+
+--changeset pedronevado:9 dbms:mysql
+ALTER VIEW comunidades_municipio_view AS
+  SELECT c.*, m.pr_id, m.m_cd, m.nombre AS m_nombre, pr.nombre AS pr_nombre, ca.ca_id
+  FROM comunidad AS c
+         INNER JOIN municipio AS m
+         INNER JOIN provincia AS pr
+         INNER JOIN comunidad_autonoma AS ca ON c.m_id = m.m_id
+                                                  AND m.pr_id = pr.pr_id
+                                                  AND pr.ca_id = ca.ca_id;
