@@ -31,9 +31,9 @@ public class IncidenciaManagerConfiguration {
         return new UserManagerConnector(usuarioManager);
     }
 
-    @Bean
+    /*@Bean
     public IncidenciaManager incidenciaManager(IncidenciaDao incidenciaDao)
     {
         return new IncidenciaManager(incidenciaDao);
-    }
+    }*/
 }
