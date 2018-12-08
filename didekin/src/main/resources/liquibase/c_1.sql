@@ -1,5 +1,3 @@
-# noinspection SqlResolveForFile
-
 --liquibase formatted sql
 
 --changeset pedronevado:4 dbms:mysql
