@@ -10,8 +10,8 @@ import static com.didekin.userservice.repository.UsuarioTables.USUARIO_TB;
  */
 enum UsuarioSql {
 
-    COMUS_BY_USER("select c_id, tipo_via, nombre_via, numero, sufijo_numero, fecha_alta," +
-            " portal, escalera, planta, puerta, roles," +
+    COMUS_BY_USER("select c_id, tipo_via, nombre_via, numero, sufijo_numero, " +
+            " portal, escalera, planta, puerta, " +
             " m_cd, m_nombre, " +
             " pr_id, pr_nombre" +
             " from usuarios_comunidades_view " +
@@ -64,8 +64,7 @@ enum UsuarioSql {
             " portal = ?," +
             " escalera = ?," +
             " planta = ?," +
-            " puerta = ?," +
-            " roles = ? " +
+            " puerta = ? " +
             " WHERE c_id = ? AND u_id = ?"),
 
     NEW_PASSWORD("UPDATE usuario SET " +
@@ -103,7 +102,7 @@ enum UsuarioSql {
             " where user_name = ? AND c_id = ? "),
 
     USERCOMUS_BY_COMU("select c_id, u_id, user_name, alias," +
-            " portal, escalera, planta, puerta, roles" +
+            " portal, escalera, planta, puerta " +
             " from usuarios_comunidades_view" +
             " where c_id = ? " +
             " ORDER BY alias"),

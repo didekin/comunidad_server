@@ -154,20 +154,10 @@ public class ComunidadDaoDbPreDevTest {
     {
         Connection conn = requireNonNull(comunidadDao.getJdbcTemplate().getDataSource()).getConnection();
         comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
+        // Admite alta duplicada.
+        assertThat(comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn) > 0, is(true));
         if (conn != null) {
             conn.close();
-        }
-
-        try {
-            conn = comunidadDao.getJdbcTemplate().getDataSource().getConnection();
-            comunidadDao.insertComunidad(COMU_LA_PLAZUELA_10, conn);
-            fail();
-        } catch (Exception e) {
-            assertThat(e.getMessage(), allOf(containsString(ServiceException.DUPLICATE_ENTRY), containsString(ServiceException.COMUNIDAD_UNIQUE_KEY)));
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
         }
     }
 
@@ -192,12 +182,11 @@ public class ComunidadDaoDbPreDevTest {
         // Check.
         assertThat(usuariosComunidad.get(2),
                 allOf(
-                        hasProperty("roles", is("pre,inq")),
                         hasProperty("portal", is(usuarioCom.getPortal())),
                         hasProperty("escalera", is(usuarioCom.getEscalera())),
                         hasProperty("planta", is(usuarioCom.getPlanta())),
                         hasProperty("puerta", is(usuarioCom.getPuerta())),
-                        hasProperty("comunidad", is(calle_el_escorial)),
+                        hasProperty("entidad", is(calle_el_escorial)),
                         hasProperty("usuario", is(paco))
                 )
         );

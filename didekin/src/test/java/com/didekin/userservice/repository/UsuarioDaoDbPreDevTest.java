@@ -40,7 +40,6 @@ import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USER_NOT_FOU
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -149,24 +148,6 @@ public class UsuarioDaoDbPreDevTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USER_COMU_NOT_FOUND));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testGetAllRolesFunctionalUser()
-    {
-        List<String> roles = usuarioDao.getAllRolesFunctionalUser(pedro.getUserName());
-        assertThat(roles.size(), equalTo(2));
-        assertThat(roles, hasItems("adm", "inq"));
-
-        roles = usuarioDao.getAllRolesFunctionalUser("luis@luis.com");
-        assertThat(roles.size(), equalTo(2));
-        assertThat(roles, hasItems("adm", "pro"));
-
-        roles = usuarioDao.getAllRolesFunctionalUser("juan@noauth.com");
-        assertThat(roles.size(), equalTo(1));
-        assertThat(roles, hasItems("inq"));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
@@ -439,7 +420,7 @@ public class UsuarioDaoDbPreDevTest {
         // Verificación de datos de comunidad.
         assertThat(userComunidades.get(0).getEntidad(),
                 allOf(
-                        hasProperty("c_Id", is(calle_plazuela_23.getId())),
+                        hasProperty("id", is(calle_plazuela_23.getId())),
                         hasProperty("domicilio", allOf
                                 (
                                         hasProperty("tipoVia", is(calle_plazuela_23.getDomicilio().getTipoVia())),
