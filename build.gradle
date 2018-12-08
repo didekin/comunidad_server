@@ -12,7 +12,7 @@ buildscript {
 
 apply from: '../didekinweb.gradle'
 
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
+sourceCompatibility = "11.0.1"
+targetCompatibility = "11.0.1"
 
 
