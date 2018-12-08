@@ -47,15 +47,15 @@ public class IncidenciaManager {
     private static final Logger logger = LoggerFactory.getLogger(IncidenciaManager.class.getCanonicalName());
 
     private final IncidenciaDao incidenciaDao;
-    @Autowired
-    private GcmUserServiceIf gcmUserComuService;
-    @Autowired
-    private UserManagerConnector usuarioConnector;
+    private final GcmUserServiceIf gcmUserComuService;
+    private final UserManagerConnector usuarioConnector;
 
     @Autowired
-    public IncidenciaManager(IncidenciaDao incidenciaDao)
+    public IncidenciaManager(IncidenciaDao incidenciaDao, GcmUserServiceIf gcmUserComuService, UserManagerConnector usuarioConnector)
     {
         this.incidenciaDao = incidenciaDao;
+        this.gcmUserComuService = gcmUserComuService;
+        this.usuarioConnector = usuarioConnector;
     }
 
     public UserManagerConnector getUsuarioConnector()
