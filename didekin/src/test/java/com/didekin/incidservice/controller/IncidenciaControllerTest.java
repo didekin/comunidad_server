@@ -61,7 +61,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.pedro_lafuente;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.ronda_plazuela_10bis;
 import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.TOKEN_ENCRYP_DECRYP_ERROR;
-import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -70,7 +69,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
@@ -344,8 +342,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testRegIncidImportancia_1() throws ServiceException
     {
-        // Caso OK: usuario NO adm registrado en comunidad. No existe registro previo de incidencia.
-        assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), 4L), is(false));
+        // Caso OK: usuario registrado en comunidad. No existe registro previo de incidencia.
         // Data.
         Incidencia incidencia = doIncidencia(luis.getUserName(), "incidencia_6_4", calle_plazuela_23.getId(), (short) 14);
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia)
@@ -507,11 +504,6 @@ abstract class IncidenciaControllerTest {
                 ENDPOINT.seeIncidImportancia(accessToken, 999L).blockingGet();
         assertThat(response.isSuccessful(), is(false));
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(INCIDENCIA_NOT_FOUND.getHttpMessage()));
-
-        // 2. Existe incidencia, existe usuario, no existe relación usuario_comunidad, ni, por lo tanto, usuario_incidencia.
-        response = ENDPOINT.seeIncidImportancia(accessToken, 5L).blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
