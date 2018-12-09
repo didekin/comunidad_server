@@ -3,6 +3,7 @@ package com.didekin.incidservice.repository;
 import com.didekin.common.repository.RepositoryConfig;
 import com.didekin.userservice.auth.TkProducerConfig;
 import com.didekin.userservice.gcm.GcmConfiguration;
+import com.didekin.userservice.gcm.GcmUserServiceIf;
 import com.didekin.userservice.repository.UsuarioManager;
 
 import org.springframework.context.annotation.Bean;
@@ -31,9 +32,11 @@ public class IncidenciaManagerConfiguration {
         return new UserManagerConnector(usuarioManager);
     }
 
-    /*@Bean
-    public IncidenciaManager incidenciaManager(IncidenciaDao incidenciaDao)
+    @Bean
+    public IncidenciaManager incidenciaManager(IncidenciaDao incidenciaDao,
+                                               GcmUserServiceIf gcmUserService,
+                                               UserManagerConnector userManagerConnector)
     {
-        return new IncidenciaManager(incidenciaDao);
-    }*/
+        return new IncidenciaManager(incidenciaDao, gcmUserService, userManagerConnector);
+    }
 }

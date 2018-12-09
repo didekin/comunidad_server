@@ -116,17 +116,7 @@ public class IncidenciaDao {
                 .nombreVia(rs.getString("comunidad_nombre_via"))
                 .numero(rs.getShort("comunidad_numero"))
                 .sufijoNumero(rs.getString("comunidad_sufijo"))
-                .municipio(
-                        new Municipio(
-                                rs.getShort("m_cd"),
-                                rs.getString("m_nombre"),
-                                new Provincia(
-                                        rs.getShort("pr_id"),
-                                        rs.getString("pr_nombre")
-                                )
-                        )
-                )
-                .build();
+                .buildNoMunicipio();
 
         Comunidad comunidad = new Comunidad.ComunidadBuilder()
                 .c_id(rs.getLong("c_id"))

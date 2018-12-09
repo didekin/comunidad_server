@@ -170,6 +170,12 @@ public class UsuarioDao {
             throw new ServiceException(USER_NOT_FOUND);
         }
         return usuario;
+
+        /* (rs, rowNum) -> doUserComuOnlyRoles(
+                            rs,
+                            doUsuarioNoPswd(rs),
+                            new Comunidad.ComunidadBuilder().c_id(rs.getLong("c_id")).build()
+                    )*/
     }
 
     Usuario getUserDataById(long idUsuario) throws ServiceException

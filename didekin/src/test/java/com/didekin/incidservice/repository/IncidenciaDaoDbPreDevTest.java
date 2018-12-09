@@ -724,23 +724,27 @@ public class IncidenciaDaoDbPreDevTest {
     @Test
     public void test_SeeIncidenciaById()
     {
-        assertThat(incidenciaDao.seeIncidenciaById(1L), allOf(
-                hasProperty("incidenciaId", is(1L)),
-                hasProperty("comunidad",
-                        allOf(
-                                hasProperty("c_Id", is(1L)),
-                                hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
-                                hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
-                                hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
-                                hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero()))
-                        )
-                ),
-                hasProperty("userName", is(luis.getUserName())),
-                hasProperty("descripcion", is("incidencia_1")),
-                hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 41))),
-                hasProperty("fechaAlta", notNullValue()),
-                hasProperty("fechaCierre", nullValue())
-        ));
+        assertThat(incidenciaDao.seeIncidenciaById(1L),
+                allOf(
+                        hasProperty("incidenciaId", is(1L)),
+                        hasProperty("comunidad",
+                                allOf(
+                                        hasProperty("id", is(ronda_plazuela_10bis.getId())),
+                                        hasProperty("domicilio",
+                                                allOf(
+                                                        hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
+                                                        hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
+                                                        hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
+                                                        hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero()))
+                                                ))
+                                )
+                        ),
+                        hasProperty("userName", is(luis.getUserName())),
+                        hasProperty("descripcion", is("incidencia_1")),
+                        hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 41))),
+                        hasProperty("fechaAlta", notNullValue()),
+                        hasProperty("fechaCierre", nullValue())
+                ));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -763,11 +767,14 @@ public class IncidenciaDaoDbPreDevTest {
                                         hasProperty("fechaAlta", notNullValue()),
                                         hasProperty("comunidad",
                                                 allOf(
-                                                        hasProperty("c_Id", is(1L)),
-                                                        hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
-                                                        hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
-                                                        hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
-                                                        hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero()))
+                                                        hasProperty("id", is(1L)),
+                                                        hasProperty("domicilio",
+                                                                allOf(
+                                                                        hasProperty("tipoVia", is(ronda_plazuela_10bis.getDomicilio().getTipoVia())),
+                                                                        hasProperty("nombreVia", is(ronda_plazuela_10bis.getDomicilio().getNombreVia())),
+                                                                        hasProperty("numero", is(ronda_plazuela_10bis.getDomicilio().getNumero())),
+                                                                        hasProperty("sufijoNumero", is(ronda_plazuela_10bis.getDomicilio().getSufijoNumero())))
+                                                        )
                                                 )
                                         )
                                 )
@@ -781,7 +788,7 @@ public class IncidenciaDaoDbPreDevTest {
                                                         hasProperty("uId", is(pedro.getuId()))
                                                 )
                                         ),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId())))
+                                        hasProperty("entidad", hasProperty("id", is(ronda_plazuela_10bis.getId())))
                                 )
                         ),
                         hasProperty("importancia", is((short) 1)),
@@ -881,7 +888,7 @@ public class IncidenciaDaoDbPreDevTest {
 
         // Verificamos que no muestra incidencias con antigüedad > 2 años.
         incidencia = incidenciaDao.seeIncidenciaById(7L);
-        assertThat(incidencia, hasProperty("comunidad", hasProperty("c_Id", is(calle_olmo_55.getId()))));
+        assertThat(incidencia, hasProperty("comunidad", hasProperty("id", is(calle_olmo_55.getId()))));
         assertThat(incidencia.getFechaAlta().compareTo(from(now().minus(730, DAYS))) < 0, is(true));
     }
 
@@ -905,7 +912,7 @@ public class IncidenciaDaoDbPreDevTest {
         assertThat(incidenciaUsers.get(0).getIncidencia(),
                 allOf(
                         hasProperty("incidenciaId", is(1L)),
-                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId()))),
+                        hasProperty("comunidad", hasProperty("id", is(ronda_plazuela_10bis.getId()))),
                         hasProperty("userName", is(luis.getUserName())),
                         hasProperty("descripcion", is("incidencia_1")),
                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 41))),
@@ -934,7 +941,7 @@ public class IncidenciaDaoDbPreDevTest {
                         hasProperty("incidencia",
                                 allOf(
                                         hasProperty("incidenciaId", is(3L)),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(ronda_plazuela_10bis.getId())))
+                                        hasProperty("comunidad", hasProperty("id", is(ronda_plazuela_10bis.getId())))
                                 )
                         ),
                         hasProperty("fechaAltaResolucion", notNullValue())

@@ -40,28 +40,6 @@ public class UserManagerConnectorDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
-    public void test_CheckAuthorityInComunidad()
-    {
-        assertThat(connector.checkAuthorityInComunidad(pedro.getUserName(), 1L), is(true));
-        assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_CheckIncidModificationPower()
-    {
-        // Premises: user with rol 'inq' in DB.
-        assertThat(connector.checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
-        // Exec and check: user initiates incidencia.
-        assertThat(connector.checkIncidModificationPower(juan.getUserName(),
-                new Incidencia.IncidenciaBuilder().incidenciaId(2L).userName(juan.getUserName()).build()),
-                is(true));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
     public void test_CheckUserInComunidad()
     {
         assertThat(connector.checkUserInComunidad(pedro.getUserName(), 1L), is(true));

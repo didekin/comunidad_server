@@ -321,6 +321,14 @@ public class IncidenciaManager {
                 })
                 .map(incidenciaOut -> incidenciaDao.regIncidImportancia(
                         new IncidImportancia.IncidImportanciaBuilder(regIncidencia(incidenciaOut))
+                                .usuarioComunidad(new UsuarioComunidad.UserComuBuilder(
+                                        new Comunidad.ComunidadBuilder()
+                                                .c_id(incidenciaOut.getComunidadId())
+                                                .build(),
+                                        new Usuario.UsuarioBuilder()
+                                                .copyUsuario(usuarioConnector.completeUser(userName))
+                                                .build()
+                                ).build())
                                 .importancia(incidImportancia.getImportancia())
                                 .build()
                         )

@@ -173,29 +173,10 @@ public class IncidenciaManagerDbPreDevTest {
     @Test
     public void testDeleteIncidencia_1() throws ServiceException
     {
-        // Premises: usuario iniciador incidencia; no ADM.
+        // Premises: usuario iniciador incidencia.
         assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(2L).getUserName()), is(true));
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
         // Exec and check.
         assertThat(incidenciaManager.deleteIncidencia(juan.getUserName(), 2L), is(1));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testDeleteIncidencia_2() throws ServiceException
-    {
-        // Premises: no usuario iniciador; no ADM.
-        assertThat(juan.getUserName().equals(incidenciaManager.seeIncidenciaById(4L).getUserName()), is(false));
-        incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 4L);
-        // Exec and check.
-        try {
-            incidenciaManager.deleteIncidencia(juan.getUserName(), 4L);
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
-        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -234,50 +215,14 @@ public class IncidenciaManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidencia_3() throws ServiceException
-    {
-        // Premisas: usuario no ADM ni iniciador incidencia.
-        Incidencia incidencia = incidenciaManager.seeIncidenciaById(5L);
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
-        // Datos.
-        incidencia = new Incidencia.IncidenciaBuilder().copyIncidencia(incidencia).descripcion("new_description").build();
-        // Exec and check: returns 0.
-        assertThat(incidenciaManager.modifyIncidencia(juan.getUserName(), incidencia), is(0));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
     public void testModifyIncidImportancia_1() throws ServiceException
-    {
-        // Premisas: SIN registro previo de incidImportancia; NO usuario ADM, ni iniciador; existe registro de incidencia.
-        IncidAndResolBundle resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), 4L);
-        assertThat(resolBundle.getIncidImportancia().getImportancia(), is((short) 0));
-        assertThat(resolBundle.getIncidImportancia().getFechaAlta(), nullValue());
-        Incidencia incidencia = resolBundle.getIncidImportancia().getIncidencia();
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
-        /* Data.*/
-        IncidImportancia newIncidImp = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 3).usuarioComunidad(juan_plazuela23).build();
-        // Exec: inserta registro incidImportancia.
-        assertThat(incidenciaManager.modifyIncidImportancia(juan.getUserName(), newIncidImp), is(1));
-        // Check.
-        resolBundle = incidenciaManager.seeIncidImportanciaByUser(juan.getUserName(), incidencia.getIncidenciaId());
-        assertThat(resolBundle.getIncidImportancia().getImportancia(), is((short) 3));
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testModifyIncidImportancia_2() throws ServiceException
     {
         // Premisas: usuario iniciador ( -> existe registro previo de incidImportancia); no ADM.
         final IncidImportancia incidImportancia = incidenciaManager.seeIncidImportanciaByUser(paco.getUserName(), 6L).getIncidImportancia();
         Incidencia incidencia = incidImportancia.getIncidencia();
         assertThat(incidencia.getComunidad(), is(calle_olmo_55));
         assertThat(incidencia.getUserName(), is(paco.getUserName()));
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), calle_olmo_55.getId()), is(false));
+//        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(paco.getUserName(), calle_olmo_55.getId()), is(false));
         assertThat(incidImportancia.getImportancia(), is((short) 2));
         // Data
         IncidImportancia incidImpIn = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 1).usuarioComunidad(paco_olmo).build();
@@ -290,7 +235,7 @@ public class IncidenciaManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_3() throws ServiceException
+    public void testModifyIncidImportancia_2() throws ServiceException
     {
         // Premisa: CON registro previo de incidImportancia, sin cambiar nada. Usuario no iniciador, función ADM.
         IncidImportancia incidImportancia = incidenciaDao.seeIncidImportanciaByUser(pedro.getUserName(), 2L).getIncidImportancia();
@@ -307,7 +252,7 @@ public class IncidenciaManagerDbPreDevTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyIncidImportancia_4() throws ServiceException
+    public void testModifyIncidImportancia_3() throws ServiceException
     {
         // Premisa: incidencia is closed. Usuario inicidador.
         Incidencia incidencia = incidenciaManager.seeIncidenciaById(7L);
@@ -343,30 +288,6 @@ public class IncidenciaManagerDbPreDevTest {
         } catch (ServiceException e) {
             assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
         }
-    }
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testModifyIncidImportancia_5() throws ServiceException
-    {
-        // Premisa: importancia <= 0; usuario iniciador.
-        Incidencia incidencia = incidenciaManager.seeIncidenciaById(6L);
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(paco.getUserName(), incidencia), is(true));
-        IncidImportancia incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(paco_olmo).importancia((short) 0).build();
-        // Exec and check: inserta incidencia e incidenciaImportancia. Devuelve 1, porque modifica incidencia aunque no haya variación.
-        assertThat(incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidNew), is(1));
-        // Verificamos que si importancia > 0, el método devolvería 2.
-        incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(paco_olmo).importancia((short) 2).build();
-        assertThat(incidenciaManager.modifyIncidImportancia(paco.getUserName(), incidNew), is(2));
-
-        // Premisa: importancia <= 0; usuario NO iniciador NO adm.
-        incidencia = incidenciaManager.seeIncidenciaById(4L);
-        assertThat(incidenciaManager.getUsuarioConnector().checkIncidModificationPower(juan.getUserName(), incidencia), is(false));
-        incidNew = new IncidImportancia.IncidImportanciaBuilder(incidencia).importancia((short) 0).usuarioComunidad(juan_plazuela23).build();
-        // Devuelve cero: no tiene poder para modificar incidencia y importancia = 0.
-        assertThat(incidenciaManager.modifyIncidImportancia(juan_plazuela23.getUsuario().getUserName(), incidNew), is(0));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
@@ -536,8 +457,7 @@ public class IncidenciaManagerDbPreDevTest {
     @Test
     public void testRegIncidImportancia_2()
     {
-        // Premisas: no existe incidencia;  iniciador no es usuario ADM.
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(juan.getUserName(), 2L), is(false));
+        // Premisas: no existe incidencia.
         Incidencia incidencia = doIncidencia(juan.getUserName(), "Nueva incidencia en Cámaras de vigilancia", 2L, (short) 11);
         // Data
         IncidImportancia incidImportancia = new IncidImportancia.IncidImportanciaBuilder(incidencia).usuarioComunidad(pedro_lafuente).importancia((short) 4).build();
@@ -673,17 +593,19 @@ public class IncidenciaManagerDbPreDevTest {
                                         hasProperty("incidenciaId", is(4L)),
                                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 37))),
                                         hasProperty("fechaAlta", notNullValue()),
-                                        hasProperty("comunidad", hasProperty(
-                                                "domicilio", allOf
-                                                        (
-                                                                hasProperty("c_Id", is(calle_plazuela_23.getId())),
-                                                                hasProperty("tipoVia", is(calle_plazuela_23.getDomicilio().getTipoVia())),
-                                                                hasProperty("nombreVia", is(calle_plazuela_23.getDomicilio().getNombreVia())),
-                                                                hasProperty("numero", is(calle_plazuela_23.getDomicilio().getNumero())),
-                                                                hasProperty("sufijoNumero", is(calle_plazuela_23.getDomicilio().getSufijoNumero()))
-                                                        )
+                                        hasProperty("comunidad",
+                                                allOf(
+                                                        hasProperty("domicilio",
+                                                                allOf
+                                                                        (
+                                                                                hasProperty("tipoVia", is(calle_plazuela_23.getDomicilio().getTipoVia())),
+                                                                                hasProperty("nombreVia", is(calle_plazuela_23.getDomicilio().getNombreVia())),
+                                                                                hasProperty("numero", is(calle_plazuela_23.getDomicilio().getNumero())),
+                                                                                hasProperty("sufijoNumero", is(calle_plazuela_23.getDomicilio().getSufijoNumero()))
+                                                                        )
+                                                        ),
+                                                        hasProperty("id", is(calle_plazuela_23.getId()))
                                                 )
-
                                         )
                                 )
                         ),
@@ -696,7 +618,7 @@ public class IncidenciaManagerDbPreDevTest {
                                                         hasProperty("uId", is(juan.getuId()))
                                                 )
                                         ),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getId())))
+                                        hasProperty("entidad", hasProperty("id", is(calle_plazuela_23.getId())))
                                 )
                         ),
                         hasProperty("importancia", is((short) 0)),
@@ -817,7 +739,7 @@ public class IncidenciaManagerDbPreDevTest {
                         hasProperty("incidencia",
                                 allOf(
                                         hasProperty("incidenciaId", is(5L)),
-                                        hasProperty("comunidad", hasProperty("c_Id", is(4L)))   // Difference with the DAO.
+                                        hasProperty("comunidad", hasProperty("id", is(4L)))   // Difference with the DAO.
                                 ))
                 )
         );

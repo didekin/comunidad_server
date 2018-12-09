@@ -48,7 +48,7 @@ public class UserManagerConnector {
     {
         logger.debug("checkAuthorityInComunidad()");
         /*return usuarioManager.completeWithUserComuRoles(userName, comunidadId).hasAdministradorAuthority();*/
-        return false; // TODO
+        return true; // TODO: cambiar condición.
     }
 
     public String checkHeaderGetUserName(String httpHeaderIn)
