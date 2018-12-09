@@ -165,23 +165,6 @@ public class UsuarioManager {
                 .findFirst().get();
     }
 
-    List<String> getRolesSecurity(Usuario usuario)
-    {
-        logger.info("getRolesSecurity()");
-
-        /*List<String> functionalRoles = usuarioDao.getAllRolesFunctionalUser(usuario.getUserName());
-        List<String> authorities = new ArrayList<>();
-
-        for (String functionalRole : functionalRoles) {
-            final String authority = getRolFromFunction(functionalRole).authority;
-            if (!authorities.contains(authority)) {
-                authorities.add(authority);
-            }
-        }
-        return authorities;*/
-        return null; // TODO: descomentar.
-    }
-
     /**
      * @return an instance of usuarioComunidad or null, if there exists the comunidad.
      * @throws ServiceException COMUNIDAD_NOT_FOUND, if there is not userComu in DB and there doesn't exist the comunidad.
@@ -201,18 +184,6 @@ public class UsuarioManager {
     {
         logger.info("getUserData()");
         return usuarioDao.getUserDataByName(email);
-    }
-
-    boolean isOldestUserComu(Usuario user, long comunidadId) throws ServiceException
-    {
-        logger.debug("isOldestOrAdmonUserComu()");
-        long idOldestUser;
-        try {
-            idOldestUser = usuarioDao.getOldestUserComuId(comunidadId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ServiceException(COMUNIDAD_NOT_FOUND);
-        }
-        return user.getuId() == idOldestUser;
     }
 
     public boolean isUserInComunidad(String userName, long comunidadId)
@@ -545,7 +516,7 @@ public class UsuarioManager {
     {
         logger.debug("checkIncidModificationPower()");
         /* return isOldestUserComu(user, comunidad.getId()) || completeWithUserComuRoles(user.getUserName(), comunidad.getId()).hasAdministradorAuthority();*/
-        return false; // TODO
+        return true; // TODO
     }
 
 

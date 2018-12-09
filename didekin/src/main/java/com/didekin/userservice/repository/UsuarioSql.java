@@ -71,11 +71,6 @@ enum UsuarioSql {
             " password = ? " +
             " WHERE u_id = ?"),
 
-    OLDEST_USER_COMU("SELECT u_id " +
-            " FROM usuario_comunidad " +
-            " WHERE c_id = ? " +
-            " ORDER BY fecha_alta ASC LIMIT 1"),
-
     PK("u_id"),
 
     ROLES_ALL_FUNC("SELECT DISTINCT cu.roles " +

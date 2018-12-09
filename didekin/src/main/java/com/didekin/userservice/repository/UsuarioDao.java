@@ -34,7 +34,6 @@ import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USERCOMU;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER_ALIAS;
 import static com.didekin.userservice.repository.UsuarioSql.NEW_PASSWORD;
-import static com.didekin.userservice.repository.UsuarioSql.OLDEST_USER_COMU;
 import static com.didekin.userservice.repository.UsuarioSql.PK;
 import static com.didekin.userservice.repository.UsuarioSql.ROLES_ALL_FUNC;
 import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKENS_GCM_AUTH_BY_ID;
@@ -157,17 +156,6 @@ public class UsuarioDao {
     {
         Integer maxPk = jdbcTemplate.queryForObject(UsuarioSql.MAX_PK.toString(), Integer.class);
         return (maxPk == null) ? -1L : maxPk;
-    }
-
-    long getOldestUserComuId(long comunidadId)
-    {
-        logger.debug("getOldestUserComuId(), jdbcUrl: " + requireNonNull(jdbcTemplate.getDataSource()).toString());
-
-        return requireNonNull(jdbcTemplate.queryForObject(
-                OLDEST_USER_COMU.toString(),
-                new Long[]{comunidadId},
-                (resultSet, rowNum) -> resultSet.getLong("u_id"))
-        );
     }
 
     Usuario getUserDataByName(String userName)

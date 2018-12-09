@@ -327,29 +327,6 @@ public class UsuarioManagerDbPreDevTest {
                 true);
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testIsOldestUserComuId_1() throws ServiceException
-    {
-        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(3L).build(), 1L), is(true));
-        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(5L).build(), 1L), is(false));
-        assertThat(usuarioManager.isOldestUserComu(new Usuario.UsuarioBuilder().uId(7L).build(), 2L), is(true));
-    }
-
-    @Test
-    public void testIsOldestUserComuId_2() throws ServiceException
-    {
-        // Caso: la comunidad no existe en BD.
-        Usuario pedroUser = new Usuario.UsuarioBuilder().userName(pedro.getUserName()).password("password3").build();
-        try {
-            assertThat(usuarioManager.isOldestUserComu(pedroUser, 999L), is(true));
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(COMUNIDAD_NOT_FOUND));
-        }
-    }
-
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
@@ -420,35 +397,24 @@ public class UsuarioManagerDbPreDevTest {
     public void testModifyComuData() throws ServiceException
     {
         // Caso 1: usuario ADM, no 'oldest' in comunidad.
-        Comunidad comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(ronda_plazuela_10bis)
-                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("Tris").build())
+        Comunidad comunidadChanged = new Comunidad.ComunidadBuilder()
+                .copyComunidadNonNullValues(ronda_plazuela_10bis)
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .copyDomicilioNonNullValues(ronda_plazuela_10bis.getDomicilio())
+                        .sufijoNumero("Tris")
+                        .build())
                 .build();
-        assertThat(usuarioManager.checkComuDataModificationPower(luis, ronda_plazuela_10bis), is(true));
         assertThat(usuarioManager.modifyComuData(luis, comunidadChanged), is(1));
+
         // Caso 2: usuario 'oldest' in comunidad, no ADM.
         comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_la_fuente_11)
-                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("QAC").build())
+                .domicilio(new Domicilio.DomicilioBuilder()
+                        .copyDomicilioNonNullValues(calle_la_fuente_11.getDomicilio())
+                        .sufijoNumero("QAC")
+                        .build())
                 .build();
         assertThat(usuarioManager.checkComuDataModificationPower(juan, calle_la_fuente_11), is(true));
         assertThat(usuarioManager.modifyComuData(juan, comunidadChanged), is(1));
-
-        // Caso 3: usuario no ADM, no 'oldest' in comunidad.
-        UsuarioComunidad userComu = makeUsuarioComunidad(
-                calle_el_escorial,
-                luis,
-                "portalB", "escB", "plantaZ", "door31");
-        assertThat(usuarioManager.regUserComu(userComu), is(1));
-        assertThat(usuarioManager.checkComuDataModificationPower(luis, calle_el_escorial), is(false));
-
-        comunidadChanged = new Comunidad.ComunidadBuilder().copyComunidadNonNullValues(calle_el_escorial)
-                .domicilio(new Domicilio.DomicilioBuilder().sufijoNumero("TRAS").build())
-                .build();
-        try {
-            usuarioManager.modifyComuData(luis, comunidadChanged);
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(UNAUTHORIZED_TX_TO_USER));
-        }
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
@@ -887,21 +853,6 @@ public class UsuarioManagerDbPreDevTest {
     }
 
     // ======================================== CHECKERS ========================================
-
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
-    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void test_CheckComuDataModificationPower()
-    {
-        // No oldest, but adm.
-        assertThat(usuarioManager.checkComuDataModificationPower(
-                new Usuario.UsuarioBuilder().copyUsuario(luis).build(), new Comunidad.ComunidadBuilder().c_id(1L).build()
-        ), is(true));
-        // Usuario oldest no adm.
-        assertThat(usuarioManager.checkComuDataModificationPower(
-                new Usuario.UsuarioBuilder().copyUsuario(juan).build(), new Comunidad.ComunidadBuilder().c_id(2L).build()
-        ), is(true));
-    }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")

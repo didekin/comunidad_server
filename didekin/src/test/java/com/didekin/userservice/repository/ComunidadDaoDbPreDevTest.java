@@ -227,13 +227,13 @@ public class ComunidadDaoDbPreDevTest {
                 .build();
         assertThat(comunidadDao.modifyComuData(comunidad), is(1));
         Comunidad comunidadDb = comunidadDao.getComunidadById(4L);
-        assertThat(comunidadDb, allOf(
+        assertThat(comunidadDb, hasProperty("domicilio", allOf(
                 hasProperty("nombreVia", equalTo(comunidad.getDomicilio().getNombreVia())),
                 hasProperty("tipoVia", equalTo(comunidad.getDomicilio().getTipoVia())),
                 hasProperty("numero", equalTo(comunidad.getDomicilio().getNumero())),
                 hasProperty("sufijoNumero", equalTo(comunidad.getDomicilio().getSufijoNumero())),
                 hasProperty("municipio", equalTo(comunidad.getDomicilio().getMunicipio()))
-        ));
+        )));
     }
 
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
