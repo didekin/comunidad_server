@@ -254,38 +254,6 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testModifyResolucion_3() throws IOException
-    {
-        // Caso USERCOMU_WRONG_INIT: el usuario no está asociado a la comunidad.
-        Resolucion resolucion = ENDPOINT.seeResolucion(
-                getUserConnector().insertTokenGetHeaderStr(luis.getUserName()),
-                3L)
-                .blockingGet().body();
-        try {
-            incidenciaManager.getUsuarioConnector().checkUserInComunidad(paco.getUserName(), resolucion.getComunidadId());
-            fail();
-        } catch (ServiceException e) {
-            assertThat(e.getExceptionMsg(), is(USERCOMU_WRONG_INIT));
-        }
-        // Nuevos datos.
-        resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
-                .copyResolucion(resolucion)
-                .avances(null)
-                .costeEstimado(1111)
-                .build();
-        // Check.
-        Response<Integer> response = ENDPOINT.modifyResolucion(
-                getUserConnector().insertTokenGetHeaderStr(paco.getUserName()),
-                resolucion)
-                .blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
     public void testModifyResolucion_4() throws ServiceException
     {
         // Caso OK: avance con descripción vacía; devuelve 1.
@@ -444,27 +412,6 @@ abstract class IncidenciaControllerTest {
                         regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), resolucion)
                         .blockingGet().body(),
                 is(1));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testRegResolucion_3() throws IOException
-    {
-        // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getId(), (short) 22);
-        Resolucion resolucion = doResolucion(
-                incidencia,
-                luis.getUserName(),
-                "resol_incid_5_4",
-                22222,
-                now().plus(12, DAYS));
-        Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(pedro.getUserName()), resolucion)
-                        .blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USERCOMU_WRONG_INIT.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
