@@ -51,7 +51,6 @@ import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenci
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doIncidenciaWithIdDescUsername;
 import static com.didekin.incidservice.testutils.IncidenciaTestUtils.doResolucion;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_el_escorial;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente_11;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
@@ -249,27 +248,6 @@ abstract class IncidenciaControllerTest {
                 .avances(avances)
                 .build();
         assertThat(ENDPOINT.modifyResolucion(accessToken, resolucion).blockingGet().body(), is(2));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
-    public void testModifyResolucion_2() throws IOException
-    {
-        // Caso UNAUTHORIZED_TX_TO_USER: usuario no ADM.
-        final String accessToken = getUserConnector().insertTokenGetHeaderStr(luis.getUserName());
-        Resolucion resolucion = ENDPOINT.seeResolucion(accessToken, 4L).blockingGet().body();
-        assertThat(incidenciaManager.getUsuarioConnector().checkAuthorityInComunidad(luis.getUserName(), calle_la_fuente_11.getId()), is(false));
-        // Nuevos datos.
-        resolucion = new Resolucion.ResolucionBuilder(resolucion.getIncidencia())
-                .copyResolucion(resolucion)
-                .costeEstimado(1111)
-                .build();
-
-        Response<Integer> response = ENDPOINT.modifyResolucion(accessToken, resolucion).blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
