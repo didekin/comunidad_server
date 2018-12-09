@@ -450,28 +450,6 @@ abstract class IncidenciaControllerTest {
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
-    public void testRegResolucion_2() throws IOException
-    {
-        // Caso: usuario sin funciones administrador.
-        // Preconditions
-        assertThat(getUserConnector().checkAuthorityInComunidad(luis.getUserName(), calle_plazuela_23.getId()), is(false));
-        Incidencia incidencia = doIncidenciaWithId(luis.getUserName(), 5L, calle_plazuela_23.getId(), (short) 22);
-        Resolucion resolucion = doResolucion(incidencia,
-                luis.getUserName(),
-                "resol_incid_5_4",
-                22222,
-                now().plus(12, DAYS));
-        Response<Integer> response =
-                ENDPOINT.regResolucion(getUserConnector().insertTokenGetHeaderStr(luis.getUserName()), resolucion)
-                        .blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(UNAUTHORIZED_TX_TO_USER.getHttpMessage()));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_b.sql", "classpath:insert_incidencia_b.sql"})
-    @Sql(executionPhase = AFTER_TEST_METHOD,
-            scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
-    @Test
     public void testRegResolucion_3() throws IOException
     {
         // Caso: usuarioComunidad no relacionado con comunidad de la incidencia.
