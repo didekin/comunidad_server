@@ -7,7 +7,6 @@ import com.didekin.common.DbPre;
 import com.didekin.common.LocalDev;
 import com.didekin.common.controller.RetrofitConfigurationDev;
 import com.didekin.common.controller.RetrofitConfigurationPre;
-import com.didekin.common.repository.ServiceException;
 import com.didekin.userservice.auth.EncrypTkProducerBuilder;
 import com.didekin.userservice.repository.UserMockManager;
 import com.didekin.userservice.repository.UserMockRepoConfiguration;
@@ -152,34 +151,6 @@ public abstract class UserComuControllerTest {
         UsuarioComunidad userComu = USERCOMU_ENDPOINT.getUserComuByUserAndComu(httpAuthHeader, 2L).blockingGet().body();
         assertThat(userComu.getEntidad(), is(COMU_LA_FUENTE));
         assertThat(userComu.getUsuario().getAlias(), is("pedronevado"));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testIsOldestAdmonUserComu_1() throws ServiceException
-    {
-        // luis: PRO, not oldest, in comunidad 3.
-        UsuarioComunidad usuarioComunidad = new UsuarioComunidad.UserComuBuilder(calle_el_escorial, luis)
-                .portal("portal")
-                .planta("planta2")
-                .puerta("puertaB").build();
-        final String accessToken = userMockManager.insertAuthTkGetNewAuthTkStr(luis.getUserName());
-        int isInserted = USERCOMU_ENDPOINT.regUserComu(accessToken, usuarioComunidad).blockingGet().body();
-        assertThat(isInserted, is(1));
-        assertThat(USERCOMU_ENDPOINT.isOldestOrAdmonUserComu(accessToken, calle_el_escorial.getId()).blockingGet().body(), is(false));
-    }
-
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
-    @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
-    @Test
-    public void testIsOldestAdmonUserComu_2() throws ServiceException, IOException
-    {
-        Response<Boolean> response = USERCOMU_ENDPOINT
-                .isOldestOrAdmonUserComu(userMockManager.insertAuthTkGetNewAuthTkStr(pedro.getUserName()), 999L)
-                .blockingGet();
-        assertThat(response.isSuccessful(), is(false));
-        assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(COMUNIDAD_NOT_FOUND.getHttpMessage()));
     }
 
     @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
