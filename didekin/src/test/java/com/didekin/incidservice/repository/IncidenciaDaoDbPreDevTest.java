@@ -860,7 +860,7 @@ public class IncidenciaDaoDbPreDevTest {
         assertThat(incidencia,
                 allOf(
                         hasProperty("incidenciaId", is(5L)),
-                        hasProperty("comunidad", hasProperty("c_Id", is(calle_plazuela_23.getId()))),
+                        hasProperty("comunidad", hasProperty("id", is(calle_plazuela_23.getId()))),
                         hasProperty("userName", is(paco.getUserName())),
                         hasProperty("descripcion", is("incidencia_5")),
                         hasProperty("ambitoIncidencia", hasProperty("ambitoId", is((short) 3))),

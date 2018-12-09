@@ -60,3 +60,32 @@ ALTER VIEW comunidades_municipio_view AS
          INNER JOIN comunidad_autonoma AS ca ON c.m_id = m.m_id
                                                   AND m.pr_id = pr.pr_id
                                                   AND pr.ca_id = ca.ca_id;
+
+--changeset pedronevado:10 dbms:mysql
+ALTER VIEW incid_importancia_resolucion_view AS
+  SELECT DISTINCT
+                  im.incid_id,
+                  im.u_id,
+      -- usuario who ranked importancia.
+                  iuv.user_name,
+                  iuv.alias,
+                  im.importancia,
+                  im.fecha_alta,
+                  icv.descripcion,
+                  icv.ambito,
+                  icv.fecha_alta    AS fecha_alta_incidencia,
+                  icv.user_name     AS incid_user_initiator,
+                  icv.c_id,
+                  icv.tipo_via      AS comunidad_tipo_via,
+                  icv.nombre_via    AS comunidad_nombre_via,
+                  icv.numero        AS comunidad_numero,
+                  icv.sufijo_numero AS comunidad_sufijo,
+                  re.fecha_alta     AS fecha_alta_resolucion
+  FROM incidencia_importancia AS im
+         INNER JOIN incid_importancia_user_view AS iuv
+           ON im.incid_id = iuv.incid_id AND im.u_id = iuv.u_id
+         INNER JOIN incidencia_comunidad_view AS icv
+           ON iuv.incid_id = icv.incid_id
+         LEFT JOIN incidencia_resolucion AS re
+           ON icv.incid_id = re.incid_id
+  WHERE icv.fecha_cierre IS NULL;
