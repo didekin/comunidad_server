@@ -1,6 +1,6 @@
 --liquibase formatted sql
 
---changeset pedronevado:4 dbms:mysql
+--changeset pedronevado:1 dbms:mysql
 ALTER TABLE comunidad
   drop index tipo_via,
   drop column fecha_alta,
@@ -8,7 +8,7 @@ ALTER TABLE comunidad
   ADD COLUMN id_fiscal VARCHAR(9) NULL,
   ADD COLUMN state ENUM ('op', 'cl') NOT NULL;
 
---changeset pedronevado:5 dbms:mysql
+--changeset pedronevado:2 dbms:mysql
 CREATE TABLE comunidad_apoderado
 (
   c_id         INTEGER UNSIGNED NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE comunidad_apoderado
     ON DELETE CASCADE
 );
 
---changeset pedronevado:6 dbms:mysql
+--changeset pedronevado:3 dbms:mysql
 ALTER TABLE usuario_comunidad
 RENAME TO comunidad_miembro,
   drop column roles,
@@ -36,13 +36,13 @@ RENAME TO comunidad_miembro,
   drop column fecha_mod,
   ADD COLUMN state ENUM ('op', 'cl') NOT NULL;
 
---changeset pedronevado:5 dbms:mysql
+--changeset pedronevado:4 dbms:mysql
 ALTER TABLE usuario
   drop column fecha_alta,
   drop column fecha_mod,
   ADD COLUMN state ENUM ('op', 'cl') NOT NULL;
 
---changeset pedronevado:7 dbms:mysql
+--changeset pedronevado:5 dbms:mysql
 CREATE TABLE usuario_appinstance
 (
   u_id      INTEGER UNSIGNED  NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE usuario_appinstance
     ON DELETE CASCADE
 );
 
---changeset pedronevado:8 dbms:mysql
+--changeset pedronevado:6 dbms:mysql
 ALTER VIEW usuarios_comunidades_view AS
   SELECT u.user_name,
          u.u_id,
@@ -84,14 +84,14 @@ ALTER VIEW usuarios_comunidades_view AS
                                          AND c.m_id = m.m_id
                                          AND m.pr_id = pr.pr_id;
 
---changeset pedronevado:9 dbms:mysql
+--changeset pedronevado:7 dbms:mysql
 ALTER VIEW incid_importancia_user_view AS
   SELECT DISTINCT im.incid_id, im.c_id, im.u_id, u.user_name, u.alias
   FROM incidencia_importancia AS im
          INNER JOIN usuario_comunidad AS uc ON im.u_id = uc.u_id AND im.c_id = uc.c_id
          INNER JOIN usuario AS u ON im.u_id = u.u_id;
 
---changeset pedronevado:10 dbms:mysql
+--changeset pedronevado:8 dbms:mysql
 ALTER VIEW comunidades_municipio_view AS
   SELECT c.*, m.pr_id, m.m_cd, m.nombre AS m_nombre, pr.nombre AS pr_nombre, ca.ca_id
   FROM comunidad AS c
@@ -101,7 +101,7 @@ ALTER VIEW comunidades_municipio_view AS
                                                   AND m.pr_id = pr.pr_id
                                                   AND pr.ca_id = ca.ca_id;
 
---changeset pedronevado:11 dbms:mysql
+--changeset pedronevado:9 dbms:mysql
 ALTER VIEW incid_importancia_resolucion_view AS
   SELECT DISTINCT im.incid_id,
                   im.u_id,
