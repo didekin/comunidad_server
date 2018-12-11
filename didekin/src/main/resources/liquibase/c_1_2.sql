@@ -1,3 +1,5 @@
+--liquibase formatted sql
+
 --changeset pedronevado:120 dbms:mysql
 ALTER VIEW usuarios_comunidades_view AS
   SELECT u.user_name,
