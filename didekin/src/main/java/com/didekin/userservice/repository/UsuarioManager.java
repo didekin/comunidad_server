@@ -15,7 +15,6 @@ import org.jose4j.jwt.MalformedClaimException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.MailException;
 
 import java.sql.Connection;
@@ -35,7 +34,6 @@ import static com.didekinlib.http.exception.GenericExceptionMsg.DATABASE_ERROR;
 import static com.didekinlib.model.common.ValidDataPatterns.EMAIL;
 import static com.didekinlib.model.common.ValidDataPatterns.PASSWORD;
 import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_DUPLICATE;
-import static com.didekinlib.model.entidad.comunidad.http.ComunidadExceptionMsg.COMUNIDAD_NOT_FOUND;
 import static com.didekinlib.model.usuario.http.TkValidaPatterns.tkEncrypted_direct_symmetricKey_REGEX;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_NOT_SENT;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.PASSWORD_WRONG;

@@ -4,7 +4,8 @@
 ALTER TABLE comunidad
   drop index tipo_via,
   drop column fecha_alta,
-  drop column fecha_mod;
+  drop column fecha_mod,
+  ADD COLUMN id_fiscal VARCHAR(9) NULL;
 
 --changeset pedronevado:5 dbms:mysql
 ALTER TABLE usuario
@@ -63,8 +64,7 @@ ALTER VIEW comunidades_municipio_view AS
 
 --changeset pedronevado:10 dbms:mysql
 ALTER VIEW incid_importancia_resolucion_view AS
-  SELECT DISTINCT
-                  im.incid_id,
+  SELECT DISTINCT im.incid_id,
                   im.u_id,
       -- usuario who ranked importancia.
                   iuv.user_name,
@@ -82,10 +82,9 @@ ALTER VIEW incid_importancia_resolucion_view AS
                   icv.sufijo_numero AS comunidad_sufijo,
                   re.fecha_alta     AS fecha_alta_resolucion
   FROM incidencia_importancia AS im
-         INNER JOIN incid_importancia_user_view AS iuv
-           ON im.incid_id = iuv.incid_id AND im.u_id = iuv.u_id
-         INNER JOIN incidencia_comunidad_view AS icv
-           ON iuv.incid_id = icv.incid_id
-         LEFT JOIN incidencia_resolucion AS re
-           ON icv.incid_id = re.incid_id
+         INNER JOIN incid_importancia_user_view AS iuv ON im.incid_id = iuv.incid_id AND im.u_id = iuv.u_id
+         INNER JOIN incidencia_comunidad_view AS icv ON iuv.incid_id = icv.incid_id
+         LEFT JOIN incidencia_resolucion AS re ON icv.incid_id = re.incid_id
   WHERE icv.fecha_cierre IS NULL;
+
+--changeset pedronevado:11 dbms:mysql
