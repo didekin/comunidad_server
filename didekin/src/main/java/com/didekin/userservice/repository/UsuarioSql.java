@@ -24,12 +24,12 @@ enum UsuarioSql {
 
     DELETE_BY_NAME("DELETE FROM usuario WHERE user_name = ?"),
 
-    DELETE_USER_COMUNIDAD("DELETE FROM usuario_comunidad " +
+    DELETE_USER_COMUNIDAD("DELETE FROM comunidad_miembro " +
             " WHERE c_id = ? AND u_id = ?"),
 
     GCM_TOKENS_BY_COMUNIDAD("SELECT gcm_token " +
             "FROM usuario AS u " +
-            "INNER JOIN usuario_comunidad AS cu " +
+            "INNER JOIN comunidad_miembro AS cu " +
             "INNER JOIN comunidad AS c " +
             "ON u.u_id = cu.u_id " +
             "AND cu.c_id = c.c_id " +
@@ -60,7 +60,7 @@ enum UsuarioSql {
             " gcm_token = ? " +
             " WHERE gcm_token = ?"),
 
-    MODIFY_USERCOMU("UPDATE usuario_comunidad SET " +
+    MODIFY_USERCOMU("UPDATE comunidad_miembro SET " +
             " portal = ?," +
             " escalera = ?," +
             " planta = ?," +
@@ -74,7 +74,7 @@ enum UsuarioSql {
     PK("u_id"),
 
     ROLES_ALL_FUNC("SELECT DISTINCT cu.roles " +
-            " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
+            " FROM usuario as u INNER JOIN comunidad_miembro AS cu " +
             " ON u.u_id = cu.u_id " +
             " WHERE u.user_name = ?"),
 
@@ -103,7 +103,7 @@ enum UsuarioSql {
             " ORDER BY alias"),
 
     USERCOMU_BY_EMAIL("SELECT u.u_id, u.alias, u.user_name, cu.c_id, cu.roles " +
-            " FROM usuario as u INNER JOIN usuario_comunidad AS cu " +
+            " FROM usuario as u INNER JOIN comunidad_miembro AS cu " +
             " USING (u_id) " +
             " WHERE u.user_name = ? AND cu.c_id = ?"),
 

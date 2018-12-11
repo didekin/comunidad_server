@@ -9,13 +9,13 @@ public enum ComunidadSql {
 
     BY_ID("SELECT * FROM comunidades_municipio_view WHERE c_id = ?"),
 
-    COUNT_BY_USERCOMU("select COUNT(*) from usuario_comunidad " +
+    COUNT_BY_USERCOMU("select COUNT(*) from comunidad_miembro " +
             " where c_id = ? " +
             " and u_id = ? "),
 
     INSERT("INSERT INTO comunidad (c_id, tipo_via, nombre_via, numero, sufijo_numero, m_id) VALUES (?,?,?,?,?,?)"),
 
-    INSERT_USUARIO("INSERT INTO usuario_comunidad (c_id, u_id, portal, escalera, planta, puerta) VALUES (?,?,?,?,?,?)"), /* Con PKs.*/
+    INSERT_USUARIO("INSERT INTO comunidad_miembro (c_id, u_id, portal, escalera, planta, puerta) VALUES (?,?,?,?,?,?)"), /* Con PKs.*/
 
     DELETE_BY_ID("DELETE FROM comunidad WHERE c_id = ?"),
 
@@ -54,7 +54,7 @@ public enum ComunidadSql {
             " AND m_cd = ? " +
             " ORDER BY tipo_via, nombre_via LIMIT 100"),
 
-    USERS_ID_BY_COMU("select u_id from usuario_comunidad as cu " +
+    USERS_ID_BY_COMU("select u_id from comunidad_miembro as cu " +
             " where cu.c_id = ?"),;
 
     String sqlText;

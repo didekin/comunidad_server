@@ -498,7 +498,7 @@ abstract class IncidenciaControllerTest {
     @Test
     public void testSeeIncidImportancia_2() throws IOException
     {
-        // 1. No existe incidencia en BD, existe usuario. Es irrelevante la relación usuario_comunidad.
+        // 1. No existe incidencia en BD, existe usuario. Es irrelevante la relación comunidad_miembro.
         final String accessToken = getUserConnector().insertTokenGetHeaderStr(pedro.getUserName());
         Response<IncidAndResolBundle> response =
                 ENDPOINT.seeIncidImportancia(accessToken, 999L).blockingGet();

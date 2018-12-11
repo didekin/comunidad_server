@@ -5,11 +5,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 # ==============================================
 
 DROP TABLE IF EXISTS comunidad;
-DROP TABLE IF EXISTS usuario_comunidad;
-DROP TABLE IF EXISTS usuario;
+DROP TABLE IF EXISTS comunidad_apoderado;
+DROP TABLE IF EXISTS comunidad_autonoma;
+DROP TABLE IF EXISTS comunidad_miembro;
 DROP TABLE IF EXISTS municipio;
 DROP TABLE IF EXISTS provincia;
-DROP TABLE IF EXISTS comunidad_autonoma;
+DROP TABLE IF EXISTS usuario_comunidad;
+DROP TABLE IF EXISTS usuario;
+DROP TABLE IF EXISTS usuario_appinstance;
+
+
 
 CREATE TABLE comunidad
 (

@@ -7,5 +7,5 @@ package com.didekin.userservice.repository;
  */
 public final class UsuarioTables {
     public static final String USUARIO_TB = "usuario";
-    static final String USUARIO_COMUNIDAD_TB = "usuario_comunidad";
+    static final String USUARIO_COMUNIDAD_TB = "comunidad_miembro";
 }

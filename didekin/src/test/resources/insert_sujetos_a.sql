@@ -20,21 +20,21 @@ VALUES (9, 'pepe_no_auth', 'password9', 'pepe@noauth.com', NULL, NULL);
 INSERT INTO didekin.usuario
 VALUES (11, 'paco', 'password11', 'paco@paco.com', NULL, NULL);
 
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (1, 3, 'Centro', NULL, 3, 'J');
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (1, 5, NULL, NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (2, 3, 'A', NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (2, 7, 'A', NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (3, 3, 'A', NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (4, 11, 'BC', NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (4, 7, 'JJ', NULL, NULL, NULL);
-INSERT INTO didekin.usuario_comunidad
+INSERT INTO didekin.comunidad_miembro
 VALUES (6, 11, 'B', NULL, 'Planta 0', '11');
 
 # DATE_SUB(NOW(), INTERVAL 20 SECOND)
