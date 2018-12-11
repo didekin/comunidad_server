@@ -87,5 +87,5 @@ ALTER VIEW incid_importancia_resolucion_view AS
          LEFT JOIN incidencia_resolucion AS re ON icv.incid_id = re.incid_id
   WHERE icv.fecha_cierre IS NULL;
 
---changeset pedronevado:11 dbms:mysql
+
 
