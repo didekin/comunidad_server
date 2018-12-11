@@ -6,8 +6,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS comunidad;
 DROP TABLE IF EXISTS usuario_comunidad;
-DROP TABLE IF EXISTS oauth_access_token;
-DROP TABLE IF EXISTS oauth_refresh_token;
 DROP TABLE IF EXISTS usuario;
 DROP TABLE IF EXISTS municipio;
 DROP TABLE IF EXISTS provincia;
@@ -73,6 +71,7 @@ CREATE TABLE usuario
   --   num_tf INTEGER UNSIGNED NOT NULL,
   user_name  VARCHAR(60)      NOT NULL, -- email.
   gcm_token  VARCHAR(175)     NULL, -- google messages id token
+  token_auth CHAR(60)         NULL,
   fecha_alta TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fecha_mod  TIMESTAMP        NULL
   ON UPDATE CURRENT_TIMESTAMP,
