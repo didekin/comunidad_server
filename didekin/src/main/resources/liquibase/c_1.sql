@@ -88,3 +88,4 @@ ALTER VIEW incid_importancia_resolucion_view AS
   WHERE icv.fecha_cierre IS NULL;
 
 --changeset pedronevado:11 dbms:mysql
+
