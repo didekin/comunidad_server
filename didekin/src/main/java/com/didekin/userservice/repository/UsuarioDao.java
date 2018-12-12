@@ -17,9 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static com.didekin.userservice.repository.ComunidadDao.doDomicilio;
 import static com.didekin.userservice.repository.UsuarioSql.COMUS_BY_USER;
@@ -35,7 +33,6 @@ import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USERCOMU;
 import static com.didekin.userservice.repository.UsuarioSql.MODIFY_USER_ALIAS;
 import static com.didekin.userservice.repository.UsuarioSql.NEW_PASSWORD;
 import static com.didekin.userservice.repository.UsuarioSql.PK;
-import static com.didekin.userservice.repository.UsuarioSql.ROLES_ALL_FUNC;
 import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKENS_GCM_AUTH_BY_ID;
 import static com.didekin.userservice.repository.UsuarioSql.UPDATE_TOKEN_AUTH_BY_NAME;
 import static com.didekin.userservice.repository.UsuarioSql.USERCOMUS_BY_COMU;
@@ -117,28 +114,6 @@ public class UsuarioDao {
         return rowsDeleted;
     }
 
-    List<String> getAllRolesFunctionalUser(String userName)
-    {
-        logger.info("getAllRolesFunctionalUser() ,jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
-
-        List<String> roles = jdbcTemplate.queryForList(
-                ROLES_ALL_FUNC.toString(), String.class, userName);
-
-        List<String> functionalRoles = new ArrayList<>();
-
-        Pattern pattern = Pattern.compile(",");
-
-        for (String rolesByComunidad : roles) {
-            String[] rolesDivided = pattern.split(rolesByComunidad);
-            for (String roleDivided : rolesDivided) {
-                if (!functionalRoles.contains(roleDivided)) {
-                    functionalRoles.add(roleDivided);
-                }
-            }
-        }
-        return functionalRoles;
-    }
-
     List<Comunidad> getComusByUser(String userName)
     {
         logger.info("getComusByUser() ,jdbcUrl: " + (requireNonNull(jdbcTemplate.getDataSource())).toString());
@@ -170,12 +145,6 @@ public class UsuarioDao {
             throw new ServiceException(USER_NOT_FOUND);
         }
         return usuario;
-
-        /* (rs, rowNum) -> doUserComuOnlyRoles(
-                            rs,
-                            doUsuarioNoPswd(rs),
-                            new Comunidad.ComunidadBuilder().c_id(rs.getLong("c_id")).build()
-                    )*/
     }
 
     Usuario getUserDataById(long idUsuario) throws ServiceException
