@@ -21,7 +21,7 @@ ALTER TABLE comunidad
   ADD FOREIGN KEY (c_id) REFERENCES entidad (e_id)
   ON UPDATE CASCADE
   ON DELETE CASCADE;
-SET FOREIGN_KEY_CHECKS = 1;
+;
 
 --changeset pedronevado:111 dbms:mysql runOnChange:true
 CREATE TABLE comunidad_apoderado
@@ -94,6 +94,7 @@ ALTER TABLE incidencia_importancia
   ADD FOREIGN KEY (c_id, u_id) REFERENCES comunidad_miembro (c_id, u_id)
   ON UPDATE CASCADE
   ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS = 1
 
 
 
