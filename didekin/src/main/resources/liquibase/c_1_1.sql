@@ -9,6 +9,7 @@ ALTER TABLE comunidad
   ADD COLUMN state ENUM ('op', 'cl') NOT NULL;
 
 --changeset pedronevado:117 dbms:mysql
+SET FOREIGN_KEY_CHECKS = 0;
 ALTER TABLE comunidad
   drop column id_fiscal,
   drop column tipo_via,
@@ -20,6 +21,7 @@ ALTER TABLE comunidad
   ADD FOREIGN KEY (c_id) REFERENCES entidad (e_id)
   ON UPDATE CASCADE
   ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS = 1;
 
 --changeset pedronevado:111 dbms:mysql runOnChange:true
 CREATE TABLE comunidad_apoderado
