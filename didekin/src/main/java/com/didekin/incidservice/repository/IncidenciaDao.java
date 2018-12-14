@@ -408,7 +408,7 @@ public class IncidenciaDao {
     }
 
     /**
-     * This method queries the incidencia_comunidad_view exclusively; therefore data pertaining to the user level,
+     * This method queries the comu_incidencia_vw exclusively; therefore data pertaining to the user level,
      * such as the importancia_avg are not available in the returned object.
      * <p>
      * Postconditions:

@@ -15,7 +15,7 @@ gradle.properties
 # Build and logs
 logs/
 /**/out
-/**/build
+didekin/build
 /**/libs
 /**/releases
 
@@ -23,3 +23,5 @@ logs/
 terminal/*
 didekin/src/main/resources/didekin_web_sym.pkcs12
 
+# Vaciados BD.
+didekin/sql_dumps/
