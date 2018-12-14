@@ -160,15 +160,16 @@ CREATE TABLE usuario
 
 CREATE TABLE usuario_appinstance
 (
-  u_id      INTEGER UNSIGNED  NOT NULL,
-  pub_key   VARCHAR(100)      NOT NULL,
-  gcm_token VARCHAR(175)      NULL,
-  state     ENUM ('op', 'cl') NOT NULL,
-  UNIQUE (u_id, pub_key, gcm_token),
+  u_id         INTEGER UNSIGNED  NOT NULL,
+  ec_pub_key_x VARCHAR(100)      NOT NULL,
+  ec_pub_key_y VARCHAR(100)      NOT NULL,
+  gcm_token    VARCHAR(175)      NULL,
+  state        ENUM ('op', 'cl') NOT NULL,
+  UNIQUE (u_id, ec_pub_key_x, gcm_token),
+  UNIQUE (u_id, ec_pub_key_y, gcm_token),
   INDEX id_parent_usuario (u_id),
   FOREIGN KEY (u_id)
   REFERENCES usuario (u_id)
-    ON UPDATE CASCADE
     ON DELETE CASCADE
 );
 

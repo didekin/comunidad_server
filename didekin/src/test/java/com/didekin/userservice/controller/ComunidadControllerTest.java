@@ -80,7 +80,7 @@ public abstract class ComunidadControllerTest {
 
 //  ===========================================================================================================
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetComuData()
@@ -94,7 +94,7 @@ public abstract class ComunidadControllerTest {
                 ).map(Response::body).test().assertValue(calle_el_escorial);
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSearcRhComunidades_1()

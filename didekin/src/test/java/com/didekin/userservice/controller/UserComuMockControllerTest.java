@@ -71,7 +71,7 @@ public abstract class UserComuMockControllerTest {
 
 //  ===========================================================================================================
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
     public void testDeleteUser()
@@ -90,7 +90,7 @@ public abstract class UserComuMockControllerTest {
                 .assertValue(response -> tkEncrypted_direct_symmetricKey_REGEX.isPatternOk(response.body()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegUserAndUserComu_1()

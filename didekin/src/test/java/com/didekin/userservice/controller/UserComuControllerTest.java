@@ -94,7 +94,7 @@ public abstract class UserComuControllerTest {
 
 //  ===========================================================================================================
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
     public void testDeleteUserComu()
@@ -107,7 +107,7 @@ public abstract class UserComuControllerTest {
                 ).map(Response::body).test().assertValue(IS_USER_DELETED);
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetComusByUser_1()
@@ -133,7 +133,7 @@ public abstract class UserComuControllerTest {
         assertThat(retrofitHandler.getErrorBean(response).getMessage(), is(USER_NOT_FOUND.getHttpMessage()));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetUserComuByUserAndComu() throws IOException
@@ -153,7 +153,7 @@ public abstract class UserComuControllerTest {
         assertThat(userComu.getUsuario().getAlias(), is("pedronevado"));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyComuData()
@@ -166,7 +166,7 @@ public abstract class UserComuControllerTest {
                 is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUserComu()
@@ -198,7 +198,7 @@ public abstract class UserComuControllerTest {
                 is("MOD"));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegComuAndUserComu()
@@ -241,7 +241,7 @@ public abstract class UserComuControllerTest {
         assertThat(usuarioManager.getComusByUser(USER_JUAN.getUserName()).get(0), is(comunidad));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testRegUserComu()
@@ -259,7 +259,7 @@ public abstract class UserComuControllerTest {
         assertThat(rowInserted, is(1));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSeeUserComuByComu()
@@ -275,7 +275,7 @@ public abstract class UserComuControllerTest {
         assertThat(usuarioComus.get(0).getUsuario(), is(luis));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSeeUserComusByUser()

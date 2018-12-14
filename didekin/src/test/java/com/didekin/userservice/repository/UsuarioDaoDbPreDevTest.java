@@ -64,7 +64,7 @@ public class UsuarioDaoDbPreDevTest {
     @Autowired
     private UsuarioDao usuarioDao;
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
     public void testDeleteGcmToken()
@@ -74,7 +74,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuarioDao.getUserDataById(luis.getuId()).getGcmToken(), nullValue());
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testDeleteUserByName() throws ServiceException
@@ -102,7 +102,7 @@ public class UsuarioDaoDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
     public void testDeleteUserComunidad_1() throws ServiceException
@@ -114,7 +114,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(isDeleted, is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test()
     public void testDeleteUserComunidad_2()
@@ -150,7 +150,7 @@ public class UsuarioDaoDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetComusByUser_1()
@@ -162,7 +162,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(comunidades, CoreMatchers.hasItems(UsuarioTestUtils.COMU_LA_PLAZUELA_10bis, COMU_LA_FUENTE, UsuarioTestUtils.COMU_EL_ESCORIAL));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetComusByUser_2()
@@ -181,7 +181,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(maxPk, is(-1L));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetUserDataById_1() throws ServiceException
@@ -201,7 +201,7 @@ public class UsuarioDaoDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testGetUserDataByName_1()
@@ -221,7 +221,7 @@ public class UsuarioDaoDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_GetUserFullComuByUserAndComu_1() throws ServiceException
@@ -303,7 +303,7 @@ public class UsuarioDaoDbPreDevTest {
         tryCheckInsertUser(usuario2, conn, GCM_TOKEN_KEY);
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_IsUserInComunidad()
@@ -315,7 +315,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuarioDao.isUserInComunidad(pedro.getUserName(), 4L), is(false));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUser() throws ServiceException
@@ -336,7 +336,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(checkpw("new_password", usuarioDBOut.getPassword()), is(true));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUserAlias() throws ServiceException
@@ -355,7 +355,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuarioDB_2.getAlias(), is(usuarioIn.getAlias()));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testModifyUserComu()
@@ -373,7 +373,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(userComus.get(0).getPuerta(), is(uc_1.getPuerta()));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testPasswordChange()
@@ -387,7 +387,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuarioDao.getUserDataByName("luis@luis.com").getPassword(), is("new_luis_password"));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSeeUserComusByComu_1()
@@ -408,7 +408,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuariosComu.get(1).getPuerta(), is(nullValue()));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void testSeeUserComusByUser()
@@ -466,7 +466,7 @@ public class UsuarioDaoDbPreDevTest {
         );
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_UpdateTokenAuthByUserName()
@@ -484,7 +484,7 @@ public class UsuarioDaoDbPreDevTest {
         assertThat(usuarioDao.getUserDataById(pedro.getuId()).getTokenAuth(), is("update_pedro_tokenAuth"));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:delete_sujetos.sql")
     @Test
     public void test_UpdateTokenAuthById()

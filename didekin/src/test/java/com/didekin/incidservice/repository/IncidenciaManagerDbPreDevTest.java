@@ -39,7 +39,6 @@ import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_la_fuente
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_olmo_55;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.calle_plazuela_23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.juan;
-import static com.didekin.userservice.testutils.UsuarioTestUtils.juan_plazuela23;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.luis_plazuelas_10bis;
 import static com.didekin.userservice.testutils.UsuarioTestUtils.paco;
@@ -51,7 +50,6 @@ import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionM
 import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_NOT_REGISTERED;
 import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCIDENCIA_USER_WRONG_INIT;
 import static com.didekinlib.model.relacion.incidencia.http.IncidenciaExceptionMsg.INCID_IMPORTANCIA_NOT_FOUND;
-import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.UNAUTHORIZED_TX_TO_USER;
 import static com.didekinlib.model.usuario.http.UsuarioExceptionMsg.USERCOMU_WRONG_INIT;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -89,7 +87,7 @@ public class IncidenciaManagerDbPreDevTest {
 
     // ======================================  HELPERS ========================================
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
     public void test_checkIncidenciaOpen()
@@ -103,7 +101,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -115,7 +113,7 @@ public class IncidenciaManagerDbPreDevTest {
 
     // ======================================  MANAGER  ========================================
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -147,7 +145,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.seeIncidenciaById(incidencia.getIncidenciaId()).getFechaCierre(), notNullValue());
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -167,7 +165,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.closeIncidencia(luis.getUserName(), resolucion), is(2));
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -179,7 +177,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.deleteIncidencia(juan.getUserName(), 2L), is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -195,7 +193,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.modifyIncidencia(paco.getUserName(), incidencia), is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -211,7 +209,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -231,7 +229,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaDao.seeIncidImportanciaByUser(paco.getUserName(), 6L).getIncidImportancia().getImportancia(), is((short) 1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -248,7 +246,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.modifyIncidImportancia(pedro.getUserName(), incidImpNew), is(2));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -290,7 +288,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -322,7 +320,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(resolucion.getCosteEstimado(), is(1111));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -336,7 +334,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.regIncidComment(pedro.getUserName(), comment), is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -378,7 +376,7 @@ public class IncidenciaManagerDbPreDevTest {
      * <p>
      * - GcmTokens are written to null in database after insertion and communication con GCM service.
      */
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_b.sql")
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -395,7 +393,7 @@ public class IncidenciaManagerDbPreDevTest {
         waitAtMost(5, SECONDS).until(() -> usuarioManager.getUserData(luis.getUserName()).getGcmToken() == null);
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos_a.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:insert_sujetos.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -415,7 +413,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.regIncidencia(incidenciaNew), is(incidenciaNew));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -451,7 +449,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -465,7 +463,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.regIncidImportancia(pedro.getUserName(), incidImportancia), is(2));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -490,7 +488,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.regIncidImportancia(luis.getUserName(), incidImportancia), is(1));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -509,7 +507,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -524,7 +522,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -536,7 +534,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(comments.size(), is(0));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -552,7 +550,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(resolBundleOut.hasResolucion(), is(false));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -569,7 +567,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -628,7 +626,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(resolBundle.hasResolucion(), is(false));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -654,7 +652,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(resolBundle.hasResolucion(), is(true));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -664,7 +662,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L).size(), is(0));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -674,7 +672,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.seeIncidsClosedByComu(pedro.getUserName(), 2L).size(), is(0));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -697,7 +695,7 @@ public class IncidenciaManagerDbPreDevTest {
         }
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -714,7 +712,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciasUser.get(0).getIncidencia(), hasProperty("descripcion", is("incidencia_4")));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -726,7 +724,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaUsers.size(), is(0));
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -745,7 +743,7 @@ public class IncidenciaManagerDbPreDevTest {
         );
     }
 
-    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
@@ -757,7 +755,7 @@ public class IncidenciaManagerDbPreDevTest {
         assertThat(incidenciaManager.seeResolucion(juan.getUserName(), 2L), nullValue());
     }
 
-    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos_a.sql", "classpath:insert_incidencia_a.sql"})
+    @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = {"classpath:insert_sujetos.sql", "classpath:insert_incidencia.sql"})
     @Sql(executionPhase = AFTER_TEST_METHOD,
             scripts = {"classpath:delete_sujetos.sql", "classpath:delete_incidencia.sql"})
     @Test
