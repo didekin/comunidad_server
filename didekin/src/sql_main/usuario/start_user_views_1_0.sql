@@ -17,7 +17,8 @@ CREATE VIEW comunidad_vw AS
 CREATE VIEW administrador_vw AS
   SELECT *
   FROM entidad
-  where tipo_entidad = 'prov_admon' with check option;
+  where tipo_entidad = 'prov_admon'
+    and id_fiscal is not NULL with check option;
 
 -- Relación entidad-miembro de tipo pertenencia a administrador (o empleado de/en administrador).
 CREATE VIEW administrador_empleado_vw AS

@@ -10,7 +10,7 @@ import static com.didekin.userservice.repository.UsuarioTables.USUARIO_TB;
  */
 enum UsuarioSql {
 
-    COMUS_BY_USER("select c_id, tipo_via, nombre_via, numero, sufijo_numero, " +
+    COMUS_BY_USER("select e_id, tipo_via, nombre_via, numero, sufijo_numero, " +
             " portal, escalera, planta, puerta, " +
             " m_cd, m_nombre, " +
             " pr_id, pr_nombre" +
@@ -25,15 +25,15 @@ enum UsuarioSql {
     DELETE_BY_NAME("DELETE FROM usuario WHERE user_name = ?"),
 
     DELETE_USER_COMUNIDAD("DELETE FROM comunidad_miembro " +
-            " WHERE c_id = ? AND u_id = ?"),
+            " WHERE e_id = ? AND u_id = ?"),
 
     GCM_TOKENS_BY_COMUNIDAD("SELECT gcm_token " +
             "FROM usuario AS u " +
             "INNER JOIN comunidad_miembro AS cu " +
             "INNER JOIN comunidad AS c " +
             "ON u.u_id = cu.u_id " +
-            "AND cu.c_id = c.c_id " +
-            "WHERE c.c_id = ? " +
+            "AND cu.e_id = c.e_id " +
+            "WHERE c.e_id = ? " +
             "AND gcm_token IS NOT NULL " +
             "ORDER BY gcm_token"),
 
@@ -42,7 +42,7 @@ enum UsuarioSql {
     IS_USER_IN_COMUNIDAD("SELECT COUNT(*) FROM " + USUARIO_TB +
             " INNER JOIN " + USUARIO_COMUNIDAD_TB +
             " USING (u_id) " +
-            " WHERE user_name = ? AND c_id = ?"),
+            " WHERE user_name = ? AND e_id = ?"),
 
     MAX_PK("SELECT MAX(u_id) AS u_id FROM usuario"),
 
@@ -65,7 +65,7 @@ enum UsuarioSql {
             " escalera = ?," +
             " planta = ?," +
             " puerta = ? " +
-            " WHERE c_id = ? AND u_id = ?"),
+            " WHERE e_id = ? AND u_id = ?"),
 
     NEW_PASSWORD("UPDATE usuario SET " +
             " password = ? " +
@@ -94,18 +94,18 @@ enum UsuarioSql {
             " FROM usuario WHERE u_id = ?"),
 
     USERCOMU_BY_COMU("select * from usuarios_comunidades_view" +
-            " where user_name = ? AND c_id = ? "),
+            " where user_name = ? AND e_id = ? "),
 
-    USERCOMUS_BY_COMU("select c_id, u_id, user_name, alias," +
+    USERCOMUS_BY_COMU("select e_id, u_id, user_name, alias," +
             " portal, escalera, planta, puerta " +
             " from usuarios_comunidades_view" +
-            " where c_id = ? " +
+            " where e_id = ? " +
             " ORDER BY alias"),
 
-    USERCOMU_BY_EMAIL("SELECT u.u_id, u.alias, u.user_name, cu.c_id, cu.roles " +
+    USERCOMU_BY_EMAIL("SELECT u.u_id, u.alias, u.user_name, cu.e_id, cu.roles " +
             " FROM usuario as u INNER JOIN comunidad_miembro AS cu " +
             " USING (u_id) " +
-            " WHERE u.user_name = ? AND cu.c_id = ?"),
+            " WHERE u.user_name = ? AND cu.e_id = ?"),
 
     USERCOMUS_BY_USER("select * from usuarios_comunidades_view" +
             " where user_name = ? " +

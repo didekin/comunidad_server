@@ -9,32 +9,30 @@ VALUES (4, 'H96543210', 'Calle', 'de la Plazuela', 23, '', 103, 'comunidad', 'op
 INSERT INTO didekin.entidad
 VALUES (6, 'H76543297', 'Calle', 'del Olmo', 55, '', 105, 'comunidad', 'op');
 
-# didekin.usuario ============================================================================================
 INSERT INTO didekin.usuario
 VALUES (3,
         'pedronevado',
         '$2a$10$9Gg4THybJVAAOY3yfzDY1uaTEhajatpX.WC056Ibd.fQJMG9QyZ3S',
         'pedro@didekin.es',
         NULL,
-        'op'); # password3
+        'op');
 INSERT INTO didekin.usuario
 VALUES (5,
         'luis_gomez',
         '$2a$10$km0D4Uc5cFV1Gv6aAnoeeu03XNk1i686uqlB2A0BClNtB5A8LucLK',
         'luis@luis.com',
         'luis_token_auth',
-        'op'); # password5
+        'op');
 INSERT INTO didekin.usuario
 VALUES (7,
         'juan_no_auth',
         '$2a$10$Gp06vc0EB.s8gkmulvfzouhCdkcaa5mvhlJsIf4XnrCYsJF/UwG56',
         'juan@noauth.com',
         NULL,
-        'op'); # password7
+        'op');
 INSERT INTO didekin.usuario
-VALUES (11, 'paco', '$2a$10$cdOjupfvgP/zpTOd5yyGROQVjjUhU18J/kg/04ZoUwLAUoeIo5xbK', 'paco@paco.com', NULL, 'op'); # password11
+VALUES (11, 'paco', '$2a$10$cdOjupfvgP/zpTOd5yyGROQVjjUhU18J/kg/04ZoUwLAUoeIo5xbK', 'paco@paco.com', NULL, 'op');
 
-# didekin.usuario_appinstance ============================================================================================
 INSERT INTO didekin.usuario_appinstance
 VALUES (3,
         '5755099286786375742977069411837913043687552329990879963599357261164258192822',
@@ -60,7 +58,6 @@ VALUES (11,
         NULL,
         'op');
 
-# didekin.comunidad_miembro ============================================================================================
 INSERT INTO didekin.comunidad_miembro
 VALUES (1, 1, 3, 'Centro', NULL, 3, 'J', TRUE, 'op');
 INSERT INTO didekin.comunidad_miembro
@@ -79,5 +76,6 @@ INSERT INTO didekin.comunidad_miembro
 VALUES (8, 6, 11, 'B', NULL, 'Planta 0', '11', FALSE, 'op');
 
 # DATE_SUB(NOW(), INTERVAL 20 SECOND)
+# Regla password: password3, password5, ...
 
 

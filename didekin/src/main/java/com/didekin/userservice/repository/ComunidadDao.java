@@ -24,6 +24,7 @@ import java.util.List;
 import static com.didekin.common.repository.ServiceException.GENERATED_KEY;
 import static com.didekin.userservice.repository.ComunidadSql.BY_ID;
 import static com.didekin.userservice.repository.ComunidadSql.COUNT_BY_USERCOMU;
+import static com.didekin.userservice.repository.ComunidadSql.DELETE_BY_ID;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT;
 import static com.didekin.userservice.repository.ComunidadSql.INSERT_USUARIO;
 import static com.didekin.userservice.repository.ComunidadSql.MODIFY_COMU;
@@ -64,7 +65,7 @@ public class ComunidadDao {
     {
         logger.info("::deleteComunidad()");
 
-        int rowsDeleted = jdbcTemplate.update(ComunidadSql.DELETE_BY_ID.toString(), comunidad.getId());
+        int rowsDeleted = jdbcTemplate.update(DELETE_BY_ID.toString(), comunidad.getId());
         if (!(rowsDeleted == 1)) {
             throw new ServiceException(COMUNIDAD_NOT_FOUND);
         }
@@ -271,7 +272,7 @@ public class ComunidadDao {
         public Comunidad mapRow(ResultSet resultSet, int i) throws SQLException
         {
             return new Comunidad.ComunidadBuilder()
-                    .c_id(resultSet.getLong("c_Id"))
+                    .c_id(resultSet.getLong("e_Id"))
                     .domicilio(doDomicilio(resultSet))
                     .build();
         }

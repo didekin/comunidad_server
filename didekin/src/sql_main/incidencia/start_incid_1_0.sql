@@ -23,14 +23,9 @@ CREATE TABLE incidencia
   ambito      SMALLINT UNSIGNED NOT NULL,
   importancia SMALLINT UNSIGNED NOT NULL, -- valores: 1, 2, 3 y 4.
   state       ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (incid_id),
-  INDEX id_parent_comu_miembro (cm_id),
-  INDEX id_parent_ambito (ambito),
-  FOREIGN KEY (cm_id) REFERENCES comunidad_miembro (cm_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (ambito) REFERENCES ambito_incidencia (ambito_id)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+  INDEX (incid_id),
+  INDEX id_parent_comunidad_miembro (cm_id),
+  INDEX id_parent_ambito (ambito)
 );
 
 SET FOREIGN_KEY_CHECKS = 1;

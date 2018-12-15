@@ -7,17 +7,17 @@ package com.didekin.userservice.repository;
  */
 public enum ComunidadSql {
 
-    BY_ID("SELECT * FROM comunidades_municipio_vw WHERE c_id = ?"),
+    BY_ID("SELECT * FROM comunidades_municipio_vw WHERE e_id = ?"),
 
     COUNT_BY_USERCOMU("select COUNT(*) from comunidad_miembro " +
-            " where c_id = ? " +
+            " where e_id = ? " +
             " and u_id = ? "),
 
-    INSERT("INSERT INTO comunidad (c_id, tipo_via, nombre_via, numero, sufijo_numero, m_id) VALUES (?,?,?,?,?,?)"),
+    INSERT("INSERT INTO comunidad_vw (e_id, tipo_via, nombre_via, numero, sufijo_numero, m_id) VALUES (?,?,?,?,?,?)"),
 
-    INSERT_USUARIO("INSERT INTO comunidad_miembro (c_id, u_id, portal, escalera, planta, puerta) VALUES (?,?,?,?,?,?)"), /* Con PKs.*/
+    INSERT_USUARIO("INSERT INTO comunidad_miembro (e_id, u_id, portal, escalera, planta, puerta) VALUES (?,?,?,?,?,?)"), /* Con PKs.*/
 
-    DELETE_BY_ID("DELETE FROM comunidad_vw WHERE c_id = ?"),
+    DELETE_BY_ID("DELETE FROM comunidad_vw WHERE e_id = ?"),
 
     MODIFY_COMU("UPDATE comunidad SET " +
             " tipo_via = ?," +
@@ -25,7 +25,7 @@ public enum ComunidadSql {
             " numero = ?," +
             " sufijo_numero = ?," +
             " m_id = ? " +
-            " WHERE c_id = ?"),
+            " WHERE e_id = ?"),
 
     // Taking into account everything in comunidad.
     SEARCH_ONE("SELECT * FROM comunidades_municipio_vw" +
@@ -55,7 +55,7 @@ public enum ComunidadSql {
             " ORDER BY tipo_via, nombre_via LIMIT 100"),
 
     USERS_ID_BY_COMU("select u_id from comunidad_miembro as cu " +
-            " where cu.c_id = ?"),;
+            " where cu.e_id = ?"),;
 
     String sqlText;
 

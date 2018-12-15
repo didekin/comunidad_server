@@ -32,15 +32,9 @@ CREATE TABLE comunidad_miembro
   puerta      VARCHAR(10)       NULL,
   isApoderado BOOLEAN                    default false,
   state       ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (cm_id),
-  INDEX id_parent_com (e_id),
-  INDEX id_parent_usu (u_id),
-  FOREIGN KEY (e_id)
-  REFERENCES entidad (e_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (u_id)
-  REFERENCES usuario (u_id)
-    ON DELETE CASCADE
+  INDEX (cm_id),
+  INDEX id_parent_comunidad (e_id),
+  INDEX id_parent_usuario (u_id)
 );
 
 CREATE TABLE entidad
@@ -54,7 +48,7 @@ CREATE TABLE entidad
   m_id          INTEGER UNSIGNED  NOT NULL,
   tipo_entidad  ENUM ('comunidad', 'prov_admon', 'prov_otros'),
   state         ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (e_id),
+  INDEX (e_id),
   INDEX id_parent_municipio (m_id),
   FOREIGN KEY (m_id) REFERENCES municipio (m_id)
     ON UPDATE CASCADE
@@ -67,14 +61,9 @@ CREATE TABLE entidad_rel_entidad
   e1_id  INTEGER UNSIGNED  NOT NULL,
   e2_id  INTEGER UNSIGNED  NOT NULL,
   state  ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (ere_id),
-  INDEX id_parent_entidad1 (e1_id),
-  INDEX id_parent_entidad2 (e2_id),
-  FOREIGN KEY (e1_id)
-  REFERENCES entidad (e_id)
-    ON DELETE RESTRICT,
-  FOREIGN KEY (e2_id)
-  REFERENCES entidad (e_id)
+  INDEX (ere_id),
+  INDEX index_1_parent_entidad (e1_id),
+  INDEX index_2_parent_entidad (e2_id)
 );
 
 CREATE TABLE entidades_rel_usuario
@@ -85,20 +74,10 @@ CREATE TABLE entidades_rel_usuario
   u_id        INTEGER UNSIGNED  NOT NULL,
   isApoderado BOOLEAN                    default false,
   state       ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (esru_id),
-  INDEX id_parent_entidad1 (e1_id),
-  INDEX id_parent_entidad2 (e2_id),
-  INDEX id_parent_usuario (u_id),
-  FOREIGN KEY (e1_id)
-  REFERENCES entidad (e_id)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-  FOREIGN KEY (e2_id)
-  REFERENCES entidad (e_id),
-  FOREIGN KEY (u_id)
-  REFERENCES usuario (u_id)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+  INDEX (esru_id),
+  INDEX index_1_parent_entidad (e1_id),
+  INDEX index_2_parent_entidad (e2_id),
+  INDEX id_parent_usuario (u_id)
 );
 
 CREATE TABLE municipio
@@ -121,15 +100,9 @@ CREATE TABLE proveedor_empleado
   e_id   INTEGER UNSIGNED  NOT NULL,
   u_id   INTEGER UNSIGNED  NOT NULL,
   state  ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (pre_id),
-  INDEX id_parent_com (e_id),
-  INDEX id_parent_usu (u_id),
-  FOREIGN KEY (e_id)
-  REFERENCES entidad (e_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (u_id)
-  REFERENCES usuario (u_id)
-    ON DELETE CASCADE
+  INDEX (pre_id),
+  INDEX id_parent_comunidad (e_id),
+  INDEX id_parent_usuario (u_id)
 );
 
 CREATE TABLE provincia
@@ -144,6 +117,11 @@ CREATE TABLE provincia
     ON DELETE RESTRICT
 );
 
+CREATE TABLE transaccion
+(
+
+)
+
 CREATE TABLE usuario
 (
   u_id       INTEGER UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -154,8 +132,8 @@ CREATE TABLE usuario
   user_name  VARCHAR(60)       NOT NULL, -- email.
   token_auth CHAR(60)          NULL,
   state      ENUM ('op', 'cl') NOT NULL,
-  PRIMARY KEY (u_id),
-  UNIQUE (user_name)
+  INDEX (u_id),
+  INDEX (user_name)
 );
 
 CREATE TABLE usuario_appinstance
@@ -165,12 +143,7 @@ CREATE TABLE usuario_appinstance
   ec_pub_key_y VARCHAR(100)      NOT NULL,
   gcm_token    VARCHAR(175)      NULL,
   state        ENUM ('op', 'cl') NOT NULL,
-  UNIQUE (u_id, ec_pub_key_x, gcm_token),
-  UNIQUE (u_id, ec_pub_key_y, gcm_token),
-  INDEX id_parent_usuario (u_id),
-  FOREIGN KEY (u_id)
-  REFERENCES usuario (u_id)
-    ON DELETE CASCADE
+  INDEX id_parent_usuario (u_id)
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
